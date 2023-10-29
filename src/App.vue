@@ -8,7 +8,7 @@ const url_live = '/live';
 const url_record = '/record';
 const url_list = `${url_record}/list.json`;
 
-const streamer = ref(null);
+const streamer = ref([]);
 const hist = ref(null);
 onMounted(
   async () => {
@@ -37,16 +37,31 @@ onMounted(
               }
             )
             .sort( // 我就想整理 爽
-              (a, b) => {
-                if (a.publishTime < b.publishTime) return -1
-                else if (a.publishTime > b.publishTime) return 1
-                else return 0;
-              }
+              (a, b) => a.publishTime - b.publishTime
             )
         }
       )
       .catch(e => console.error(e));
-    streamer.value = new Set(hist.value.map(i=>i.streamer));
+
+    streamer.value = (
+      await Promise.all(
+        Array
+          .from(
+            new Set(hist.value.map(i => i.streamer)).values()
+          )
+          .map(
+            async i => {
+              return {
+                name: i,
+                status: (await fetch(`${url_live}/${i}.m3u8`)).ok
+              }
+            }
+          )
+      )
+    )
+      .sort(
+        (a, b) => (a.status === b.status) ? 0 : a.status ? -1 : 1
+      )
   }
 )
 </script>

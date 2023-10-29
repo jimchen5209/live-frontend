@@ -29,4 +29,5 @@ coverage
 
 # Custom ignored
 record
+live
 .yarn
