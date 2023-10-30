@@ -65,7 +65,7 @@ onMounted(async () => {
           <div class="ts-content">頂部欄</div>
         </div>
         <!-- Playlist -->
-        <PlaylistView :playlist="JSON.parse(JSON.stringify(hist))" />
+        <PlaylistView :playlist="hist" />
       </div>
       <!-- Chat -->
       <div class="cell" style="width: 18%">

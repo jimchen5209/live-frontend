@@ -3,14 +3,13 @@ import { computed } from 'vue'
 
 const props = defineProps({
   streamer: String,
-  publishTime: String,
+  publishTime: Date,
   duration: String,
   src: String,
   name: String
 })
-const publishTime = new Date(props.publishTime)
 const pubTime = computed(
-  () => `${publishTime.toLocaleDateString()} ${publishTime.toLocaleTimeString()}`
+  () => `${props.publishTime.toLocaleDateString()} ${props.publishTime.toLocaleTimeString()}`
 )
 const parsedu = computed(() => {
   let h = Math.floor(props.duration / 3600)
