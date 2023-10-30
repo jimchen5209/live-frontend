@@ -1,11 +1,9 @@
 <script setup>
-import RecordCard from './RecordCard.vue';
+import RecordCard from './RecordCard.vue'
 
-defineProps(
-  {
-    playlist: Array
-  }
-)
+defineProps({
+  playlist: Array
+})
 </script>
 
 <template>
