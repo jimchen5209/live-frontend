@@ -31,6 +31,7 @@ const parsedu = computed(() => {
       <picture>
         <source :srcset="src + '.avif'" />
         <source :srcset="src + '.jxl'" />
+        <source :srcset="src + '.png'" />
         <img
           src="../../assets/image.png"
           alt="Record thumb"
