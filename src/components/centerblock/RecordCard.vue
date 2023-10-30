@@ -25,13 +25,13 @@ const parsedu = computed(() => {
 
 <template>
   <!-- Box -->
-  <a class="ts-box" :href="`/#profile/${streamer}/${name}`">
+  <a class="ts-box" :href="`#profile/${streamer}/${name}`">
     <!-- Preview image -->
     <div class="ts-image">
       <picture>
-        <source :srcset="src + '.avif'" />
-        <source :srcset="src + '.jxl'" />
-        <source :srcset="src + '.png'" />
+        <source type="image/jxl" :srcset="src + '.jxl'" />
+        <source type="image/avif" :srcset="src + '.avif'" />
+        <source type="image/png" :srcset="src + '.png'" />
         <img
           src="../../assets/image.png"
           alt="Record thumb"
