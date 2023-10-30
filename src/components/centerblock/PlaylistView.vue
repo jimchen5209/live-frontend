@@ -11,7 +11,7 @@ defineProps({
     <!-- Todo Search -->
     <!-- Card View -->
     <!-- Grid -->
-    <div class="ts-grid has-spaced-large mobile:is-3-columns tablet+:is-5-columns">
+    <div class="ts-grid has-spaced-large tablet:is-2-columns desktop:is-3-columns widescreen:is-5-columns">
       <!-- Column -->
       <div class="column" v-for:="i in playlist?.slice(-99).reverse()">
         <RecordCard
