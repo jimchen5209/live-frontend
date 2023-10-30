@@ -3,6 +3,7 @@ import { ref, onMounted } from 'vue'
 
 import StreamerList from './components/sidebar/StreamerList.vue'
 import HeaderBlock from './components/sidebar/HeaderBlock.vue'
+import PlaylistView from './components/centerblock/PlaylistView.vue'
 
 const url_live = '/live';
 const url_record = '/record';
@@ -29,10 +30,9 @@ onMounted(
                       filename.substring(filename.length - 14, filename.length - 4) * 1000
                     )
                   ),
-                  thumbSrc: `${url_record}/${filename.substring(0, filename.length - 3)}`,
                   duration: e.format.duration,
-                  src: `${url_record}/${filename.substring(0, filename.length - 3)}.mp4`,
-                  name: filename.substring(0, filename.length - 3) + "mp4",
+                  src: `${url_record}/${filename.substring(0, filename.length - 4)}`,
+                  name: filename,
                 }
               }
             )
@@ -72,16 +72,16 @@ onMounted(
       <!-- Side Bar -->
       <div class="cell is-scrollable is-vertical" style="width: 13%;">
         <HeaderBlock />
-        <StreamerList v-bind:streamer="streamer" />
+        <StreamerList :streamer="streamer" />
       </div>
-      <!-- Player -->
+      <!-- Center -->
       <div class="cell is-fluid is-scrollable is-vertical">
+        <!-- Player -->
         <div class="cell" style="height: 80%;">
           <div class="ts-content">頂部欄</div>
         </div>
-        <div class="cell">
-          <div class="ts-content" v-for:="i in Array.from(Array(100).keys())">內容欄 {{ i }}</div>
-        </div>
+        <!-- Playlist -->
+        <PlaylistView :playlist="JSON.parse(JSON.stringify(hist))"/>
       </div>
       <!-- Chat -->
       <div class="cell" style="width: 18%;">
