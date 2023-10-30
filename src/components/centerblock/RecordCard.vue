@@ -33,7 +33,7 @@ const parsedu = computed(
       <picture>
         <source :srcset="src + '.avif'">
         <source :srcset="src + '.jxl'">
-        <img src="image.png" alt="Record thumb">
+        <img src="../../assets/image.png" alt="Record thumb">
       </picture>
     </div>
     <!-- Metadata -->
