@@ -27,7 +27,7 @@ const parsedu = computed(() => {
   <!-- Box -->
   <a class="ts-box" :href="`#profile/${streamer}/${name}`">
     <!-- Preview image -->
-    <div class="ts-image">
+    <div class="live-card-picture ts-image">
       <picture>
         <source type="image/jxl" :srcset="src + '.jxl'" />
         <source type="image/avif" :srcset="src + '.avif'" />
@@ -50,3 +50,12 @@ const parsedu = computed(() => {
     </div>
   </a>
 </template>
+
+<style scoped>
+.live-card-picture {
+  width: 100%;
+  aspect-ratio: 16/9;
+  object-fit: contain;
+  display: inline-block;
+}
+</style>
