@@ -1,9 +1,10 @@
 <script setup>
-import { ref, onMounted } from 'vue'
+import { ref, computed, onMounted } from 'vue'
 
 import StreamerList from './components/sidebar/StreamerList.vue'
 import HeaderBlock from './components/sidebar/HeaderBlock.vue'
 import PlaylistView from './components/centerblock/PlaylistView.vue'
+import MediaPlayer from './components/centerblock/MediaPlayer.vue'
 
 const url_live = '/live'
 const url_record = '/record'
@@ -58,6 +59,13 @@ onMounted(async () => {
     )
   ).sort((a, b) => (a.status === b.status ? 0 : a.status ? -1 : 1))
 })
+
+// Custom routing
+const currentPath = ref(window.location.hash)
+window.addEventListener('hashchange', () => {
+  currentPath.value = window.location.hash
+})
+const isPlayable = computed(() => currentPath.value.split('/').length>2);
 </script>
 
 <template>
@@ -71,14 +79,20 @@ onMounted(async () => {
       <!-- Center -->
       <div class="cell is-fluid is-scrollable is-vertical">
         <!-- Player -->
-        <div class="cell" style="height: 80%">
-          <div class="ts-content">頂部欄</div>
+        <div v-if="isPlayable" class="has-flex-center cell" style="height: 80%">
+          <MediaPlayer
+            :hist="hist"
+            :currentPath="currentPath"
+          />
         </div>
         <!-- Playlist -->
-        <PlaylistView :playlist="hist" />
+        <PlaylistView
+          :currentPath="currentPath"
+          :hist="hist"
+        />
       </div>
       <!-- Chat -->
-      <div class="cell" style="width: 18%">
+      <div v-if="isPlayable" class="cell" style="width: 18%">
         <div class="ts-content">聊天室</div>
       </div>
     </div>
