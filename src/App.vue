@@ -69,32 +69,31 @@ const isPlayable = computed(() => currentPath.value.split('/').length>2);
 </script>
 
 <template>
-  <div class="ts-container is-fluid">
-    <div class="ts-app-layout is-horizontal is-full">
-      <!-- Side Bar -->
-      <div class="cell is-scrollable is-vertical" style="width: 13%">
-        <HeaderBlock />
-        <StreamerList :streamer="streamer" />
-      </div>
-      <!-- Center -->
-      <div class="cell is-fluid is-scrollable is-vertical">
-        <!-- Player -->
-        <div v-if="isPlayable" class="has-flex-center cell" style="max-height: 80%">
-          <MediaPlayer
-            :hist="hist"
-            :currentPath="currentPath"
-          />
-        </div>
-        <!-- Playlist -->
-        <PlaylistView
-          :currentPath="currentPath"
+  <div class="ts-app-layout is-horizontal is-fluid">
+    <!-- Side Bar -->
+    <div class="cell is-scrollable is-vertical" style="width: 13%">
+      <HeaderBlock />
+      <StreamerList :streamer="streamer" />
+    </div>
+    <!-- Center -->
+    <div class="cell is-fluid is-scrollable is-vertical">
+      <!-- Player -->
+      <div v-if="isPlayable" class="has-flex-center cell" style="max-height: 80%">
+        <MediaPlayer
           :hist="hist"
+          :currentPath="currentPath"
         />
       </div>
-      <!-- Chat -->
-      <div v-if="isPlayable" class="cell" style="width: 18%">
-        <div class="ts-content">聊天室</div>
-      </div>
+      <!-- Playlist -->
+      <PlaylistView
+        :key="currentPath"
+        :currentPath="currentPath"
+        :hist="hist"
+      />
+    </div>
+    <!-- Chat -->
+    <div v-if="isPlayable" class="cell" style="width: 18%">
+      <div class="ts-content">聊天室</div>
     </div>
   </div>
 </template>
