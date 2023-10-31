@@ -30,6 +30,7 @@ const playlist = computed(() => {
       <!-- Column -->
       <div class="column" v-for:="i in playlist?.slice(cardAmount).reverse()">
         <RecordCard
+          :key="i.name"
           :streamer="i.streamer"
           :publishTime="i.publishTime"
           :duration="i.duration"
