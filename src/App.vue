@@ -40,9 +40,19 @@ onMounted(async () => {
   streamer.value = (
     await Promise.all(
       Array.from(new Set(hist.value.map((i) => i.streamer)).values()).map(async (i) => {
+        const isLive = (await fetch(`${url_live}/${i}.m3u8`)).ok
+        if (isLive)
+          hist.value.push({
+            streamer: i,
+            publishTime: new Date(Date.now()),
+            duration: '0',
+            src: `${url_live}/${i}.m3u8`,
+            name: `${i}.m3u8`,
+            isLive: true
+          })
         return {
           name: i,
-          status: (await fetch(`${url_live}/${i}.m3u8`)).ok
+          status: isLive
         }
       })
     )

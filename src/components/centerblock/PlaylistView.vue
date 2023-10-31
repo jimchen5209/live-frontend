@@ -7,7 +7,7 @@ defineProps({
 </script>
 
 <template>
-  <div class="cell is-horizontal">
+  <div class="cell">
     <!-- Todo Search -->
     <!-- Card View -->
     <!-- Grid -->
@@ -20,6 +20,7 @@ defineProps({
           :duration="i.duration"
           :src="i.src"
           :name="i.name"
+          :isLive="'isLive' in i"
         />
       </div>
     </div>

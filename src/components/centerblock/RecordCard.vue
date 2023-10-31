@@ -6,7 +6,8 @@ const props = defineProps({
   publishTime: Date,
   duration: String,
   src: String,
-  name: String
+  name: String,
+  isLive: Boolean
 })
 const pubTime = computed(
   () => `${props.publishTime.toLocaleDateString()} ${props.publishTime.toLocaleTimeString()}`
@@ -42,8 +43,10 @@ const parsedu = computed(() => {
     <!-- Metadata -->
     <div class="ts-content is-secondary">
       <div class="ts-text is-description">{{ streamer }}</div>
-      <div class="ts-header is-truncated is-heavy">{{ parsedu }}</div>
-      <div class="ts-text is-description">{{ pubTime }}</div>
+      <div v-if=isLive class="ts-header is-truncated is-heavy" style="color: #ff4141;">Live</div>
+      <div v-else class="ts-header is-truncated is-heavy">{{ parsedu }}</div>
+      <div v-if=!isLive class="ts-text is-description">{{ pubTime }}</div>
+      <div v-else class="ts-text is-description">Now</div>
     </div>
   </a>
 </template>
