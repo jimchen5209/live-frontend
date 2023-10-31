@@ -78,7 +78,7 @@ const isPlayable = computed(() => currentPath.value.split('/').length>2);
     <!-- Center -->
     <div class="cell is-fluid is-scrollable is-vertical">
       <!-- Player -->
-      <div v-if="isPlayable" class="has-flex-center cell" style="max-height: 80%">
+      <div v-if="isPlayable" class="has-flex-center cell" style="max-height: 80vh">
         <MediaPlayer
           :hist="hist"
           :currentPath="currentPath"
