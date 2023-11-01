@@ -57,7 +57,7 @@ const parsedu = computed(() => {
 <style scoped>
 .live-card-picture {
   display: inline;
-  background-image: url("@/assets/loading.svg");
+  background-image: url("data:image/svg+xml,%3csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 160 90' %3e%3cpath d='M0 0h160v90H0z' fill='%23232323'/%3e%3cellipse cx='60' cy='45' rx='6' ry='6' fill='red'%3e%3canimate id='A' attributeName='cy' begin='0s%3bC.end' values='45%3b47%3b40%3b47%3b45' dur='0.4s'/%3e%3canimate attributeName='ry' begin='0s%3bC.end' values='6%3b5%3b7%3b5%3b6' dur='0.4s'/%3e%3c/ellipse%3e%3cellipse cx='80' cy='45' rx='6' ry='6' fill='%230f0'%3e%3canimate id='B' attributeName='cy' begin='A.end' values='45%3b47%3b40%3b47%3b45' dur='0.4s'/%3e%3canimate attributeName='ry' begin='A.end' values='6%3b5%3b7%3b5%3b6' dur='0.4s'/%3e%3c/ellipse%3e%3cellipse cx='100' cy='45' rx='6' ry='6' fill='%2300f'%3e%3canimate id='C' attributeName='cy' begin='B.end' values='45%3b47%3b40%3b47%3b45' dur='0.4s'/%3e%3canimate attributeName='ry' begin='B.end' values='6%3b5%3b7%3b5%3b6' dur='0.4s'/%3e%3c/ellipse%3e%3c/svg%3e");
   background-repeat: no-repeat;
   width: 100%;
   aspect-ratio: 16/9;
