@@ -27,7 +27,7 @@ onMounted(async () => {
               parseInt(filename.substring(filename.length - 14, filename.length - 4) * 1000)
             ),
             duration: e.format.duration,
-            src: `${url_record}/${filename.substring(0, filename.length - 4)}`,
+            src: `${url_record}/${filename}`,
             name: filename
           }
         })
@@ -80,6 +80,8 @@ const isPlayable = computed(() => currentPath.value.split('/').length>2);
       <!-- Player -->
       <div v-if="isPlayable" class="has-flex-center cell" style="max-height: 80vh">
         <MediaPlayer
+          v-if="hist"
+          :key="currentPath"
           :hist="hist"
           :currentPath="currentPath"
         />

@@ -29,11 +29,14 @@ const parsedu = computed(() => {
     <!-- Preview image -->
     <div class="live-card-picture ts-image">
       <picture>
-        <source type="image/jxl" :srcset="src + '.jxl'" />
-        <source type="image/avif" :srcset="src + '.avif'" />
-        <source type="image/png" :srcset="src + '.png'" />
+        <source v-if="isLive" type="image/jxl" :srcset="`${src.substring(0, src.length-4)}jxl`" />
+        <source v-else type="image/jxl" :srcset="`${src.substring(0, src.length-3)}jxl`" />
+        <source v-if="isLive" type="image/avif" :srcset="`${src.substring(0, src.length-4)}avif`" />
+        <source v-else type="image/avif" :srcset="`${src.substring(0, src.length-3)}avif`" />
+        <source v-if="isLive" type="image/png" :srcset="`${src.substring(0, src.length-4)}png`" />
+        <source v-else type="image/png" :srcset="`${src.substring(0, src.length-3)}png`" />
         <img
-          src="../../assets/image.png"
+          src="@/assets/placeholder.svg"
           alt="Record thumb"
           loading="lazy"
           onerror="this.parentNode.children[0] != this && this.parentNode.children[0].remove()"
@@ -53,6 +56,9 @@ const parsedu = computed(() => {
 
 <style scoped>
 .live-card-picture {
+  display: inline;
+  background-image: url("@/assets/loading.svg");
+  background-repeat: no-repeat;
   width: 100%;
   aspect-ratio: 16/9;
   object-fit: contain;
