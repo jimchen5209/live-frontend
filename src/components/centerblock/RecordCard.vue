@@ -36,7 +36,7 @@ const parsedu = computed(() => {
         <source v-if="isLive" type="image/png" :srcset="`${src.substring(0, src.length-4)}png`" />
         <source v-else type="image/png" :srcset="`${src.substring(0, src.length-3)}png`" />
         <img
-          src="@/assets/placeholder.svg"
+          src="data:image/svg+xml,%3csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 160 90' xmlns:v='https://vecta.io/nano'%3e%3cpath d='M0 0h160v90H0z' fill='%23232323'/%3e%3cg fill='%23676767'%3e%3ccircle cx='60' cy='45' r='6'/%3e%3ccircle cx='80' cy='45' r='6'/%3e%3ccircle cx='100' cy='45' r='6'/%3e%3c/g%3e%3c/svg%3e"
           alt="Record thumb"
           loading="lazy"
           onerror="this.parentNode.children[0] != this && this.parentNode.children[0].remove()"
