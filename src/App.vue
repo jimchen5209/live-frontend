@@ -65,7 +65,16 @@ const currentPath = ref(window.location.hash)
 window.addEventListener('hashchange', () => {
   currentPath.value = window.location.hash
 })
-const isPlayable = computed(() => currentPath.value.split('/').length>2);
+
+// 相容舊的
+const p = currentPath.value.split('/').at(-1);
+if (currentPath.value?.startsWith('#record')) { // #record/cute_panda-1698758357.mp4
+  window.location.replace(`#profile/${p.split('-').at(0)}/${p}`); // #profile/cute_panda/cute_panda-1698758357.mp4
+} else if (currentPath.value?.startsWith('#live')) { // #record/cute_panda-1698758357.mp4
+  window.location.replace(`#profile/${p.split('-').at(0)}/${p.split('-').at(0)}.m3u8`); // #profile/cute_panda/cute_panda.m3u8
+}
+
+const isPlayable = computed(() => currentPath.value.split('/').length > 2)
 </script>
 
 <template>
@@ -79,19 +88,10 @@ const isPlayable = computed(() => currentPath.value.split('/').length>2);
     <div class="cell is-fluid is-scrollable is-vertical">
       <!-- Player -->
       <div v-if="isPlayable" class="has-flex-center cell" style="max-height: 80vh">
-        <MediaPlayer
-          v-if="hist"
-          :key="currentPath"
-          :hist="hist"
-          :currentPath="currentPath"
-        />
+        <MediaPlayer v-if="hist" :key="currentPath" :hist="hist" :currentPath="currentPath" />
       </div>
       <!-- Playlist -->
-      <PlaylistView
-        :key="currentPath"
-        :currentPath="currentPath"
-        :hist="hist"
-      />
+      <PlaylistView :key="currentPath" :currentPath="currentPath" :hist="hist" />
     </div>
     <!-- Chat -->
     <div v-if="isPlayable" class="cell" style="width: 18%">
