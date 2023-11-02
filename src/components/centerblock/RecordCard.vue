@@ -1,5 +1,5 @@
 <script setup>
-import { computed, ref } from 'vue'
+import { computed, ref, warn } from 'vue'
 
 const props = defineProps({
   streamer: String,
@@ -21,7 +21,7 @@ const parsedu = computed(() => {
   if (s < 10) s = `0${s}`
   return `${h}:${m}:${s}`
 })
-const isload = ref(false)
+const isload = ref(false);
 </script>
 
 <template>
@@ -31,7 +31,6 @@ const isload = ref(false)
     <div
       class="live-card-picture ts-image"
       :class="{ 'live-loading': !isload }"
-      @load="() => (isload = true)"
     >
       <picture>
         <source v-if="isLive" type="image/jxl" :srcset="`${src.substring(0, src.length - 4)}jxl`" />
@@ -45,6 +44,7 @@ const isload = ref(false)
         <source v-if="isLive" type="image/png" :srcset="`${src.substring(0, src.length - 4)}png`" />
         <source v-else type="image/png" :srcset="`${src.substring(0, src.length - 3)}png`" />
         <img
+          @load="isload++"
           src="data:image/svg+xml,%3csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 160 90' xmlns:v='https://vecta.io/nano'%3e%3cpath d='M0 0h160v90H0z' fill='%23232323'/%3e%3cg fill='%23676767'%3e%3ccircle cx='60' cy='45' r='6'/%3e%3ccircle cx='80' cy='45' r='6'/%3e%3ccircle cx='100' cy='45' r='6'/%3e%3c/g%3e%3c/svg%3e"
           alt="Record thumb"
           loading="lazy"
