@@ -20,7 +20,7 @@ onMounted(() => {
     fetchSetup: (context) => new Request(context.url)
   })
 
-  if (Hls.isSupported()) {
+  if (resource.value?.isLive && Hls.isSupported()) {
     hls.value = new Hls({
       liveSyncDurationCount: 0,
       fetchSetup: (context) => new Request(context.url)
@@ -67,7 +67,7 @@ onMounted(() => {
 watch(
   () => resource.value?.streamer,
   () => {
-    if (Hls.isSupported()) {
+    if (resource.value?.isLive && Hls.isSupported()) {
       hls.value.destroy()
       setTimeout(() => {
         hls.value = new Hls({
