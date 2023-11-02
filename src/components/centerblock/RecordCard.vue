@@ -1,5 +1,5 @@
 <script setup>
-import { computed, ref, warn } from 'vue'
+import { computed, ref } from 'vue'
 
 const props = defineProps({
   streamer: String,
