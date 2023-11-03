@@ -105,7 +105,7 @@ const status_playable = computed(() => path_current.value.split('/').length > 2)
           :list_livestream="list_livestream"
         />
       </div>
-      <div class="cell is-fluid is-scrollable">
+      <div id="centerblock" class="cell is-fluid desktop+:is-scrollable">
         <div class="ts-app-layout is-vertical">
           <div
             v-if="status_playable"

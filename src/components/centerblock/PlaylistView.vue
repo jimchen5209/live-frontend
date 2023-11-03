@@ -16,6 +16,9 @@ const playlist = computed(() => {
     return props.list
   }
 })
+
+const centerdiv = computed(() => document.getElementById('centerblock'))
+const scrollTo = (x, y) => window.scroll(x, y)
 </script>
 
 <template>
@@ -37,6 +40,19 @@ const playlist = computed(() => {
         :isLive="'isLive' in i"
       />
     </div>
+    <!-- Scroll top button -->
+    <button
+      class="tablet-:has-hidden ts-button is-start-icon is-wide is-fluid"
+      @click="centerdiv.scroll(0, 0)"
+    >
+      <span class="ts-icon is-wheelchair-move-icon"></span>Top
+    </button>
+    <button
+      class="desktop+:has-hidden ts-button is-start-icon is-wide is-fluid"
+      @click="scrollTo(0, 0)"
+    >
+      <span class="ts-icon is-wheelchair-move-icon"></span>Top
+    </button>
     <!-- Load more button -->
     <button
       v-if="playlist?.length > Math.abs(cardAmount)"
