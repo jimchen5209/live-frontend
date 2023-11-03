@@ -142,7 +142,7 @@ onBeforeUnmount(() => {
             </div>
           </div>
           <!-- Options -->
-          <div class="ts-dropdown" data-name="select" data-position="bottom-start">
+          <div class="ts-dropdown is-dark" data-name="select" data-position="bottom-start">
             <button class="item" @click="change_quality(-1)">Auto</button>
             <button
               class="item"
