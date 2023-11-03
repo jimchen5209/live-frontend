@@ -1,8 +1,8 @@
 <script setup>
-import { ref, computed, onMounted } from 'vue'
+import { ref, onMounted, computed } from 'vue'
 
-import StreamerList from './components/sidebar/StreamerList.vue'
 import HeaderBlock from './components/sidebar/HeaderBlock.vue'
+import StreamerList from './components/sidebar/StreamerList.vue'
 import PlaylistView from './components/centerblock/PlaylistView.vue'
 import MediaPlayer from './components/centerblock/MediaPlayer.vue'
 
@@ -10,10 +10,12 @@ const url_live = '/live'
 const url_record = '/record'
 const url_list = `${url_record}/list.json`
 
-const streamer = ref([])
-const hist = ref(null)
+const list_livestream = ref([])
+const list_records = ref([])
+
 onMounted(async () => {
-  hist.value = await fetch(url_list)
+  // Data fetching
+  list_records.value = await fetch(url_list)
     .then((res) => res.json())
     .then((list) => {
       if (list.length <= 0) throw 'List empty.'
@@ -38,64 +40,128 @@ onMounted(async () => {
     })
     .catch((e) => console.error(e))
 
-  streamer.value = (
+  list_livestream.value = (
     await Promise.all(
-      Array.from(new Set(hist.value.map((i) => i.streamer)).values()).map(async (i) => {
-        const isLive = (await fetch(`${url_live}/${i}.m3u8`)).ok
-        if (isLive)
-          hist.value.push({
-            streamer: i,
-            publishTime: new Date(Date.now()),
-            duration: '0',
-            src: `${url_live}/${i}.m3u8`,
-            name: `${i}.m3u8`,
-            isLive: true
-          })
+      Array.from(new Set(list_records.value.map((i) => i.streamer)).values()).map(async (i) => {
+        const url_livestream = `${url_live}/${i}.m3u8`
         return {
-          name: i,
-          status: isLive
+          streamer: i,
+          publishTime: new Date(Date.now()),
+          duration: '0',
+          src: url_livestream,
+          name: `${i}.m3u8`,
+          isLive: (await fetch(url_livestream)).ok
         }
       })
     )
-  ).sort((a, b) => (a.status === b.status ? 0 : a.status ? -1 : 1))
+  ).sort((a, b) => (a.isLive === b.isLive ? 0 : a.isLive ? -1 : 1))
 })
 
-// Custom routing
-const currentPath = ref(window.location.hash)
+// Custom Routing
+const path_current = ref(window.location.hash)
 window.addEventListener('hashchange', () => {
-  currentPath.value = window.location.hash
+  path_current.value = window.location.hash
 })
 
 // 相容舊的
-const p = currentPath.value.split('/').at(-1);
-if (currentPath.value?.startsWith('#record')) { // #record/cute_panda-1698758357.mp4
-  window.location.replace(`#profile/${p.split('-').at(0)}/${p}`); // #profile/cute_panda/cute_panda-1698758357.mp4
-} else if (currentPath.value?.startsWith('#live')) { // #record/cute_panda-1698758357.mp4
-  window.location.replace(`#profile/${p.split('-').at(0)}/${p.split('-').at(0)}.m3u8`); // #profile/cute_panda/cute_panda.m3u8
+const p = path_current.value.split('/').at(-1)
+if (path_current.value?.startsWith('#record')) {
+  // #record/cute_panda-1698758357.mp4
+  window.location.replace(`#profile/${p.split('-').at(0)}/${p}`) // #profile/cute_panda/cute_panda-1698758357.mp4
+} else if (path_current.value?.startsWith('#live')) {
+  // #record/cute_panda-1698758357.mp4
+  window.location.replace(`#profile/${p.split('-').at(0)}/${p.split('-').at(0)}.m3u8`) // #profile/cute_panda/cute_panda.m3u8
 }
 
-const isPlayable = computed(() => currentPath.value.split('/').length > 2)
+const status_playable = computed(() => path_current.value.split('/').length > 2)
 </script>
 
 <template>
-  <div class="ts-app-layout is-horizontal is-fluid">
-    <!-- Side Bar -->
-    <div class="cell is-scrollable is-vertical" style="width: 13%">
-      <HeaderBlock />
-      <StreamerList :streamer="streamer" />
-    </div>
-    <!-- Center -->
-    <div class="cell is-fluid is-scrollable is-vertical">
-      <!-- Player -->
-      <div v-if="isPlayable" class="has-flex-center cell" style="max-height: 80vh">
-        <MediaPlayer v-if="hist" :key="currentPath" :hist="hist" :currentPath="currentPath" />
+  <div class="ts-app-layout is-vertical is-full">
+    <!-- StreamerList for mobile user -->
+    <div class="cell">
+      <div class="desktop+:has-hidden ts-app-topbar">
+        <div class="start">
+          <a class="item" data-toggle="menu:has-hidden">
+            <span class="ts-icon is-bars-icon"></span>
+          </a>
+          <div class="item is-text">StreamerList</div>
+        </div>
+        <div class="content has-hidden" data-name="menu">
+          <HeaderBlock />
+          <StreamerList
+            v-if="list_livestream"
+            :list_livestream="list_livestream"
+          />
+        </div>
       </div>
-      <!-- Playlist -->
-      <PlaylistView :key="currentPath" :currentPath="currentPath" :hist="hist" />
     </div>
-    <!-- Chat -->
-    <div v-if="isPlayable" class="cell" style="width: 18%">
+    <!-- Basic Layout for desktop user -->
+    <div class="ts-app-layout is-horizontal">
+      <div id="sidebar" class="tablet-:has-hidden cell is-scrollable">
+        <HeaderBlock />
+        <StreamerList
+          v-if="list_livestream"
+          :list_livestream="list_livestream"
+        />
+      </div>
+      <div class="cell is-fluid is-scrollable">
+        <div class="ts-app-layout is-vertical">
+          <div
+            v-if="status_playable"
+            id="player"
+            class="cell"
+          >
+            <MediaPlayer
+              v-if="list_livestream"
+              :key="path_current"
+              class="has-full-size"
+              :path_curr="path_current"
+              :list="list_records.concat(list_livestream.filter((i) => i.isLive))"
+            />
+          </div>
+          <div class="tablet-:has-hidden cell">
+            <PlaylistView
+              v-if="list_livestream"
+              :key="path_current"
+              :path_current="path_current"
+              :list="list_records.concat(list_livestream.filter((i) => i.isLive))"
+            />
+          </div>
+        </div>
+      </div>
+      <div
+        v-if="status_playable"
+        id="sidebar"
+        class="tablet-:has-hidden cell"
+      >
+        <div class="ts-content">聊天室</div>
+      </div>
+    </div>
+    <!-- Chat and Playlist for mobile user -->
+    <div
+      v-if="status_playable"
+      class="desktop+:has-hidden cell"
+    >
       <div class="ts-content">聊天室</div>
+    </div>
+    <div class="desktop+:has-hidden cell">
+      <PlaylistView
+        v-if="list_livestream"
+        :key="path_current"
+        :path_current="path_current"
+        :list="list_records.concat(list_livestream.filter((i) => i.isLive))"
+      />
     </div>
   </div>
 </template>
+
+<style scoped>
+#sidebar {
+  width: 17%;
+}
+#player {
+  aspect-ratio: 16/9;
+  max-height: 80vh;
+}
+</style>
