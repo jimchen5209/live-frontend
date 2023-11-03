@@ -163,5 +163,6 @@ const status_playable = computed(() => path_current.value.split('/').length > 2)
   aspect-ratio: 16/9;
   max-height: 80vh;
   display: inline-flex;
+  box-sizing: content-box;
 }
 </style>
