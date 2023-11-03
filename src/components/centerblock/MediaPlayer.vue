@@ -18,6 +18,7 @@ const resource = computed(() => props.list?.filter((i) => i.name == props.path_c
   <video
     v-else
     controls
+    class="has-full-size"
     :src="resource?.src"
   ></video>
 </template>
