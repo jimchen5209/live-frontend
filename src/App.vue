@@ -29,7 +29,7 @@ onMounted(async () => {
               parseInt(filename.substring(filename.length - 14, filename.length - 4) * 1000)
             ),
             duration: e.format.duration,
-            src: `${url_record}/${filename}`,
+            src: `${url_record}/${filename.replace('flv', 'mp4')}`,
             name: filename
           }
         })
