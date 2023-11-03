@@ -115,7 +115,6 @@ const status_playable = computed(() => path_current.value.split('/').length > 2)
             <MediaPlayer
               v-if="list_livestream"
               :key="path_current"
-              class="has-full-size"
               :path_curr="path_current"
               :list="list_records.concat(list_livestream.filter((i) => i.isLive))"
             />
