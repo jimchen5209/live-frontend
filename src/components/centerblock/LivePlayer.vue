@@ -42,8 +42,11 @@ onMounted(() => {
     })
     hls.value.loadSource(props.resource?.src)
     hls.value.attachMedia(player.value)
-    hls.value.on(Hls.Events.MANIFEST_PARSED, () => {
+    hls.value.on(Hls.Events.MANIFEST_PARSED, (event, data) => {
       const play = player.value.play()
+      list_quality.value = data.levels.map((i) =>
+        i.height ? `${i.height}p (${i.bitrate / 1000}kbps)` : 'Source'
+      )
       if (play)
         play.catch((error) => {
           if (error.name === 'NotAllowedError') {
