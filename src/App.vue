@@ -79,8 +79,8 @@ const status_playable = computed(() => path_current.value.split('/').length > 2)
 <template>
   <div class="ts-app-layout is-vertical is-full">
     <!-- StreamerList for mobile user -->
-    <div class="cell">
-      <div class="desktop+:has-hidden ts-app-topbar">
+    <div class="cell desktop+:has-hidden">
+      <div class="ts-app-topbar">
         <div class="start">
           <a class="item" data-toggle="menu:has-hidden">
             <span class="ts-icon is-bars-icon"></span>
