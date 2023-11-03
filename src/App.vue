@@ -42,7 +42,7 @@ onMounted(async () => {
 
   list_livestream.value = (
     await Promise.all(
-      Array.from(new Set(list_records.value.map((i) => i.streamer)).values()).map(async (i) => {
+      Array.from(new Set(list_records.value.toReversed().map((i) => i.streamer)).values()).map(async (i) => {
         const url_livestream = `${url_live}/${i}.m3u8`
         return {
           streamer: i,

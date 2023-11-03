@@ -8,6 +8,11 @@ const props = defineProps({
 const hls = ref(null)
 const player = ref(null)
 const list_quality = ref([])
+const curr_quality = ref(-1)
+const change_quality = (quality) => {
+  curr_quality.value = quality
+  hls.value.nextLevel = quality
+}
 
 onMounted(() => {
   player.value = document.getElementById('live-player')
@@ -123,19 +128,26 @@ onBeforeUnmount(() => {
     <!-- Dropdown -->
     <div v-if="list_quality.length > 1" class="cell">
       <div class="ts-app-topbar">
-        <div class="center is-text">Quality Select:</div>
+        <div class="start">
+          <div class="item is-text">{{ resource?.streamer }}</div>
+        </div>
+        <div class="center">
+          <div class="item is-text">Quality Select:</div>
+        </div>
         <div class="end is-text">
           <!-- Selected -->
           <div class="ts-select is-fluid" data-dropdown="select">
-            <div class="ts-content">Auto</div>
+            <div class="content">
+              {{ curr_quality == -1 ? 'Auto' : list_quality[curr_quality] }}
+            </div>
           </div>
           <!-- Options -->
           <div class="ts-dropdown" data-name="select" data-position="bottom-start">
-            <button class="item" @click="hls.nextLevel = -1">Auto</button>
+            <button class="item" @click="change_quality(-1)">Auto</button>
             <button
               class="item"
               v-for:="(quality, index) in list_quality"
-              @click="hls.nextLevel = index"
+              @click="change_quality(index)"
             >
               {{ quality }}
             </button>
@@ -145,3 +157,9 @@ onBeforeUnmount(() => {
     </div>
   </div>
 </template>
+
+<style scoped>
+.is-text {
+  line-height: normal;
+}
+</style>
