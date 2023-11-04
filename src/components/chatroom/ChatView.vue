@@ -90,48 +90,29 @@ watch(
     <!-- Input -->
     <div class="cell">
       <div class="ts-content is-dense">
-        <div class="ts-grid is-compact">
-          <div class="column">
-            <div class="ts-input">
-              <input
-                v-model="nickname"
-                type="text"
-                placeholder="Nickname"
-                @focusout="action_setusername(nickname)"
-              />
-            </div>
-          </div>
-          <div class="column is-fluid">
-            <div class="ts-input">
-              <input
-                v-model="message"
-                type="text"
-                placeholder="Messages..."
-                @keypress="
-                  (event) => {
-                    if (event.key === 'Enter') {
-                      action_sendmessage(message)
-                      message = ''
-                    }
-                  }
-                "
-              />
-            </div>
-          </div>
-          <div class="column is-3-wide">
-            <button
-              class="ts-button is-icon is-ghost"
-              :class="{ 'is-loading': !isready }"
-              @click="
-                () => {
+        <div class="ts-input is-start-labeled">
+          <input
+            class="label"
+            style="padding-right: 0%; max-width: 33%;"
+            v-model="nickname"
+            type="text"
+            placeholder="Nickname"
+            @focusout="action_setusername(nickname)"
+          />
+          <input
+            class="text"
+            v-model="message"
+            type="text"
+            placeholder="Messages..."
+            @keypress="
+              (event) => {
+                if (event.key === 'Enter') {
                   action_sendmessage(message)
                   message = ''
                 }
-              "
-            >
-              <span class="ts-icon is-paper-plane-icon"></span>
-            </button>
-          </div>
+              }
+            "
+          />
         </div>
       </div>
     </div>
