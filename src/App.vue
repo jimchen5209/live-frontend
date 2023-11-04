@@ -119,7 +119,7 @@ if (path_current.value?.startsWith('#record')) {
       </div>
       <div id="centerblock" class="cell is-fluid desktop+:is-scrollable">
         <div class="ts-app-layout is-vertical">
-          <div v-if="status_playable" id="player" class="cell">
+          <div v-if="status_playable" class="cell">
             <MediaPlayer
               v-if="list_livestream"
               :key="path_current"
@@ -174,11 +174,5 @@ if (path_current.value?.startsWith('#record')) {
 }
 #chatbar{
   width: 18%
-}
-#player {
-  aspect-ratio: 16/9;
-  max-height: 80vh;
-  display: inline-flex;
-  box-sizing: content-box;
 }
 </style>

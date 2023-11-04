@@ -22,3 +22,12 @@ const resource = computed(() => props.list?.filter((i) => i.name == props.path_c
     :src="resource?.src"
   ></video>
 </template>
+
+<style scoped>
+:global(video) {
+  aspect-ratio: 16/9;
+  max-height: 80vh;
+  display: inline-flex;
+  box-sizing: content-box;
+}
+</style>
