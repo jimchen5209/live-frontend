@@ -1,5 +1,5 @@
 <script setup>
-import { ref, onMounted, computed } from 'vue'
+import { ref, onMounted, computed, watch } from 'vue'
 
 import HeaderBlock from './components/sidebar/HeaderBlock.vue'
 import StreamerList from './components/sidebar/StreamerList.vue'
@@ -42,17 +42,19 @@ onMounted(async () => {
 
   list_livestream.value = (
     await Promise.all(
-      Array.from(new Set(list_records.value.toReversed().map((i) => i.streamer)).values()).map(async (i) => {
-        const url_livestream = `${url_live}/${i}.m3u8`
-        return {
-          streamer: i,
-          publishTime: new Date(Date.now()),
-          duration: '0',
-          src: url_livestream,
-          name: `${i}.m3u8`,
-          isLive: (await fetch(url_livestream)).ok
+      Array.from(new Set(list_records.value.toReversed().map((i) => i.streamer)).values()).map(
+        async (i) => {
+          const url_livestream = `${url_live}/${i}.m3u8`
+          return {
+            streamer: i,
+            publishTime: new Date(Date.now()),
+            duration: '0',
+            src: url_livestream,
+            name: `${i}.m3u8`,
+            isLive: (await fetch(url_livestream)).ok
+          }
         }
-      })
+      )
     )
   ).sort((a, b) => (a.isLive === b.isLive ? 0 : a.isLive ? -1 : 1))
 })
@@ -63,6 +65,22 @@ window.addEventListener('hashchange', () => {
   path_current.value = window.location.hash
 })
 
+const status_playable = ref(false)
+
+// 來點回首頁
+watch(
+  () => path_current.value,
+  () => {
+    console.log('Path changed')
+    const menu = document.getElementById('menu-mobile')
+    if (!menu.getAttribute('class').match('has-hidden'))
+      menu.setAttribute('class', `${menu.getAttribute('class')} has-hidden`)
+    window.scrollTo(0, 0)
+    document.getElementById('centerblock').scrollTo(0, 0)
+    status_playable.value = path_current.value.split('/').length > 2
+  }
+)
+
 // 相容舊的
 const p = path_current.value.split('/').at(-1)
 if (path_current.value?.startsWith('#record')) {
@@ -72,8 +90,6 @@ if (path_current.value?.startsWith('#record')) {
   // #record/cute_panda-1698758357.mp4
   window.location.replace(`#profile/${p.split('-').at(0)}/${p.split('-').at(0)}.m3u8`) // #profile/cute_panda/cute_panda.m3u8
 }
-
-const status_playable = computed(() => path_current.value.split('/').length > 2)
 </script>
 
 <template>
@@ -87,12 +103,9 @@ const status_playable = computed(() => path_current.value.split('/').length > 2)
           </a>
           <div class="item is-text">StreamerList</div>
         </div>
-        <div class="content has-hidden" data-name="menu">
+        <div id="menu-mobile" class="content has-hidden" data-name="menu">
           <HeaderBlock />
-          <StreamerList
-            v-if="list_livestream"
-            :list_livestream="list_livestream"
-          />
+          <StreamerList v-if="list_livestream" :list_livestream="list_livestream" />
         </div>
       </div>
     </div>
@@ -100,18 +113,11 @@ const status_playable = computed(() => path_current.value.split('/').length > 2)
     <div class="ts-app-layout is-horizontal">
       <div id="sidebar" class="tablet-:has-hidden cell is-scrollable">
         <HeaderBlock />
-        <StreamerList
-          v-if="list_livestream"
-          :list_livestream="list_livestream"
-        />
+        <StreamerList v-if="list_livestream" :list_livestream="list_livestream" />
       </div>
       <div id="centerblock" class="cell is-fluid desktop+:is-scrollable">
         <div class="ts-app-layout is-vertical">
-          <div
-            v-if="status_playable"
-            id="player"
-            class="cell"
-          >
+          <div v-if="status_playable" id="player" class="cell">
             <MediaPlayer
               v-if="list_livestream"
               :key="path_current"
@@ -129,19 +135,12 @@ const status_playable = computed(() => path_current.value.split('/').length > 2)
           </div>
         </div>
       </div>
-      <div
-        v-if="status_playable"
-        id="sidebar"
-        class="tablet-:has-hidden cell"
-      >
+      <div v-if="status_playable" id="sidebar" class="tablet-:has-hidden cell">
         <div class="ts-content">聊天室</div>
       </div>
     </div>
     <!-- Chat and Playlist for mobile user -->
-    <div
-      v-if="status_playable"
-      class="desktop+:has-hidden cell"
-    >
+    <div v-if="status_playable" class="desktop+:has-hidden cell">
       <div class="ts-content">聊天室</div>
     </div>
     <div class="desktop+:has-hidden cell">
