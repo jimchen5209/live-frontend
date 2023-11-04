@@ -8,9 +8,10 @@ const props = defineProps({
 const hls = ref(null)
 const player = ref(null)
 const list_quality = ref([])
-const curr_quality = ref(-1)
+const curr_quality = ref(localStorage.getItem('config_quality') ?? -1)
 const change_quality = (quality) => {
   curr_quality.value = quality
+  localStorage.setItem('config_quality', quality)
   hls.value.nextLevel = quality
 }
 

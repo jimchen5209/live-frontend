@@ -12,13 +12,14 @@ const props = defineProps({
 const wsServer = 'wss://live.oktw.one/ws'
 const ws = ref(null)
 const data_messages = ref([])
-const nickname = ref('')
+const nickname = ref(localStorage.getItem('config_nickname') ?? 'anonymous')
 const uuid = ref('')
 const message = ref('')
 const count_viewer = ref('')
 const isready = ref(false)
 
 const action_setusername = (username) => {
+  localStorage.setItem('config_nickname', username)
   ws.value?.send(`{"method":"setName", "name":"${username}"}`)
 }
 const action_joinchannel = (channel) => {
@@ -105,7 +106,7 @@ watch(
         <div class="ts-input is-start-labeled">
           <input
             class="label"
-            style="padding-right: 0%; max-width: 33%;"
+            style="padding-right: 0%; max-width: 33%"
             v-model="nickname"
             type="text"
             placeholder="Nickname"
