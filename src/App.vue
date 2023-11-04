@@ -117,7 +117,7 @@ if (path_current.value?.startsWith('#record')) {
         <HeaderBlock />
         <StreamerList v-if="list_livestream" :list_livestream="list_livestream" :path="path_current" />
       </div>
-      <div id="centerblock" class="cell is-fluid desktop+:is-scrollable">
+      <div id="centerblock" class="cell is-fluid desktop+:is-scrollable" style="display: inline-flex;">
         <div class="ts-app-layout is-vertical">
           <div v-if="status_playable" class="cell">
             <MediaPlayer
