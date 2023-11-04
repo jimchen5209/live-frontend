@@ -15,6 +15,7 @@ const data_messages = ref([])
 const nickname = ref('')
 const uuid = ref('')
 const message = ref('')
+const count_viewer = ref('')
 const isready = ref(false)
 
 const action_setusername = (username) => {
@@ -39,7 +40,10 @@ onMounted(() => {
     ws.value?.addEventListener('open', () => (isready.value = true))
     ws.value?.addEventListener('message', (event) => {
       const data = JSON.parse(event.data)
-      if ('nowViewerCount' in data && data.uuid) uuid.value = data.uuid
+      if ('nowViewerCount' in data && data.uuid) {
+        uuid.value = data.uuid
+        count_viewer.value = data.nowViewerCount
+      }
       data_messages.value.push(data)
     })
     ws.value?.addEventListener('error', (e) => console.error(e))
@@ -60,7 +64,10 @@ watch(
       ws.value?.addEventListener('open', () => (isready.value = true))
       ws.value?.addEventListener('message', (event) => {
         const data = JSON.parse(event.data)
-        if (data.uuid) uuid.value = data.uuid
+        if ('nowViewerCount' in data && data.uuid) {
+          uuid.value = data.uuid
+          count_viewer.value = data.nowViewerCount
+        }
         data_messages.value.push(data)
       })
       ws.value?.addEventListener('error', (e) => console.error(e))
@@ -75,7 +82,7 @@ watch(
     <!-- Header -->
     <div class="cell">
       <div class="ts-content">
-        <div class="ts-text is-bold is-center-aligned">Chatroom</div>
+        <div class="ts-text is-bold is-center-aligned">Chatroom ({{ count_viewer }})</div>
       </div>
     </div>
     <!-- History -->
