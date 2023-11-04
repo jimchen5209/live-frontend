@@ -80,6 +80,7 @@ watch(
         <MessageBubble
           v-if="data_messages"
           v-for:="(value, index) in data_messages.filter((i) => i.type === 'bulletScreenMessage')"
+          v-on:vnode-mounted="action_follow()"
           :index="index"
           :isself="value.sentFrom === nickname"
           :author="value.sentFrom"
