@@ -80,7 +80,7 @@ watch(
         <MessageBubble
           v-if="data_messages"
           v-for:="(value, index) in data_messages.filter((i) => i.type === 'bulletScreenMessage')"
-          v-on:vnode-mounted="action_follow()"
+          v-on:vue:mounted="action_follow()"
           :index="index"
           :isself="value.sentFrom === nickname"
           :author="value.sentFrom"
@@ -107,7 +107,7 @@ watch(
             placeholder="Messages..."
             @keypress="
               (event) => {
-                if (event.key === 'Enter') {
+                if (event.key === 'Enter' && message.length > 0) {
                   action_sendmessage(message)
                   message = ''
                   action_follow()

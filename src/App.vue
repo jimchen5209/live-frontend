@@ -105,7 +105,7 @@ if (path_current.value?.startsWith('#record')) {
         </div>
         <div id="menu-mobile" class="content has-hidden" data-name="menu">
           <HeaderBlock />
-          <StreamerList v-if="list_livestream" :list_livestream="list_livestream" />
+          <StreamerList v-if="list_livestream" :list_livestream="list_livestream" :path="path_current" />
         </div>
       </div>
     </div>
@@ -113,7 +113,7 @@ if (path_current.value?.startsWith('#record')) {
     <div class="ts-app-layout is-horizontal">
       <div id="sidebar" class="tablet-:has-hidden cell is-scrollable">
         <HeaderBlock />
-        <StreamerList v-if="list_livestream" :list_livestream="list_livestream" />
+        <StreamerList v-if="list_livestream" :list_livestream="list_livestream" :path="path_current" />
       </div>
       <div id="centerblock" class="cell is-fluid desktop+:is-scrollable">
         <div class="ts-app-layout is-vertical">
