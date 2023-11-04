@@ -65,9 +65,9 @@ window.addEventListener('hashchange', () => {
   path_current.value = window.location.hash
 })
 
-const status_playable = ref(false)
+const status_playable = ref(path_current.value.split('/').length > 2)
 
-// 來點回首頁
+// 來點回頂部
 watch(
   () => path_current.value,
   () => {
