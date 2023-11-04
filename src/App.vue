@@ -1,5 +1,5 @@
 <script setup>
-import { ref, onMounted, watch } from 'vue'
+import { ref, onMounted, watch, computed } from 'vue'
 
 import HeaderBlock from './components/sidebar/HeaderBlock.vue'
 import StreamerList from './components/sidebar/StreamerList.vue'
@@ -13,6 +13,8 @@ const url_list = `${url_record}/list.json`
 
 const list_livestream = ref([])
 const list_records = ref([])
+
+const status_mobile = computed(() => window.innerWidth<=1023)
 
 onMounted(async () => {
   // Data fetching
@@ -137,7 +139,7 @@ if (path_current.value?.startsWith('#record')) {
       </div>
       <div v-if="status_playable" id="chatbar" class="tablet-:has-hidden cell">
         <ChatView
-          v-if="list_livestream"
+          v-if="!status_mobile"
           :key="path_current"
           :id_his="'desktop-history'"
           :name="path_current.split('/').at(-1)"
@@ -148,6 +150,7 @@ if (path_current.value?.startsWith('#record')) {
     <!-- Chat and Playlist for mobile user -->
     <div v-if="status_playable" class="desktop+:has-hidden cell" style="height: 80vh;">
       <ChatView
+          v-if="status_mobile"
           :key="path_current"
           :id_his="'mobile-history'"
           :name="path_current.split('/').at(-1)"

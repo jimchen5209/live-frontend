@@ -39,7 +39,7 @@ onMounted(() => {
     ws.value?.addEventListener('open', () => (isready.value = true))
     ws.value?.addEventListener('message', (event) => {
       const data = JSON.parse(event.data)
-      if (data.uuid) uuid.value = data.uuid
+      if ('nowViewerCount' in data && data.uuid) uuid.value = data.uuid
       data_messages.value.push(data)
     })
     ws.value?.addEventListener('error', (e) => console.error(e))
