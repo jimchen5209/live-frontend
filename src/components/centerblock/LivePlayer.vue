@@ -53,6 +53,11 @@ onMounted(() => {
       list_quality.value = data.levels.map((i) =>
         i.height ? `${i.height}p (${i.bitrate / 1000}kbps)` : 'Source'
       )
+      if (curr_quality.value in list_quality.value) {
+        change_quality(curr_quality.value)
+      } else {
+        change_quality(-1)
+      }
       if (play)
         play.catch((error) => {
           if (error.name === 'NotAllowedError') {
@@ -105,6 +110,11 @@ watch(
           list_quality.value = data.levels.map((i) =>
             i.height ? `${i.height}p (${i.bitrate / 1000}kbps)` : 'Source'
           )
+          if (curr_quality.value in list_quality.value) {
+            change_quality(curr_quality.value)
+          } else {
+            change_quality(-1)
+          }
         })
       }, 100)
     }
