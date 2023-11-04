@@ -1,10 +1,11 @@
 <script setup>
-import { ref, onMounted, computed, watch } from 'vue'
+import { ref, onMounted, watch } from 'vue'
 
 import HeaderBlock from './components/sidebar/HeaderBlock.vue'
 import StreamerList from './components/sidebar/StreamerList.vue'
 import PlaylistView from './components/centerblock/PlaylistView.vue'
 import MediaPlayer from './components/centerblock/MediaPlayer.vue'
+import ChatView from './components/chatroom/ChatView.vue'
 
 const url_live = '/live'
 const url_record = '/record'
@@ -71,7 +72,6 @@ const status_playable = ref(path_current.value.split('/').length > 2)
 watch(
   () => path_current.value,
   () => {
-    console.log('Path changed')
     const menu = document.getElementById('menu-mobile')
     if (!menu.getAttribute('class').match('has-hidden'))
       menu.setAttribute('class', `${menu.getAttribute('class')} has-hidden`)
@@ -135,13 +135,24 @@ if (path_current.value?.startsWith('#record')) {
           </div>
         </div>
       </div>
-      <div v-if="status_playable" id="sidebar" class="tablet-:has-hidden cell">
-        <div class="ts-content">聊天室</div>
+      <div v-if="status_playable" id="chatbar" class="tablet-:has-hidden cell">
+        <ChatView
+          v-if="list_livestream"
+          :key="path_current"
+          :id_his="'desktop-history'"
+          :name="path_current.split('/').at(-1)"
+          :status_playable="status_playable"
+        />
       </div>
     </div>
     <!-- Chat and Playlist for mobile user -->
-    <div v-if="status_playable" class="desktop+:has-hidden cell">
-      <div class="ts-content">聊天室</div>
+    <div v-if="status_playable" class="desktop+:has-hidden cell" style="height: 80vh;">
+      <ChatView
+          :key="path_current"
+          :id_his="'mobile-history'"
+          :name="path_current.split('/').at(-1)"
+          :status_playable="status_playable"
+        />
     </div>
     <div class="desktop+:has-hidden cell">
       <PlaylistView
@@ -156,7 +167,10 @@ if (path_current.value?.startsWith('#record')) {
 
 <style scoped>
 #sidebar {
-  width: 17%;
+  width: 13%;
+}
+#chatbar{
+  width: 18%
 }
 #player {
   aspect-ratio: 16/9;
