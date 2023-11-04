@@ -109,6 +109,7 @@ watch(
                 if (event.key === 'Enter') {
                   action_sendmessage(message)
                   message = ''
+                  action_follow()
                 }
               }
             "
