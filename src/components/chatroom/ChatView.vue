@@ -13,6 +13,7 @@ const wsServer = 'wss://live.oktw.one/ws'
 const ws = ref(null)
 const data_messages = ref([])
 const nickname = ref('')
+const uuid = ref('')
 const message = ref('')
 const isready = ref(false)
 
@@ -37,7 +38,9 @@ onMounted(() => {
     ws.value?.addEventListener('open', () => action_joinchannel(props.name))
     ws.value?.addEventListener('open', () => (isready.value = true))
     ws.value?.addEventListener('message', (event) => {
-      data_messages.value.push(JSON.parse(event.data))
+      const data = JSON.parse(event.data)
+      if (data.uuid) uuid.value = data.uuid
+      data_messages.value.push(data)
     })
     ws.value?.addEventListener('error', (e) => console.error(e))
     action_follow()
@@ -56,8 +59,9 @@ watch(
       ws.value?.addEventListener('open', () => action_joinchannel(props.name))
       ws.value?.addEventListener('open', () => (isready.value = true))
       ws.value?.addEventListener('message', (event) => {
-        console.log(event.data)
-        data_messages.value.push(JSON.parse(event.data))
+        const data = JSON.parse(event.data)
+        if (data.uuid) uuid.value = data.uuid
+        data_messages.value.push(data)
       })
       ws.value?.addEventListener('error', (e) => console.error(e))
       action_follow()
@@ -82,7 +86,7 @@ watch(
           v-for:="(value, index) in data_messages.filter((i) => i.type === 'bulletScreenMessage')"
           v-on:vue:mounted="action_follow()"
           :index="index"
-          :isself="value.sentFrom === nickname"
+          :isself="value.uuid === uuid"
           :author="value.sentFrom"
           :text="value.msg"
         />
