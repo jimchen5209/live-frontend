@@ -6,6 +6,7 @@ import StreamerList from './components/sidebar/StreamerList.vue'
 import PlaylistView from './components/centerblock/PlaylistView.vue'
 import MediaPlayer from './components/centerblock/MediaPlayer.vue'
 import ChatView from './components/chatroom/ChatView.vue'
+import ErrorBlankSlate from './components/ErrorBlankSlate.vue'
 
 const url_live = '/live'
 const url_record = '/record'
@@ -14,7 +15,8 @@ const url_list = `${url_record}/list.json`
 const list_livestream = ref([])
 const list_records = ref([])
 
-const status_mobile = computed(() => window.innerWidth<=1023)
+const status_mobile = computed(() => window.innerWidth <= 1023)
+const status_error = ref(false)
 
 onMounted(async () => {
   // Data fetching
@@ -41,7 +43,7 @@ onMounted(async () => {
           (a, b) => a.publishTime - b.publishTime
         )
     })
-    .catch((e) => console.error(e))
+    .catch(() => (status_error.value = true))
 
   list_livestream.value = (
     await Promise.all(
@@ -95,7 +97,8 @@ if (path_current.value?.startsWith('#record')) {
 </script>
 
 <template>
-  <div class="ts-app-layout is-vertical is-full">
+  <ErrorBlankSlate v-if="status_error" />
+  <div v-else class="ts-app-layout is-vertical is-full">
     <!-- StreamerList for mobile user -->
     <div class="cell desktop+:has-hidden">
       <div class="ts-app-topbar">
@@ -107,7 +110,11 @@ if (path_current.value?.startsWith('#record')) {
         </div>
         <div id="menu-mobile" class="content has-hidden" data-name="menu">
           <HeaderBlock />
-          <StreamerList v-if="list_livestream" :list_livestream="list_livestream" :path="path_current" />
+          <StreamerList
+            v-if="list_livestream"
+            :list_livestream="list_livestream"
+            :path="path_current"
+          />
         </div>
       </div>
     </div>
@@ -115,11 +122,15 @@ if (path_current.value?.startsWith('#record')) {
     <div class="ts-app-layout is-horizontal">
       <div id="sidebar" class="tablet-:has-hidden cell is-scrollable">
         <HeaderBlock />
-        <StreamerList v-if="list_livestream" :list_livestream="list_livestream" :path="path_current" />
+        <StreamerList
+          v-if="list_livestream"
+          :list_livestream="list_livestream"
+          :path="path_current"
+        />
       </div>
-      <div id="centerblock" class="cell is-fluid desktop+:is-scrollable" style="display: inline-flex;">
+      <div id="centerblock" class="cell is-fluid desktop+:is-scrollable">
         <div class="ts-app-layout is-vertical">
-          <div v-if="status_playable" class="cell">
+          <div v-if="status_playable" class="cell" style="display: inline-flex">
             <MediaPlayer
               v-if="list_livestream"
               :key="path_current"
@@ -148,14 +159,14 @@ if (path_current.value?.startsWith('#record')) {
       </div>
     </div>
     <!-- Chat and Playlist for mobile user -->
-    <div v-if="status_playable" class="desktop+:has-hidden cell" style="height: 80vh;">
+    <div v-if="status_playable" class="desktop+:has-hidden cell" style="height: 80vh">
       <ChatView
-          v-if="status_mobile"
-          :key="path_current"
-          :id_his="'mobile-history'"
-          :name="path_current.split('/').at(-1)"
-          :status_playable="status_playable"
-        />
+        v-if="status_mobile"
+        :key="path_current"
+        :id_his="'mobile-history'"
+        :name="path_current.split('/').at(-1)"
+        :status_playable="status_playable"
+      />
     </div>
     <div class="desktop+:has-hidden cell">
       <PlaylistView
@@ -172,7 +183,7 @@ if (path_current.value?.startsWith('#record')) {
 #sidebar {
   width: 13%;
 }
-#chatbar{
-  width: 18%
+#chatbar {
+  width: 18%;
 }
 </style>
