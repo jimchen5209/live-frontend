@@ -101,7 +101,7 @@ watch(
     <!-- Input -->
     <div class="cell">
       <div class="ts-content is-dense">
-        <div class="ts-input is-start-labeled">
+        <div class="ts-input is-start-labeled" :class="{ 'is-disabled': !isready }">
           <input
             class="label"
             style="padding-right: 0%; max-width: 33%"
