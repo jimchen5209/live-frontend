@@ -13,7 +13,7 @@ const wsServer = 'wss://live.oktw.one/ws'
 const ws = ref(null)
 const data_messages = ref([])
 const nickname = ref(localStorage.getItem('config_nickname') ?? 'anonymous')
-const uuid = ref('')
+const uuid = ref([])
 const message = ref('')
 const count_viewer = ref('')
 const isready = ref(false)
@@ -33,22 +33,33 @@ const action_follow = () =>
     .getElementById(props.id_his)
     .scrollTo(0, document.getElementById(props.id_his).scrollHeight)
 
+const action_connect = () => {
+  ws.value = new WebSocket(wsServer)
+  ws.value?.addEventListener('open', () => action_setusername(nickname.value))
+  ws.value?.addEventListener('open', () => action_joinchannel(props.name))
+  ws.value?.addEventListener('open', () => (isready.value = true))
+  ws.value?.addEventListener('close', (event) => {
+    isready.value = false
+    if (event.code === 1006) setTimeout(action_connect(), 2000)
+  })
+  ws.value?.addEventListener('message', (event) => {
+    const data = JSON.parse(event.data)
+    if ('nowViewerCount' in data && data.uuid) {
+      uuid.value.push(data.uuid)
+      count_viewer.value = data.nowViewerCount
+    }
+    data_messages.value.push(data)
+  })
+  ws.value?.addEventListener('error', (e) => {
+    console.error(e)
+    isready.value = false
+  })
+  action_follow()
+}
+
 onMounted(() => {
   if (props.status_playable) {
-    ws.value = new WebSocket(wsServer)
-    ws.value?.addEventListener('open', () => action_setusername(nickname.value))
-    ws.value?.addEventListener('open', () => action_joinchannel(props.name))
-    ws.value?.addEventListener('open', () => (isready.value = true))
-    ws.value?.addEventListener('message', (event) => {
-      const data = JSON.parse(event.data)
-      if ('nowViewerCount' in data && data.uuid) {
-        uuid.value = data.uuid
-        count_viewer.value = data.nowViewerCount
-      }
-      data_messages.value.push(data)
-    })
-    ws.value?.addEventListener('error', (e) => console.error(e))
-    action_follow()
+    action_connect()
   }
 })
 
@@ -59,20 +70,7 @@ watch(
   () => {
     ws.value?.close()
     if (props.status_playable) {
-      ws.value = new WebSocket(wsServer)
-      ws.value?.addEventListener('open', () => action_setusername(nickname.value))
-      ws.value?.addEventListener('open', () => action_joinchannel(props.name))
-      ws.value?.addEventListener('open', () => (isready.value = true))
-      ws.value?.addEventListener('message', (event) => {
-        const data = JSON.parse(event.data)
-        if ('nowViewerCount' in data && data.uuid) {
-          uuid.value = data.uuid
-          count_viewer.value = data.nowViewerCount
-        }
-        data_messages.value.push(data)
-      })
-      ws.value?.addEventListener('error', (e) => console.error(e))
-      action_follow()
+      action_connect()
     }
   }
 )
@@ -94,7 +92,7 @@ watch(
           v-for:="(value, index) in data_messages.filter((i) => i.type === 'bulletScreenMessage')"
           v-on:vue:mounted="action_follow()"
           :index="index"
-          :isself="value.uuid === uuid"
+          :isself="uuid.includes(value.uuid)"
           :author="value.sentFrom"
           :text="value.msg"
         />

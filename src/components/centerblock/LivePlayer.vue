@@ -133,7 +133,7 @@ onBeforeUnmount(() => {
 <template>
   <div class="ts-app-layout is-vertical">
     <!-- Player -->
-    <div class="cell is-fluid">
+    <div class="cell is-fluid" style="display: inline-flex;">
       <video controls id="live-player" class="has-full-size"></video>
     </div>
     <!-- Dropdown -->
