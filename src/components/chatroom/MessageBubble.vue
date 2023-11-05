@@ -13,6 +13,9 @@ defineProps({
       <div class="bubble">
         <div class="author">{{ author }}</div>
         <div class="text">{{ text }}</div>
+        <div class="meta">
+          <div class="item">{{ new Date(Date.now()).toLocaleTimeString('en-US') }}</div>
+        </div>
       </div>
     </div>
   </div>
