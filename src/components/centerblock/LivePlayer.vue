@@ -137,15 +137,18 @@ onBeforeUnmount(() => {
       <video controls id="live-player" class="has-full-size"></video>
     </div>
     <!-- Dropdown -->
-    <div v-if="list_quality.length > 1" class="cell">
-      <div class="ts-app-topbar">
-        <div class="start">
-          <div class="item is-text">{{ resource?.streamer }}</div>
+    <div class="cell">
+      <div class="ts-app-topbar" style="background-color: var(--ts-gray-200);">
+        <div v-if="resource" class="start">
+          <div class="item is-text" style="color: var(--ts-gray-900)">{{ resource.streamer }}</div>
+          <div class="ts-chip is-small is-start-spaced" style="background-color: #ff4141; border-color: #ff4141; color: #fff">
+            Live
+          </div>
         </div>
-        <div class="center">
-          <div class="item is-text">Quality Select:</div>
+        <div v-if="list_quality.length > 1" class="center">
+          <div class="item is-text"  style="color: var(--ts-gray-900)">Quality Select:</div>
         </div>
-        <div class="end is-text">
+        <div v-if="list_quality.length > 1" class="end is-text">
           <!-- Selected -->
           <div class="ts-select is-fluid" data-dropdown="select">
             <div class="content">
@@ -153,7 +156,7 @@ onBeforeUnmount(() => {
             </div>
           </div>
           <!-- Options -->
-          <div class="ts-dropdown is-dark" data-name="select" data-position="bottom-start">
+          <div class="ts-dropdown" data-name="select" data-position="bottom-start" style="color: var(--ts-gray-900)">
             <button class="item" @click="change_quality(-1)">Auto</button>
             <button
               class="item"
