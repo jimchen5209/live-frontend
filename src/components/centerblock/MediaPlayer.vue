@@ -22,8 +22,8 @@ const resource = computed(() => props.list?.filter((i) => i.name == props.path_c
     </div>
     <!-- Dropdown -->
     <div class="cell">
-      <div class="ts-app-topbar" style="background-color: var(--ts-gray-200);">
-        <div v-if="resource" class="start">
+      <div class="ts-grid is-1-columns tablet+:is-2-columns has-padded" style="background-color: var(--ts-gray-200);">
+        <div v-if="resource" class="column" style="display: inline-flex; align-items: center;">
           <div class="item is-text" style="color: var(--ts-gray-900)">{{ resource.streamer }}</div>
           <div class="ts-chip is-outlined is-small is-start-spaced" style="color: var(--ts-gray-500); border-color: var(--ts-gray-500);">
             {{`${resource.publishTime.toLocaleDateString()} ${resource.publishTime.toLocaleTimeString()}`}}

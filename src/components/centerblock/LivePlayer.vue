@@ -138,33 +138,35 @@ onBeforeUnmount(() => {
     </div>
     <!-- Dropdown -->
     <div class="cell">
-      <div class="ts-app-topbar" style="background-color: var(--ts-gray-200);">
-        <div v-if="resource" class="start">
+      <div class="ts-grid is-1-columns tablet+:is-2-columns has-padded" style="background-color: var(--ts-gray-200);" >
+        <div v-if="resource" class="column" style="display: inline-flex; align-items: center;">
           <div class="item is-text" style="color: var(--ts-gray-900)">{{ resource.streamer }}</div>
           <div class="ts-chip is-small is-start-spaced" style="background-color: #ff4141; border-color: #ff4141; color: #fff">
             Live
           </div>
         </div>
-        <div v-if="list_quality.length > 1" class="center">
-          <div class="item is-text"  style="color: var(--ts-gray-900)">Quality Select:</div>
-        </div>
-        <div v-if="list_quality.length > 1" class="end is-text">
-          <!-- Selected -->
-          <div class="ts-select is-fluid" data-dropdown="select">
-            <div class="content">
-              {{ curr_quality == -1 ? 'Auto' : list_quality[curr_quality] }}
-            </div>
+        <div v-if="list_quality.length > 1" class="column" style="display: flex; align-items: center;">
+          <div style="flex-shrink: 0;">
+            <div class="item is-text"  style="color: var(--ts-gray-900)">Quality Select:</div>
           </div>
-          <!-- Options -->
-          <div class="ts-dropdown" data-name="select" data-position="bottom-start" style="color: var(--ts-gray-900)">
-            <button class="item" @click="change_quality(-1)">Auto</button>
-            <button
-              class="item"
-              v-for:="(quality, index) in list_quality"
-              @click="change_quality(index)"
-            >
-              {{ quality }}
-            </button>
+          <div class="is-text has-start-spaced has-full-width">
+            <!-- Selected -->
+            <div class="ts-select is-fluid" data-dropdown="select">
+              <div class="content">
+                {{ curr_quality == -1 ? 'Auto' : list_quality[curr_quality] }}
+              </div>
+            </div>
+            <!-- Options -->
+            <div class="ts-dropdown" data-name="select" data-position="bottom-start" style="color: var(--ts-gray-900)">
+              <button class="item" @click="change_quality(-1)">Auto</button>
+              <button
+                class="item"
+                v-for:="(quality, index) in list_quality"
+                @click="change_quality(index)"
+              >
+                {{ quality }}
+              </button>
+            </div>
           </div>
         </div>
       </div>
