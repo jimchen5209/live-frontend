@@ -97,7 +97,7 @@ if (path_current.value?.startsWith('#record')) {
 </script>
 
 <template>
-  <ErrorBlankSlate v-if="status_error" />
+  <ErrorBlankSlate v-if="status_error" style="height: 100vh; width: 100vw"/>
   <div v-else class="ts-app-layout is-vertical is-full">
     <!-- StreamerList for mobile user -->
     <div class="cell desktop+:has-hidden">

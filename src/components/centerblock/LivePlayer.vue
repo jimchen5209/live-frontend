@@ -1,5 +1,6 @@
 <script setup>
 import { ref, onBeforeUnmount, onMounted, watch } from 'vue'
+import ErrorBlankSlate from '../ErrorBlankSlate.vue'
 
 const props = defineProps({
   resource: Object
@@ -7,8 +8,11 @@ const props = defineProps({
 
 const hls = ref(null)
 const player = ref(null)
+const status_error = ref(false)
+
 const list_quality = ref([])
 const curr_quality = ref(-1)
+
 const change_quality = (quality) => {
   if (list_quality.value.length > quality) {
     curr_quality.value = quality
@@ -40,9 +44,14 @@ onMounted(() => {
           default:
             // cannot recover
             console.error('fatal error encountered, could not recover')
+            status_error.value = true
             hls.value.destroy()
             break
         }
+      } else if (data.details === Hls.ErrorDetails.INTERNAL_EXCEPTION) {
+        console.error('internal error encountered, counting as unrecoverable error')
+        status_error.value = true
+        hls.value.destroy()
       }
     })
     hls.value.loadSource(props.resource?.src)
@@ -131,6 +140,7 @@ onBeforeUnmount(() => {
     <!-- Player -->
     <div class="cell is-fluid" style="display: inline-flex;">
       <video controls id="live-player" class="has-full-size"></video>
+      <ErrorBlankSlate v-if="status_error" style="position: absolute;" />
     </div>
     <!-- Dropdown -->
     <div v-if="list_quality.length > 1" class="cell">
