@@ -19,10 +19,6 @@ const change_quality = (quality) => {
 
 onMounted(() => {
   player.value = document.getElementById('live-player')
-  hls.value = new Hls({
-    liveSyncDurationCount: 0,
-    fetchSetup: (context) => new Request(context.url)
-  })
 
   if (props.resource?.isLive && Hls.isSupported()) {
     hls.value = new Hls({
@@ -34,15 +30,16 @@ onMounted(() => {
         switch (data.type) {
           case Hls.ErrorTypes.NETWORK_ERROR:
             // try to recover network error
-            console.log('fatal network error encountered, try to recover')
+            console.error('fatal network error encountered, try to recover')
             hls.value.startLoad()
             break
           case Hls.ErrorTypes.MEDIA_ERROR:
-            console.log('fatal media error encountered, try to recover')
-            hls.value.recoverMediaError()
+            console.error('fatal media error encountered, try to recover')
+            hls.value.recoverMediaError() 
             break
           default:
             // cannot recover
+            console.error('fatal error encountered, could not recover')
             hls.value.destroy()
             break
         }
