@@ -21,20 +21,14 @@ const parsedu = computed(() => {
   if (s < 10) s = `0${s}`
   return `${h}:${m}:${s}`
 })
-const isload = ref(false);
+const isload = ref(false)
 </script>
 
 <template>
   <!-- Box -->
-  <a
-    class="ts-box"
-    :href="`#profile/${streamer}/${name}`"
-  >
+  <a class="ts-box" :href="`#profile/${streamer}/${name}`">
     <!-- Preview image -->
-    <div
-      class="live-card-picture ts-image"
-      :class="{ 'live-loading': !isload }"
-    >
+    <div class="live-card-picture ts-image" :class="{ 'live-loading': !isload }">
       <picture>
         <source v-if="isLive" type="image/jxl" :srcset="`${src.substring(0, src.length - 4)}jxl`" />
         <source v-else type="image/jxl" :srcset="`${src.substring(0, src.length - 3)}jxl`" />
