@@ -1,6 +1,7 @@
 <script setup>
 import { computed } from 'vue';
 import LivePlayer from './LivePlayer.vue'
+import PlayerInfoBar from './PlayerInfoBar.vue'
 
 const props = defineProps({
   path_curr: String,
@@ -21,16 +22,7 @@ const resource = computed(() => props.list?.filter((i) => i.name == props.path_c
       <video controls class="has-full-size" :src="resource?.src" />
     </div>
     <!-- Dropdown -->
-    <div class="cell">
-      <div class="ts-grid is-1-columns tablet+:is-2-columns has-padded" style="background-color: var(--ts-gray-200);">
-        <div v-if="resource" class="column" style="display: inline-flex; align-items: center;">
-          <div class="item is-text" style="color: var(--ts-gray-900)">{{ resource.streamer }}</div>
-          <div class="ts-chip is-outlined is-small is-start-spaced" style="color: var(--ts-gray-500); border-color: var(--ts-gray-500);">
-            {{`${resource.publishTime.toLocaleDateString()} ${resource.publishTime.toLocaleTimeString()}`}}
-          </div>
-        </div>
-      </div>
-    </div>
+    <PlayerInfoBar :resource="resource" />
   </div>
 </template>
 
@@ -40,8 +32,5 @@ const resource = computed(() => props.list?.filter((i) => i.name == props.path_c
   max-height: 80vh;
   display: inline-flex;
   box-sizing: content-box;
-}
-.is-text {
-  line-height: normal;
 }
 </style>
