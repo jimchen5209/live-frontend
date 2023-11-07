@@ -1,5 +1,6 @@
 <script setup>
 import { ref, onBeforeUnmount, onMounted, watch } from 'vue'
+import ErrorBlankSlate from '../ErrorBlankSlate.vue'
 import PlayerInfoBar from './PlayerInfoBar.vue'
 
 const props = defineProps({
@@ -8,20 +9,21 @@ const props = defineProps({
 
 const hls = ref(null)
 const player = ref(null)
+const status_error = ref(false)
+
 const list_quality = ref([])
-const curr_quality = ref(localStorage.getItem('config_quality') ?? -1)
+const curr_quality = ref(-1)
+
 const change_quality = (quality) => {
-  curr_quality.value = quality
-  localStorage.setItem('config_quality', quality)
-  hls.value.nextLevel = quality
+  if (list_quality.value.length > quality) {
+    curr_quality.value = quality
+    localStorage.setItem('config_quality', curr_quality.value)
+  }
+  hls.value.nextLevel = curr_quality.value
 }
 
 onMounted(() => {
   player.value = document.getElementById('live-player')
-  hls.value = new Hls({
-    liveSyncDurationCount: 0,
-    fetchSetup: (context) => new Request(context.url)
-  })
 
   if (props.resource?.isLive && Hls.isSupported()) {
     hls.value = new Hls({
@@ -33,18 +35,24 @@ onMounted(() => {
         switch (data.type) {
           case Hls.ErrorTypes.NETWORK_ERROR:
             // try to recover network error
-            console.log('fatal network error encountered, try to recover')
+            console.error('fatal network error encountered, try to recover')
             hls.value.startLoad()
             break
           case Hls.ErrorTypes.MEDIA_ERROR:
-            console.log('fatal media error encountered, try to recover')
-            hls.value.recoverMediaError()
+            console.error('fatal media error encountered, try to recover')
+            hls.value.recoverMediaError() 
             break
           default:
             // cannot recover
+            console.error('fatal error encountered, could not recover')
+            status_error.value = true
             hls.value.destroy()
             break
         }
+      } else if (data.details === Hls.ErrorDetails.INTERNAL_EXCEPTION) {
+        console.error('internal error encountered, counting as unrecoverable error')
+        status_error.value = true
+        hls.value.destroy()
       }
     })
     hls.value.loadSource(props.resource?.src)
@@ -54,11 +62,10 @@ onMounted(() => {
       list_quality.value = data.levels.map((i) =>
         i.height ? `${i.height}p (${i.bitrate / 1000}kbps)` : 'Source'
       )
-      if (curr_quality.value in list_quality.value) {
-        change_quality(curr_quality.value)
-      } else {
-        change_quality(-1)
-      }
+
+      const stored_quality = localStorage.getItem('config_quality')
+      change_quality((stored_quality !== null && !isNaN(parseInt(stored_quality))) ? parseInt(stored_quality) : -1)
+
       if (play)
         play.catch((error) => {
           if (error.name === 'NotAllowedError') {
@@ -111,11 +118,9 @@ watch(
           list_quality.value = data.levels.map((i) =>
             i.height ? `${i.height}p (${i.bitrate / 1000}kbps)` : 'Source'
           )
-          if (curr_quality.value in list_quality.value) {
-            change_quality(curr_quality.value)
-          } else {
-            change_quality(-1)
-          }
+
+          const stored_quality = localStorage.getItem('config_quality')
+          change_quality((stored_quality !== null && !isNaN(parseInt(stored_quality))) ? parseInt(stored_quality) : -1)
         })
       }, 100)
     }
@@ -136,6 +141,7 @@ onBeforeUnmount(() => {
     <!-- Player -->
     <div class="cell is-fluid" style="display: inline-flex">
       <video controls id="live-player" class="has-full-size"></video>
+      <ErrorBlankSlate v-if="status_error" style="position: absolute;" />
     </div>
     <!-- Dropdown -->
     <PlayerInfoBar
