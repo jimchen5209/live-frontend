@@ -1,6 +1,7 @@
 <script setup>
 import { ref, onBeforeUnmount, onMounted, watch } from 'vue'
 import ErrorBlankSlate from '../ErrorBlankSlate.vue'
+import PlayerInfoBar from './PlayerInfoBar.vue'
 
 const props = defineProps({
   resource: Object
@@ -138,45 +139,16 @@ onBeforeUnmount(() => {
 <template>
   <div class="ts-app-layout is-vertical">
     <!-- Player -->
-    <div class="cell is-fluid" style="display: inline-flex;">
+    <div class="cell is-fluid" style="display: inline-flex">
       <video controls id="live-player" class="has-full-size"></video>
       <ErrorBlankSlate v-if="status_error" style="position: absolute;" />
     </div>
     <!-- Dropdown -->
-    <div v-if="list_quality.length > 1" class="cell">
-      <div class="ts-app-topbar">
-        <div class="start">
-          <div class="item is-text">{{ resource?.streamer }}</div>
-        </div>
-        <div class="center">
-          <div class="item is-text">Quality Select:</div>
-        </div>
-        <div class="end is-text">
-          <!-- Selected -->
-          <div class="ts-select is-fluid" data-dropdown="select">
-            <div class="content">
-              {{ curr_quality == -1 ? 'Auto' : list_quality[curr_quality] }}
-            </div>
-          </div>
-          <!-- Options -->
-          <div class="ts-dropdown is-dark" data-name="select" data-position="bottom-start">
-            <button class="item" @click="change_quality(-1)">Auto</button>
-            <button
-              class="item"
-              v-for:="(quality, index) in list_quality"
-              @click="change_quality(index)"
-            >
-              {{ quality }}
-            </button>
-          </div>
-        </div>
-      </div>
-    </div>
+    <PlayerInfoBar
+      :resource="resource"
+      :list_quality="list_quality"
+      :curr_quality="curr_quality"
+      @change-quality="change_quality"
+    />
   </div>
 </template>
-
-<style scoped>
-.is-text {
-  line-height: normal;
-}
-</style>
