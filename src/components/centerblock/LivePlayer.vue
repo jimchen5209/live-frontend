@@ -8,11 +8,13 @@ const props = defineProps({
 const hls = ref(null)
 const player = ref(null)
 const list_quality = ref([])
-const curr_quality = ref(localStorage.getItem('config_quality') ?? -1)
+const curr_quality = ref(-1)
 const change_quality = (quality) => {
-  curr_quality.value = quality
-  localStorage.setItem('config_quality', quality)
-  hls.value.nextLevel = quality
+  if (list_quality.value.length > quality) {
+    curr_quality.value = quality
+    localStorage.setItem('config_quality', curr_quality.value)
+  }
+  hls.value.nextLevel = curr_quality.value
 }
 
 onMounted(() => {
@@ -53,11 +55,10 @@ onMounted(() => {
       list_quality.value = data.levels.map((i) =>
         i.height ? `${i.height}p (${i.bitrate / 1000}kbps)` : 'Source'
       )
-      if (curr_quality.value in list_quality.value) {
-        change_quality(curr_quality.value)
-      } else {
-        change_quality(-1)
-      }
+
+      const stored_quality = localStorage.getItem('config_quality')
+      change_quality((stored_quality !== null && !isNaN(parseInt(stored_quality))) ? parseInt(stored_quality) : -1)
+
       if (play)
         play.catch((error) => {
           if (error.name === 'NotAllowedError') {
@@ -110,11 +111,9 @@ watch(
           list_quality.value = data.levels.map((i) =>
             i.height ? `${i.height}p (${i.bitrate / 1000}kbps)` : 'Source'
           )
-          if (curr_quality.value in list_quality.value) {
-            change_quality(curr_quality.value)
-          } else {
-            change_quality(-1)
-          }
+
+          const stored_quality = localStorage.getItem('config_quality')
+          change_quality((stored_quality !== null && !isNaN(parseInt(stored_quality))) ? parseInt(stored_quality) : -1)
         })
       }, 100)
     }
