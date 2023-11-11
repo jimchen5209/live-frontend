@@ -40,7 +40,7 @@ onMounted(() => {
             break
           case Hls.ErrorTypes.MEDIA_ERROR:
             console.error('fatal media error encountered, try to recover')
-            hls.value.recoverMediaError() 
+            hls.value.recoverMediaError()
             break
           default:
             // cannot recover
@@ -64,7 +64,9 @@ onMounted(() => {
       )
 
       const stored_quality = localStorage.getItem('config_quality')
-      change_quality((stored_quality !== null && !isNaN(parseInt(stored_quality))) ? parseInt(stored_quality) : -1)
+      change_quality(
+        stored_quality !== null && !isNaN(parseInt(stored_quality)) ? parseInt(stored_quality) : -1
+      )
 
       if (play)
         play.catch((error) => {
@@ -74,6 +76,21 @@ onMounted(() => {
           }
         })
     })
+
+    // Workaround firefox codec test fail
+    let origListener = hls.value.listeners(Hls.Events.BUFFER_CODECS)
+    hls.value.removeAllListeners([Hls.Events.BUFFER_CODECS])
+    hls.value.on(Hls.Events.BUFFER_CODECS, (event, data) => {
+      if (
+        data.video &&
+        data.video.container === 'video/mp4' &&
+        data.video.codec &&
+        !MediaSource.isTypeSupported(`${data.video.container};codecs=${data.video.codec}`)
+      ) {
+        data.video.codec = 'avc1.640034' // Override level to 5.2
+      }
+    })
+    origListener.forEach((f) => hls.value.on(Hls.Events.BUFFER_CODECS, f))
   }
   // Fuck you apple
   else if (player.value.canPlayType('application/vnd.apple.mpegurl')) {
@@ -120,9 +137,28 @@ watch(
           )
 
           const stored_quality = localStorage.getItem('config_quality')
-          change_quality((stored_quality !== null && !isNaN(parseInt(stored_quality))) ? parseInt(stored_quality) : -1)
+          change_quality(
+            stored_quality !== null && !isNaN(parseInt(stored_quality))
+              ? parseInt(stored_quality)
+              : -1
+          )
         })
       }, 100)
+
+      // Workaround firefox codec test fail
+      let origListener = hls.value.listeners(Hls.Events.BUFFER_CODECS)
+      hls.value.removeAllListeners([Hls.Events.BUFFER_CODECS])
+      hls.value.on(Hls.Events.BUFFER_CODECS, (event, data) => {
+        if (
+          data.video &&
+          data.video.container === 'video/mp4' &&
+          data.video.codec &&
+          !MediaSource.isTypeSupported(`${data.video.container};codecs=${data.video.codec}`)
+        ) {
+          data.video.codec = 'avc1.640034' // Override level to 5.2
+        }
+      })
+      origListener.forEach((f) => hls.value.on(Hls.Events.BUFFER_CODECS, f))
     }
     // Fuck you apple
     else if (player.value.canPlayType('application/vnd.apple.mpegurl')) {
@@ -141,7 +177,7 @@ onBeforeUnmount(() => {
     <!-- Player -->
     <div class="cell is-fluid" style="display: inline-flex">
       <video controls id="live-player" class="has-full-size"></video>
-      <ErrorBlankSlate v-if="status_error" style="position: absolute;" />
+      <ErrorBlankSlate v-if="status_error" style="position: absolute" />
     </div>
     <!-- Dropdown -->
     <PlayerInfoBar
