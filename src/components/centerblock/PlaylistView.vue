@@ -7,22 +7,20 @@ const props = defineProps({
   list: Array
 })
 
+defineEmits(['top'])
+
 const cardAmount = ref(-40)
 const playlist = computed(() => {
-  const pathlist = props.path_current.split('/')
-  if (pathlist.length > 1) {
-    return props.list?.filter((i) => i.streamer === pathlist.at(1))
+  const pathList = props.path_current.split('/')
+  if (pathList.length > 1) {
+    return props.list?.filter((i) => i.streamer === pathList.at(1))
   } else {
     return props.list
   }
 })
-
-const centerdiv = computed(() => document.getElementById('centerblock'))
-const scrollTo = (x, y) => window.scroll(x, y)
 </script>
 
 <template>
-  <!-- Todo Search -->
   <!-- Card View -->
   <!-- Grid -->
   <div
@@ -42,14 +40,8 @@ const scrollTo = (x, y) => window.scroll(x, y)
     </div>
     <!-- Scroll top button -->
     <button
-      class="tablet-:has-hidden ts-button is-start-icon is-wide is-fluid"
-      @click="centerdiv.scroll(0, 0)"
-    >
-      <span class="ts-icon is-wheelchair-move-icon"></span>Top
-    </button>
-    <button
-      class="desktop+:has-hidden ts-button is-start-icon is-wide is-fluid"
-      @click="scrollTo(0, 0)"
+      class="ts-button is-start-icon is-wide is-fluid"
+      @click="$emit('top')"
     >
       <span class="ts-icon is-wheelchair-move-icon"></span>Top
     </button>
@@ -63,5 +55,4 @@ const scrollTo = (x, y) => window.scroll(x, y)
     </button>
     <button v-else class="ts-button is-wide is-outlined is-fluid is-disabled">No more</button>
   </div>
-  <!-- Todo List View -->
 </template>

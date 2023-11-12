@@ -11,9 +11,9 @@ import ErrorBlankSlate from './components/ErrorBlankSlate.vue'
 import { useViewport } from './util/viewport'
 import { useChat } from './util/chat'
 
-const url_live = '/live'
-const url_record = '/record'
-const url_list = `${url_record}/list.json`
+const liveUrl = '/live'
+const recordUrl = '/record'
+const listUrl = `${recordUrl}/list.json`
 
 const {
   messages,
@@ -29,23 +29,25 @@ const {
 
 const { viewWidth } = useViewport()
 
-const list_livestream = ref([])
-const list_records = ref([])
+const centerRef = ref(null)
+const playlistRef = ref(null)
+const livestreamList = ref([])
+const recordList = ref([])
+const isError = ref(false)
 
-const status_mobile = computed(() => viewWidth.value <= 1023)
-const status_error = ref(false)
+const isMobile = computed(() => viewWidth.value <= 1023)
 
 // Custom Routing
-const path_current = ref(window.location.hash)
+const currentPath = ref(window.location.hash)
 window.addEventListener('hashchange', () => {
-  path_current.value = window.location.hash
+  currentPath.value = window.location.hash
 })
 
-const status_playable = ref(path_current.value.split('/').length > 2)
+const isPlayable = ref(currentPath.value.split('/').length > 2)
 
 const refreshChat = () => {
-  if (status_playable.value) {
-    const channel = path_current.value.split('/').at(-1)
+  if (isPlayable.value) {
+    const channel = currentPath.value.split('/').at(-1)
     disconnect()
     connect(channel)
   } else {
@@ -56,7 +58,7 @@ const refreshChat = () => {
 onMounted(async () => {
   refreshChat()
   // Data fetching
-  list_records.value = await fetch(url_list)
+  recordList.value = await fetch(listUrl)
     .then((res) => res.json())
     .then((list) => {
       if (list.length <= 0) throw 'List empty.'
@@ -70,7 +72,7 @@ onMounted(async () => {
               parseInt(filename.substring(filename.length - 14, filename.length - 4) * 1000)
             ),
             duration: e.format.duration,
-            src: `${url_record}/${filename.replace('flv', 'mp4')}`,
+            src: `${recordUrl}/${filename.replace('flv', 'mp4')}`,
             name: filename
           }
         })
@@ -79,13 +81,13 @@ onMounted(async () => {
           (a, b) => a.publishTime - b.publishTime
         )
     })
-    .catch(() => (status_error.value = true))
+    .catch(() => (isError.value = true))
 
-  list_livestream.value = (
+  livestreamList.value = (
     await Promise.all(
-      Array.from(new Set(list_records.value.toReversed().map((i) => i.streamer)).values()).map(
+      Array.from(new Set(recordList.value.toReversed().map((i) => i.streamer)).values()).map(
         async (i) => {
-          const url_livestream = `${url_live}/${i}.m3u8`
+          const url_livestream = `${liveUrl}/${i}.m3u8`
           return {
             streamer: i,
             publishTime: new Date(Date.now()),
@@ -101,100 +103,101 @@ onMounted(async () => {
 })
 
 // 來點回頂部
+const scrollToTop = () => {
+  centerRef.value?.scrollTo({ top: 0, left: 0, behavior: 'smooth' })
+  playlistRef.value?.scrollTo({ top: 0, left: 0, behavior: 'smooth' })
+}
+
 watch(
-  () => path_current.value,
+  () => currentPath.value,
   () => {
     const menu = document.getElementById('menu-mobile')
     if (!menu.getAttribute('class').match('has-hidden'))
       menu.setAttribute('class', `${menu.getAttribute('class')} has-hidden`)
-    window.scrollTo(0, 0)
-    document.getElementById('centerblock').scrollTo(0, 0)
-    status_playable.value = path_current.value.split('/').length > 2
+    scrollToTop()
+    isPlayable.value = currentPath.value.split('/').length > 2
 
     refreshChat()
   }
 )
 
 // 相容舊的
-const p = path_current.value.split('/').at(-1)
-if (path_current.value?.startsWith('#record')) {
+const p = currentPath.value.split('/').at(-1)
+if (currentPath.value?.startsWith('#record')) {
   // #record/cute_panda-1698758357.mp4
   window.location.replace(`#profile/${p.split('-').at(0)}/${p}`) // #profile/cute_panda/cute_panda-1698758357.mp4
-} else if (path_current.value?.startsWith('#live')) {
-  // #record/cute_panda-1698758357.mp4
+} else if (currentPath.value?.startsWith('#live')) {
+  // #live/cute_panda
   window.location.replace(`#profile/${p.split('-').at(0)}/${p.split('-').at(0)}.m3u8`) // #profile/cute_panda/cute_panda.m3u8
 }
 </script>
 
 <template>
-  <ErrorBlankSlate v-if="status_error" style="height: 100vh; width: 100vw"/>
-  <div v-else class="ts-app-layout is-vertical is-full">
-    <!-- StreamerList for mobile user -->
-    <div class="cell desktop+:has-hidden">
-      <div class="ts-app-topbar">
-        <div class="start">
-          <a class="item" data-toggle="menu:has-hidden">
-            <span class="ts-icon is-bars-icon"></span>
-          </a>
-          <div class="item is-text">StreamerList</div>
+  <ErrorBlankSlate v-if="isError" style="height: 100vh; width: 100vw" />
+  <div v-else class="cell ts-app-layout is-horizontal is-full">
+    <!-- StreamerList for desktop user -->
+    <div id="sidebar" class="tablet-:has-hidden cell is-scrollable">
+      <HeaderBlock />
+      <StreamerList
+        v-if="livestreamList"
+        :list_livestream="livestreamList"
+        :path="currentPath"
+      />
+    </div>
+    <div ref="centerRef" class="cell is-fluid" :class="{'is-scrollable': !isMobile}">
+      <div class="ts-app-layout is-vertical">
+        <!-- StreamerList for mobile user -->
+        <div class="cell ts-app-topbar desktop+:has-hidden">
+          <div class="start">
+            <a class="item" data-toggle="menu:has-hidden">
+              <span class="ts-icon is-bars-icon"></span>
+            </a>
+            <div class="item is-text">StreamerList</div>
+          </div>
+          <div id="menu-mobile" class="content has-hidden" data-name="menu">
+            <HeaderBlock />
+            <StreamerList
+              v-if="livestreamList"
+              :list_livestream="livestreamList"
+              :path="currentPath"
+            />
+          </div>
         </div>
-        <div id="menu-mobile" class="content has-hidden" data-name="menu">
-          <HeaderBlock />
-          <StreamerList
-            v-if="list_livestream"
-            :list_livestream="list_livestream"
-            :path="path_current"
+        <!-- MediaPlayer -->
+        <div v-if="isPlayable" class="cell" style="display: inline-flex">
+          <MediaPlayer
+            v-if="livestreamList"
+            :path_curr="currentPath"
+            :list="recordList.concat(livestreamList.filter((i) => i.isLive))"
+          />
+        </div>
+        <div ref="playlistRef" class="cell" :class="{'is-scrollable is-fluid': isMobile}">
+          <!-- Chat for mobile user -->
+          <div v-if="isPlayable" class="desktop+:has-hidden has-full-height">
+            <ChatView
+              v-if="isMobile"
+              :viewer-count="viewerCount"
+              :messages="messages"
+              :uuid="uuid"
+              :nickname="nickname"
+              :ready="readyState"
+              @set-nickname="setNickname"
+              @send-message="sendMessage"
+            />
+          </div>
+          <!-- Playlist -->
+          <PlaylistView
+            :path_current="currentPath"
+            :list="recordList.concat(livestreamList.filter((i) => i.isLive))"
+            @top="scrollToTop"
           />
         </div>
       </div>
     </div>
-    <!-- Basic Layout for desktop user -->
-    <div class="ts-app-layout is-horizontal">
-      <div id="sidebar" class="tablet-:has-hidden cell is-scrollable">
-        <HeaderBlock />
-        <StreamerList
-          v-if="list_livestream"
-          :list_livestream="list_livestream"
-          :path="path_current"
-        />
-      </div>
-      <div id="centerblock" class="cell is-fluid desktop+:is-scrollable">
-        <div class="ts-app-layout is-vertical">
-          <div v-if="status_playable" class="cell" style="display: inline-flex">
-            <MediaPlayer
-              v-if="list_livestream"
-              :key="path_current"
-              :path_curr="path_current"
-              :list="list_records.concat(list_livestream.filter((i) => i.isLive))"
-            />
-          </div>
-          <div class="tablet-:has-hidden cell">
-            <PlaylistView
-              v-if="list_livestream"
-              :key="path_current"
-              :path_current="path_current"
-              :list="list_records.concat(list_livestream.filter((i) => i.isLive))"
-            />
-          </div>
-        </div>
-      </div>
-      <div v-if="status_playable" id="chatbar" class="tablet-:has-hidden cell">
-        <ChatView
-          v-if="!status_mobile"
-          :viewer-count="viewerCount"
-          :messages="messages"
-          :uuid="uuid"
-          :nickname="nickname"
-          :ready="readyState"
-          @set-nickname="setNickname"
-          @send-message="sendMessage"
-        />
-      </div>
-    </div>
-    <!-- Chat and Playlist for mobile user -->
-    <div v-if="status_playable" class="desktop+:has-hidden cell" style="height: 80vh">
+    <!-- Chat for desktop user -->
+    <div v-if="isPlayable" id="chatBar" class="tablet-:has-hidden cell">
       <ChatView
-        v-if="status_mobile"
+        v-if="!isMobile"
         :viewer-count="viewerCount"
         :messages="messages"
         :uuid="uuid"
@@ -204,14 +207,6 @@ if (path_current.value?.startsWith('#record')) {
         @send-message="sendMessage"
       />
     </div>
-    <div class="desktop+:has-hidden cell">
-      <PlaylistView
-        v-if="list_livestream"
-        :key="path_current"
-        :path_current="path_current"
-        :list="list_records.concat(list_livestream.filter((i) => i.isLive))"
-      />
-    </div>
   </div>
 </template>
 
@@ -219,7 +214,7 @@ if (path_current.value?.startsWith('#record')) {
 #sidebar {
   width: 13%;
 }
-#chatbar {
+#chatBar {
   width: 18%;
 }
 </style>
