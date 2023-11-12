@@ -8,17 +8,53 @@ import MediaPlayer from './components/centerblock/MediaPlayer.vue'
 import ChatView from './components/chatroom/ChatView.vue'
 import ErrorBlankSlate from './components/ErrorBlankSlate.vue'
 
+import { useViewport } from './util/viewport'
+import { useChat } from './util/chat'
+
 const url_live = '/live'
 const url_record = '/record'
 const url_list = `${url_record}/list.json`
 
+const {
+  messages,
+  viewerCount,
+  uuid,
+  nickname,
+  readyState,
+  setNickname,
+  sendMessage,
+  connect,
+  disconnect
+} = useChat()
+
+const { viewWidth } = useViewport()
+
 const list_livestream = ref([])
 const list_records = ref([])
 
-const status_mobile = computed(() => window.innerWidth <= 1023)
+const status_mobile = computed(() => viewWidth.value <= 1023)
 const status_error = ref(false)
 
+// Custom Routing
+const path_current = ref(window.location.hash)
+window.addEventListener('hashchange', () => {
+  path_current.value = window.location.hash
+})
+
+const status_playable = ref(path_current.value.split('/').length > 2)
+
+const refreshChat = () => {
+  if (status_playable.value) {
+    const channel = path_current.value.split('/').at(-1)
+    disconnect()
+    connect(channel)
+  } else {
+    disconnect()
+  }
+}
+
 onMounted(async () => {
+  refreshChat()
   // Data fetching
   list_records.value = await fetch(url_list)
     .then((res) => res.json())
@@ -64,14 +100,6 @@ onMounted(async () => {
   ).sort((a, b) => (a.isLive === b.isLive ? 0 : a.isLive ? -1 : 1))
 })
 
-// Custom Routing
-const path_current = ref(window.location.hash)
-window.addEventListener('hashchange', () => {
-  path_current.value = window.location.hash
-})
-
-const status_playable = ref(path_current.value.split('/').length > 2)
-
 // 來點回頂部
 watch(
   () => path_current.value,
@@ -82,6 +110,8 @@ watch(
     window.scrollTo(0, 0)
     document.getElementById('centerblock').scrollTo(0, 0)
     status_playable.value = path_current.value.split('/').length > 2
+
+    refreshChat()
   }
 )
 
@@ -151,10 +181,13 @@ if (path_current.value?.startsWith('#record')) {
       <div v-if="status_playable" id="chatbar" class="tablet-:has-hidden cell">
         <ChatView
           v-if="!status_mobile"
-          :key="path_current"
-          :id_his="'desktop-history'"
-          :name="path_current.split('/').at(-1)"
-          :status_playable="status_playable"
+          :viewer-count="viewerCount"
+          :messages="messages"
+          :uuid="uuid"
+          :nickname="nickname"
+          :ready="readyState"
+          @set-nickname="setNickname"
+          @send-message="sendMessage"
         />
       </div>
     </div>
@@ -162,10 +195,13 @@ if (path_current.value?.startsWith('#record')) {
     <div v-if="status_playable" class="desktop+:has-hidden cell" style="height: 80vh">
       <ChatView
         v-if="status_mobile"
-        :key="path_current"
-        :id_his="'mobile-history'"
-        :name="path_current.split('/').at(-1)"
-        :status_playable="status_playable"
+        :viewer-count="viewerCount"
+        :messages="messages"
+        :uuid="uuid"
+        :nickname="nickname"
+        :ready="readyState"
+        @set-nickname="setNickname"
+        @send-message="sendMessage"
       />
     </div>
     <div class="desktop+:has-hidden cell">
