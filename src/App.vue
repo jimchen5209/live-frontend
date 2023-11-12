@@ -3,8 +3,8 @@ import { ref, onMounted, watch, computed } from 'vue'
 
 import HeaderBlock from './components/sidebar/HeaderBlock.vue'
 import StreamerList from './components/sidebar/StreamerList.vue'
-import PlaylistView from './components/centerblock/PlaylistView.vue'
-import MediaPlayer from './components/centerblock/MediaPlayer.vue'
+import PlaylistView from './components/centerBlock/PlaylistView.vue'
+import MediaPlayer from './components/centerBlock/MediaPlayer.vue'
 import ChatView from './components/chatroom/ChatView.vue'
 import ErrorBlankSlate from './components/ErrorBlankSlate.vue'
 
@@ -140,7 +140,7 @@ if (currentPath.value?.startsWith('#record')) {
       <HeaderBlock />
       <StreamerList
         v-if="livestreamList"
-        :list_livestream="livestreamList"
+        :livestream-list="livestreamList"
         :path="currentPath"
       />
     </div>
@@ -158,7 +158,7 @@ if (currentPath.value?.startsWith('#record')) {
             <HeaderBlock />
             <StreamerList
               v-if="livestreamList"
-              :list_livestream="livestreamList"
+              :livestream-list="livestreamList"
               :path="currentPath"
             />
           </div>
@@ -167,7 +167,7 @@ if (currentPath.value?.startsWith('#record')) {
         <div v-if="isPlayable" class="cell" style="display: inline-flex">
           <MediaPlayer
             v-if="livestreamList"
-            :path_curr="currentPath"
+            :current-path="currentPath"
             :list="recordList.concat(livestreamList.filter((i) => i.isLive))"
           />
         </div>
@@ -187,7 +187,7 @@ if (currentPath.value?.startsWith('#record')) {
           </div>
           <!-- Playlist -->
           <PlaylistView
-            :path_current="currentPath"
+            :current-path="currentPath"
             :list="recordList.concat(livestreamList.filter((i) => i.isLive))"
             @top="scrollToTop"
           />

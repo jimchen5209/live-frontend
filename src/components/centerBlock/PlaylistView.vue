@@ -3,7 +3,7 @@ import { computed, ref } from 'vue'
 import RecordCard from './RecordCard.vue'
 
 const props = defineProps({
-  path_current: String,
+  currentPath: String,
   list: Array
 })
 
@@ -11,7 +11,7 @@ defineEmits(['top'])
 
 const cardAmount = ref(-40)
 const playlist = computed(() => {
-  const pathList = props.path_current.split('/')
+  const pathList = props.currentPath.split('/')
   if (pathList.length > 1) {
     return props.list?.filter((i) => i.streamer === pathList.at(1))
   } else {

@@ -4,12 +4,12 @@ import LivePlayer from './LivePlayer.vue'
 import PlayerInfoBar from './PlayerInfoBar.vue'
 
 const props = defineProps({
-  path_curr: String,
+  currentPath: String,
   list: Array
 })
 
 const resource = computed(
-  () => props.list?.filter((i) => i.name == props.path_curr?.split('/').at(-1))[0]
+  () => props.list?.filter((i) => i.name == props.currentPath?.split('/').at(-1))[0]
 )
 </script>
 

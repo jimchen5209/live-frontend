@@ -36,7 +36,7 @@ const followChat = () =>
           v-for:="(value, index) in messages.filter((i) => i.type === 'bulletScreenMessage')"
           v-on:vue:mounted="followChat()"
           :index="index"
-          :isself="uuid.includes(value.uuid)"
+          :is-self="uuid.includes(value.uuid)"
           :author="value.sentFrom"
           :text="value.msg"
         />

@@ -1,7 +1,7 @@
 <script setup>
 defineProps({
   path: String,
-  list_livestream: Array
+  livestreamList: Array
 })
 </script>
 
@@ -11,7 +11,7 @@ defineProps({
     <div class="ts-divider"></div>
     <a
       class="item"
-      v-for:="i in list_livestream"
+      v-for:="i in livestreamList"
       :href="`#profile/${i.streamer}`"
       :class="{ 'is-active': path.split('/').at(1) === i.streamer }"
     >

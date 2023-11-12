@@ -9,17 +9,17 @@ const props = defineProps({
 
 const hls = ref(null)
 const player = ref(null)
-const status_error = ref(false)
+const isError = ref(false)
 
-const list_quality = ref([])
-const curr_quality = ref(-1)
+const qualityList = ref([])
+const currentQuality = ref(-1)
 
 const change_quality = (quality) => {
-  if (list_quality.value.length > quality) {
-    curr_quality.value = quality
-    localStorage.setItem('config_quality', curr_quality.value)
+  if (qualityList.value.length > quality) {
+    currentQuality.value = quality
+    localStorage.setItem('config_quality', currentQuality.value)
   }
-  hls.value.nextLevel = curr_quality.value
+  hls.value.nextLevel = currentQuality.value
 }
 
 onMounted(() => {
@@ -45,13 +45,13 @@ onMounted(() => {
           default:
             // cannot recover
             console.error('fatal error encountered, could not recover')
-            status_error.value = true
+            isError.value = true
             hls.value.destroy()
             break
         }
       } else if (data.details === Hls.ErrorDetails.INTERNAL_EXCEPTION) {
         console.error('internal error encountered, counting as unrecoverable error')
-        status_error.value = true
+        isError.value = true
         hls.value.destroy()
       }
     })
@@ -59,7 +59,7 @@ onMounted(() => {
     hls.value.attachMedia(player.value)
     hls.value.on(Hls.Events.MANIFEST_PARSED, (event, data) => {
       const play = player.value.play()
-      list_quality.value = data.levels.map((i) =>
+      qualityList.value = data.levels.map((i) =>
         i.height ? `${i.height}p (${i.bitrate / 1000}kbps)` : 'Source'
       )
 
@@ -132,7 +132,7 @@ watch(
         hls.value.attachMedia(player.value)
         hls.value.on(Hls.Events.MANIFEST_PARSED, (event, data) => {
           player.value.play()
-          list_quality.value = data.levels.map((i) =>
+          qualityList.value = data.levels.map((i) =>
             i.height ? `${i.height}p (${i.bitrate / 1000}kbps)` : 'Source'
           )
 
@@ -177,13 +177,13 @@ onBeforeUnmount(() => {
     <!-- Player -->
     <div class="cell is-fluid" style="display: inline-flex">
       <video controls id="live-player" class="has-full-size"></video>
-      <ErrorBlankSlate v-if="status_error" style="position: absolute" />
+      <ErrorBlankSlate v-if="isError" style="position: absolute" />
     </div>
     <!-- Dropdown -->
     <PlayerInfoBar
       :resource="resource"
-      :list_quality="list_quality"
-      :curr_quality="curr_quality"
+      :quality-list="qualityList"
+      :current-quality="currentQuality"
       @change-quality="change_quality"
     />
   </div>
