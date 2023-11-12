@@ -67,6 +67,6 @@ export const useChat = () => {
     setNickname,
     sendMessage,
     connect,
-    disconnect,
+    disconnect
   }
 }

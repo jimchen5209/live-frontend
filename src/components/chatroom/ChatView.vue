@@ -52,7 +52,7 @@ const followChat = () =>
             type="text"
             placeholder="Nickname"
             :value="nickname"
-            @focusout="event => $emit('set-nickname', event.target.value)"
+            @focusout="(event) => $emit('set-nickname', event.target.value)"
           />
           <input
             class="text"

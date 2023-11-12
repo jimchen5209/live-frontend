@@ -138,13 +138,9 @@ if (currentPath.value?.startsWith('#record')) {
     <!-- StreamerList for desktop user -->
     <div id="sidebar" class="tablet-:has-hidden cell is-scrollable">
       <HeaderBlock />
-      <StreamerList
-        v-if="livestreamList"
-        :livestream-list="livestreamList"
-        :path="currentPath"
-      />
+      <StreamerList v-if="livestreamList" :livestream-list="livestreamList" :path="currentPath" />
     </div>
-    <div ref="centerRef" class="cell is-fluid" :class="{'is-scrollable': !isMobile}">
+    <div ref="centerRef" class="cell is-fluid" :class="{ 'is-scrollable': !isMobile }">
       <div class="ts-app-layout is-vertical">
         <!-- StreamerList for mobile user -->
         <div class="cell ts-app-topbar desktop+:has-hidden">
@@ -171,7 +167,7 @@ if (currentPath.value?.startsWith('#record')) {
             :list="recordList.concat(livestreamList.filter((i) => i.isLive))"
           />
         </div>
-        <div ref="playlistRef" class="cell" :class="{'is-scrollable is-fluid': isMobile}">
+        <div ref="playlistRef" class="cell" :class="{ 'is-scrollable is-fluid': isMobile }">
           <!-- Chat for mobile user -->
           <div v-if="isPlayable" class="desktop+:has-hidden has-full-height">
             <ChatView
