@@ -1,7 +1,6 @@
 <script setup>
 import { ref, onBeforeUnmount, onMounted, watch } from 'vue'
-import ErrorBlankSlate from '../ErrorBlankSlate.vue'
-import PlayerInfoBar from './PlayerInfoBar.vue'
+import PlayerOverlay from './PlayerOverlay.vue'
 
 const props = defineProps({
   resource: Object
@@ -23,7 +22,7 @@ const change_quality = (quality) => {
 }
 
 onMounted(() => {
-  player.value = document.getElementById('live-player')
+  player.value = document.getElementById('mediaPlayer')
 
   if (props.resource?.isLive && Hls.isSupported()) {
     hls.value = new Hls({
@@ -173,18 +172,11 @@ onBeforeUnmount(() => {
 </script>
 
 <template>
-  <div class="ts-app-layout is-vertical">
-    <!-- Player -->
-    <div class="cell is-fluid" style="display: inline-flex">
-      <video controls id="live-player" class="has-full-size"></video>
-      <ErrorBlankSlate v-if="isError" style="position: absolute" />
-    </div>
-    <!-- Dropdown -->
-    <PlayerInfoBar
-      :resource="resource"
-      :quality-list="qualityList"
-      :current-quality="currentQuality"
-      @change-quality="change_quality"
-    />
-  </div>
+  <PlayerOverlay
+    :resource="resource"
+    :quality-list="qualityList"
+    :current-quality="currentQuality"
+    :is-error="isError"
+    @change-quality="change_quality"
+  />
 </template>

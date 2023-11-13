@@ -1,5 +1,6 @@
 <script setup>
 import { computed, ref } from 'vue'
+import ErrorBlankSlate from '../ErrorBlankSlate.vue'
 
 defineProps({
   resource: {
@@ -13,6 +14,10 @@ defineProps({
   currentQuality: {
     type: Number,
     default: -1
+  },
+  isError: {
+    type: Boolean,
+    default: false
   }
 })
 defineEmits(['change-quality'])
@@ -110,14 +115,16 @@ const toggleFullscreen = () => {
 <template>
   <div id="playerContainer" ref="overlayVideo" class="has-full-size" style="display: inline-flex">
     <video
+      id="mediaPlayer"
       ref="video"
       @timeupdate="updateStatus"
       @seeking="updateStatus"
       @click="togglePlay"
       @dblclick="toggleFullscreen"
       class="has-full-size"
-      :src="resource?.src"
+      :src="resource?.isLive ? resource?.src : undefined"
     />
+    <ErrorBlankSlate v-if="isError" style="position: absolute" />
     <div class="ts-mask is-faded is-top">
       <div class="ts-content" style="color: #fff">
         <div class="ts-header">{{ resource?.streamer }}</div>
@@ -157,6 +164,30 @@ const toggleFullscreen = () => {
             </span>
           </div>
           <div class="is-flex">
+            <div v-if="qualityList.length > 1">
+              <button class="ts-button is-secondary" data-dropdown="quality">
+                {{ currentQuality == -1 ? 'Auto' : qualityList[currentQuality] }}
+              </button>
+              <div class="ts-dropdown" data-name="quality" data-position="top-end">
+                <button
+                  class="item"
+                  :class="{ 'is-selected': currentQuality === -1 }"
+                  @click="$emit('change-quality', -1)"
+                >
+                  Auto
+                </button>
+
+                <button
+                  v-for="(quality, index) in qualityList"
+                  :key="`quality-${index}`"
+                  class="item"
+                  :class="{ 'is-selected': currentQuality === quality }"
+                  @click="$emit('change-quality', index)"
+                >
+                  {{ quality }}
+                </button>
+              </div>
+            </div>
             <div>
               <button class="ts-button is-secondary is-icon" data-dropdown="speed">
                 {{ rateList.find((rateItem) => rateItem.value === rate)?.text }}
