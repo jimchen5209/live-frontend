@@ -40,7 +40,7 @@ const isPaused = ref(true)
 
 const isMuted = ref(false)
 
-const volume = ref(0.5)
+const volume = ref(100)
 
 const currentTime = ref(0)
 
@@ -68,13 +68,13 @@ const rateList = ref([
 ])
 
 const updateStatus = () => {
-  currentTime.value = video.value.currentTime
-  duration.value = video.value.duration
-  isPaused.value = video.value.paused
-  isMuted.value = video.value.muted
-  volume.value = video.value.volume * 100
+  currentTime.value = video.value?.currentTime
+  duration.value = video.value?.duration
+  isPaused.value = video.value?.paused
+  isMuted.value = video.value?.muted
+  volume.value = video.value?.volume * 100
   isFullscreen.value = document.fullscreenElement !== null
-  rate.value = video.value.playbackRate
+  rate.value = video.value?.playbackRate
 }
 
 const setRate = (rate) => {
@@ -122,7 +122,8 @@ const toggleFullscreen = () => {
       @click="togglePlay"
       @dblclick="toggleFullscreen"
       class="has-full-size"
-      :src="resource?.isLive ? resource?.src : undefined"
+      :src="resource?.isLive ? undefined : resource?.src"
+      autoplay
     />
     <ErrorBlankSlate v-if="isError" style="position: absolute" />
     <div class="ts-mask is-faded is-top">
