@@ -128,7 +128,10 @@ const toggleFullscreen = () => {
     <div class="ts-mask is-faded is-top">
       <div class="ts-content" style="color: #fff">
         <div class="ts-header">{{ resource?.streamer }}</div>
-        <span v-if="resource?.isLive"> Live </span>
+        <span v-if="resource?.isLive">
+          <span class="ts-icon is-circle-icon" :style="{ color: '#ff4141' }" />
+          Live
+        </span>
         <span v-else>
           {{
             `${resource?.publishTime.toLocaleDateString()} ${resource?.publishTime.toLocaleTimeString()}`
@@ -160,7 +163,7 @@ const toggleFullscreen = () => {
             <input type="range" v-model="volume" :max="100" @input="setVolume" />
             <span class="has-horizontally-padded">
               {{ timeText }}
-              <span v-if="!isNaN(duration)"> / {{ durationText }} </span>
+              <span v-if="!isNaN(duration) && !resource?.isLive"> / {{ durationText }} </span>
             </span>
           </div>
           <div class="is-flex">
