@@ -47,6 +47,21 @@ const timeText = computed(() => timeToText(currentTime.value))
 
 const durationText = computed(() => timeToText(duration.value))
 
+const rate = ref(1)
+
+const rateList = ref([
+  { value: 0.25, text: '0.25x' },
+  { value: 0.5, text: '0.5x' },
+  { value: 0.75, text: '0.75x' },
+  { value: 1, text: '1x' },
+  { value: 1.25, text: '1.25x' },
+  { value: 1.5, text: '1.5x' },
+  { value: 1.75, text: '1.75x' },
+  { value: 2, text: '2x' },
+  { value: 3, text: '3x' },
+  { value: 4, text: '4x' }
+])
+
 const updateStatus = () => {
   currentTime.value = video.value.currentTime
   duration.value = video.value.duration
@@ -54,6 +69,11 @@ const updateStatus = () => {
   isMuted.value = video.value.muted
   volume.value = video.value.volume * 100
   isFullscreen.value = document.fullscreenElement !== null
+  rate.value = video.value.playbackRate
+}
+
+const setRate = (rate) => {
+  video.value.playbackRate = rate
 }
 
 const setTime = () => {
@@ -137,6 +157,22 @@ const toggleFullscreen = () => {
             </span>
           </div>
           <div class="is-flex">
+            <div>
+              <button class="ts-button is-secondary is-icon" data-dropdown="speed">
+                {{ rateList.find((rateItem) => rateItem.value === rate)?.text }}
+              </button>
+              <div class="ts-dropdown" data-name="speed" data-position="top-end">
+                <button
+                  v-for="rateItem in rateList"
+                  :key="rateItem.value"
+                  class="item"
+                  :class="{ 'is-selected': rateItem.value === rate }"
+                  @click="setRate(rateItem.value)"
+                >
+                  {{ rateItem.text }}
+                </button>
+              </div>
+            </div>
             <button class="button has-flex-center" @click="toggleFullscreen">
               <span v-if="isFullscreen" class="ts-icon is-compress-icon" />
               <span v-else class="ts-icon is-expand-icon" />
