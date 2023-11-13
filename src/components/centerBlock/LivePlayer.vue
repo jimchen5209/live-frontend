@@ -1,6 +1,6 @@
 <script setup>
 import { ref, onBeforeUnmount, onMounted, watch } from 'vue'
-import PlayerOverlay from './PlayerOverlay.vue'
+import OverlayPlayer from './OverlayPlayer.vue'
 
 const props = defineProps({
   resource: Object
@@ -172,7 +172,7 @@ onBeforeUnmount(() => {
 </script>
 
 <template>
-  <PlayerOverlay
+  <OverlayPlayer
     :resource="resource"
     :quality-list="qualityList"
     :current-quality="currentQuality"
