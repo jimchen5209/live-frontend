@@ -59,7 +59,7 @@ const followChat = () =>
             v-model="message"
             type="text"
             placeholder="Messages..."
-            @keypress="
+            @keydown="
               (event) => {
                 if (event.key === 'Enter' && message.length > 0) {
                   $emit('send-message', message)
