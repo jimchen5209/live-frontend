@@ -29,6 +29,8 @@ const isMobile = computed(() => viewWidth.value <= 1023)
 const overlayVideo = ref(null)
 const video = ref(null)
 
+const buffering = ref(false)
+
 const autoHideTimer = ref(null)
 const onPlayerMouseMove = () => {
   if (autoHideTimer.value) {
@@ -244,13 +246,21 @@ onUnmounted(() => {
       @seeking="updateStatus"
       @click="togglePlay"
       @dblclick="onDblClick"
+      @loadeddata="updateStatus"
+      @waiting="buffering = true"
+      @playing="buffering = false"
       class="has-full-size"
       :src="resource?.isLive ? undefined : resource?.src"
       autoplay
     />
 
     <ErrorBlankSlate v-if="isError" style="position: absolute" />
-    <div class="ts-mask is-faded is-top">
+    <div v-if="buffering" class="ts-mask">
+        <div class="ts-center">
+            <div class="ts-loading is-large" style="color: #FFF"></div>
+        </div>
+    </div>
+    <div class="ts-mask is-faded is-top is-hidable">
       <div class="ts-content" style="color: #fff">
         <div class="ts-header">{{ resource?.streamer }}</div>
         <span v-if="resource?.isLive">
@@ -264,7 +274,7 @@ onUnmounted(() => {
         </span>
       </div>
     </div>
-    <div class="ts-mask is-faded is-bottom">
+    <div class="ts-mask is-faded is-bottom is-hidable">
       <div class="ts-content" style="color: #fff">
         <input
           type="range"
@@ -344,7 +354,7 @@ onUnmounted(() => {
 </template>
 
 <style scoped>
-.ts-mask {
+.ts-mask.is-hidable {
   opacity: 0;
   transition-duration: 500ms;
 }
@@ -357,7 +367,7 @@ onUnmounted(() => {
   background: linear-gradient(0deg, rgba(0, 0, 0, 0.9) 0, rgba(0, 0, 0, 0.1) 90%, transparent);
 }
 
-#playerContainer:not(.auto-hidden) > .ts-mask {
+#playerContainer:not(.auto-hidden) > .ts-mask.is-hidable {
   opacity: 1;
 }
 
