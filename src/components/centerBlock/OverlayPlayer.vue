@@ -106,6 +106,22 @@ const setVolume = () => {
   video.value.volume = volume.value / 100
 }
 
+const volumeUp = () => {
+  if (volume.value + 10 <= 100)
+    volume.value += 10
+  else
+    volume.value = 100
+  setVolume()
+}
+
+const volumeDown = () => {
+  if (volume.value - 10 >= 0)
+    volume.value -= 10
+  else
+    volume.value = 0
+  setVolume()
+}
+
 const toggleMute = () => {
   video.value.muted = !video.value.muted
 }
@@ -158,17 +174,11 @@ const onKeyDown = (event) => {
     // Volume
     case 'ArrowUp':
       event.preventDefault()
-      if (video.value.volume + 0.1 <= 1)
-        video.value.volume += 0.1
-      else
-        video.value.volume = 1
+      volumeUp()
       break
     case 'ArrowDown':
       event.preventDefault()
-      if (video.value.volume - 0.1 >= 0)
-        video.value.volume -= 0.1
-      else
-        video.value.volume = 0
+      volumeDown()
       break
     case 'M':
     case 'm':
@@ -180,7 +190,10 @@ const onKeyDown = (event) => {
 
 const onMouseWheel = (event) => {
   event.preventDefault()
-  console.error(event.deltaY)
+  if (event.deltaY > 0)
+    volumeDown()
+  else
+    volumeUp()
 }
 
 onMounted(() => {
@@ -242,7 +255,7 @@ onUnmounted(() => {
               <span v-if="isPaused" class="ts-icon is-play-icon" />
               <span v-else class="ts-icon is-pause-icon" />
             </button>
-            <button class="button has-flex-center" @click="toggleMute">
+            <button class="button has-flex-center" @click="toggleMute" @wheel="onMouseWheel">
               <span v-if="isMuted" class="ts-icon is-volume-xmark-icon" />
               <span v-else-if="volume === 0" class="ts-icon is-volume-off-icon" />
               <span v-else-if="volume <= 50" class="ts-icon is-volume-low-icon" />
