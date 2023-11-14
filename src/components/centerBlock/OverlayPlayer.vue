@@ -36,7 +36,7 @@ const onPlayerMouseMove = () => {
   const t = setTimeout(() => {
     autoHideTimer.value = null
     overlayVideo.value.classList.add('auto-hidden')
-  }, 35 * 1000)
+  }, 3.5 * 1000)
   autoHideTimer.value = t
 
   overlayVideo.value.classList.remove('auto-hidden')
