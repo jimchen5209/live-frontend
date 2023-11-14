@@ -172,7 +172,7 @@ const toggleFullscreen = () => {
               <button class="ts-button is-secondary" data-dropdown="quality">
                 {{ currentQuality == -1 ? 'Auto' : qualityList[currentQuality] }}
               </button>
-              <div class="ts-dropdown" data-name="quality" data-position="top-end">
+              <div class="ts-dropdown style-text" data-name="quality" data-position="top-end">
                 <button
                   class="item"
                   :class="{ 'is-selected': currentQuality === -1 }"
@@ -196,7 +196,7 @@ const toggleFullscreen = () => {
               <button class="ts-button is-secondary is-icon" data-dropdown="speed">
                 {{ rateList.find((rateItem) => rateItem.value === rate)?.text }}
               </button>
-              <div class="ts-dropdown" data-name="speed" data-position="top-end">
+              <div class="ts-dropdown style-text" data-name="speed" data-position="top-end">
                 <button
                   v-for="rateItem in rateList"
                   :key="rateItem.value"
@@ -253,6 +253,10 @@ video:hover ~ .ts-mask {
 .button {
   width: 18px;
   height: 18px;
+}
+
+.style-text {
+  color: var(--ts-gray-900);
 }
 
 #playerContainer:not(:fullscreen) video {
