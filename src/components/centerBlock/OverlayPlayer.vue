@@ -1,5 +1,5 @@
 <script setup>
-import { computed, ref } from 'vue'
+import { computed, onMounted, onUnmounted, ref } from 'vue'
 import ErrorBlankSlate from '../ErrorBlankSlate.vue'
 
 defineProps({
@@ -127,6 +127,64 @@ const toggleFullscreen = () => {
     document.exitFullscreen()
   }
 }
+
+const onKeyDown = (event) => {
+  if (!video.value)
+    return
+
+  onPlayerMouseMove()
+
+  switch (event.key) {
+    // Play-Pause
+    case ' ':
+      event.preventDefault()
+      togglePlay()
+      break
+    // Seek
+    case 'ArrowRight':
+      event.preventDefault()
+      if (video.value.currentTime + 5 <= video.value.duration)
+        video.value.currentTime += 5
+      else
+        video.value.currentTime = video.value.duration
+      break
+    case 'ArrowLeft':
+      event.preventDefault()
+      if (video.value.currentTime - 5 >= 0)
+        video.value.currentTime -= 5
+      else
+        video.value.currentTime = 0
+      break
+    // Volume
+    case 'ArrowUp':
+      event.preventDefault()
+      if (video.value.volume + 0.1 <= 1)
+        video.value.volume += 0.1
+      else
+        video.value.volume = 1
+      break
+    case 'ArrowDown':
+      event.preventDefault()
+      if (video.value.volume - 0.1 >= 0)
+        video.value.volume -= 0.1
+      else
+        video.value.volume = 0
+      break
+    case 'M':
+    case 'm':
+      event.preventDefault()
+      toggleMute()
+      break
+  }
+}
+
+onMounted(() => {
+  document.addEventListener('keydown', onKeyDown)
+})
+
+onUnmounted(() => {
+  document.removeEventListener('keydown', onKeyDown)
+})
 </script>
 
 <template>
@@ -148,6 +206,7 @@ const toggleFullscreen = () => {
       :src="resource?.isLive ? undefined : resource?.src"
       autoplay
     />
+
     <ErrorBlankSlate v-if="isError" style="position: absolute" />
     <div class="ts-mask is-faded is-top">
       <div class="ts-content" style="color: #fff">
