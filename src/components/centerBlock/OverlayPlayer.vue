@@ -35,11 +35,11 @@ const onPlayerMouseMove = () => {
   // set timeout to wait of idle time
   const t = setTimeout(() => {
     autoHideTimer.value = null
-    overlayVideo.value.classList.add('auto-hidden')
+    overlayVideo.value?.classList.add('auto-hidden')
   }, 3.5 * 1000)
   autoHideTimer.value = t
 
-  overlayVideo.value.classList.remove('auto-hidden')
+  overlayVideo.value?.classList.remove('auto-hidden')
 }
 
 const timeToText = (time) => {
@@ -178,6 +178,11 @@ const onKeyDown = (event) => {
   }
 }
 
+const onMouseWheel = (event) => {
+  event.preventDefault()
+  console.error(event.deltaY)
+}
+
 onMounted(() => {
   document.addEventListener('keydown', onKeyDown)
 })
@@ -243,7 +248,7 @@ onUnmounted(() => {
               <span v-else-if="volume <= 50" class="ts-icon is-volume-low-icon" />
               <span v-else class="ts-icon is-volume-high-icon" />
             </button>
-            <input type="range" v-model="volume" :max="100" @input="setVolume" />
+            <input type="range" v-model="volume" :max="100" @input="setVolume" @wheel="onMouseWheel" />
             <span class="has-horizontally-padded">
               {{ timeText }}
               <span v-if="!isNaN(duration) && !resource?.isLive"> / {{ durationText }} </span>
