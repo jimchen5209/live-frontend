@@ -261,16 +261,16 @@ onUnmounted(() => {
               <span v-else-if="volume <= 50" class="ts-icon is-volume-low-icon" />
               <span v-else class="ts-icon is-volume-high-icon" />
             </button>
-            <input type="range" v-model="volume" :max="100" @input="setVolume" @wheel="onMouseWheel" />
+            <input type="range" class="mobile:has-hidden" v-model="volume" :max="100" @input="setVolume" @wheel="onMouseWheel" />
             <span class="has-horizontally-padded">
               {{ timeText }}
-              <span v-if="!isNaN(duration) && !resource?.isLive"> / {{ durationText }} </span>
+              <span v-if="!isNaN(duration) && !resource?.isLive" class="mobile:has-hidden"> / {{ durationText }} </span>
             </span>
           </div>
           <div class="is-flex">
             <div v-if="qualityList.length > 1">
               <button class="ts-button is-secondary" data-dropdown="quality">
-                {{ currentQuality == -1 ? 'Auto' : qualityList[currentQuality] }}
+                {{ currentQuality == -1 ? 'Auto' : qualityList[currentQuality].split(' ')[0] }}
               </button>
               <div class="ts-dropdown style-text" data-name="quality" data-position="top-end">
                 <button
@@ -285,7 +285,7 @@ onUnmounted(() => {
                   v-for="(quality, index) in qualityList"
                   :key="`quality-${index}`"
                   class="item"
-                  :class="{ 'is-selected': currentQuality === quality }"
+                  :class="{ 'is-selected': currentQuality === index }"
                   @click="$emit('change-quality', index)"
                 >
                   {{ quality }}
@@ -333,7 +333,7 @@ onUnmounted(() => {
   background: linear-gradient(0deg, rgba(0, 0, 0, 0.9) 0, rgba(0, 0, 0, 0.1) 90%, transparent);
 }
 
-#playerContainer:hover:not(.auto-hidden) > .ts-mask {
+#playerContainer:not(.auto-hidden) > .ts-mask {
   opacity: 1;
 }
 
