@@ -1,6 +1,7 @@
 <script setup>
 import { computed, onMounted, onUnmounted, ref } from 'vue'
 import ErrorBlankSlate from '../ErrorBlankSlate.vue'
+import { useViewport } from '../../util/viewport'
 
 defineProps({
   resource: {
@@ -21,6 +22,9 @@ defineProps({
   }
 })
 defineEmits(['change-quality'])
+
+const { viewWidth } = useViewport()
+const isMobile = computed(() => viewWidth.value <= 1023)
 
 const overlayVideo = ref(null)
 const video = ref(null)
@@ -102,6 +106,22 @@ const setTime = () => {
   video.value.currentTime = currentTime.value
 }
 
+const seekForward = () => {
+  if (currentTime.value + 5 <= duration.value)
+    currentTime.value += 5
+  else
+    currentTime.value = duration.value
+  setTime()
+}
+
+const seekBackward = () => {
+  if (currentTime.value - 5 >= 0)
+    currentTime.value -= 5
+  else
+    currentTime.value = 0
+  setTime()
+}
+
 const setVolume = () => {
   video.value.volume = volume.value / 100
 }
@@ -159,17 +179,11 @@ const onKeyDown = (event) => {
     // Seek
     case 'ArrowRight':
       event.preventDefault()
-      if (video.value.currentTime + 5 <= video.value.duration)
-        video.value.currentTime += 5
-      else
-        video.value.currentTime = video.value.duration
+      seekForward()
       break
     case 'ArrowLeft':
       event.preventDefault()
-      if (video.value.currentTime - 5 >= 0)
-        video.value.currentTime -= 5
-      else
-        video.value.currentTime = 0
+      seekBackward()
       break
     // Volume
     case 'ArrowUp':
@@ -196,6 +210,16 @@ const onMouseWheel = (event) => {
     volumeUp()
 }
 
+const onDblClick = (event) => {
+  if (video.value && isMobile.value)
+    if (event.x < video.value?.clientWidth / 2)
+      seekBackward()
+    else
+      seekForward()
+  else
+    toggleFullscreen()
+}
+
 onMounted(() => {
   document.addEventListener('keydown', onKeyDown)
 })
@@ -219,7 +243,7 @@ onUnmounted(() => {
       @timeupdate="updateStatus"
       @seeking="updateStatus"
       @click="togglePlay"
-      @dblclick="toggleFullscreen"
+      @dblclick="onDblClick"
       class="has-full-size"
       :src="resource?.isLive ? undefined : resource?.src"
       autoplay
