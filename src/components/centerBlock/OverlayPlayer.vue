@@ -25,6 +25,23 @@ defineEmits(['change-quality'])
 const overlayVideo = ref(null)
 const video = ref(null)
 
+const autoHideTimer = ref(null)
+const onPlayerMouseMove = () => {
+  if (autoHideTimer.value) {
+    clearTimeout(autoHideTimer.value)
+    autoHideTimer.value = null
+  }
+
+  // set timeout to wait of idle time
+  const t = setTimeout(() => {
+    autoHideTimer.value = null
+    overlayVideo.value.classList.add('auto-hidden')
+  }, 35 * 1000)
+  autoHideTimer.value = t
+
+  overlayVideo.value.classList.remove('auto-hidden')
+}
+
 const timeToText = (time) => {
   const hour = Math.floor(time / 3600)
   const minutes = Math.floor((time - hour * 3600) / 60)
@@ -113,7 +130,13 @@ const toggleFullscreen = () => {
 </script>
 
 <template>
-  <div id="playerContainer" ref="overlayVideo" class="has-full-size" style="display: inline-flex">
+  <div
+    id="playerContainer"
+    ref="overlayVideo"
+    class="has-full-size"
+    style="display: inline-flex"
+    @mousemove="onPlayerMouseMove"
+  >
     <video
       id="mediaPlayer"
       ref="video"
@@ -224,19 +247,16 @@ const toggleFullscreen = () => {
   opacity: 0;
   transition-duration: 500ms;
 }
+
 .ts-mask.is-faded.is-top {
   background: linear-gradient(180deg, rgba(0, 0, 0, 0.9) 0, rgba(0, 0, 0, 0.1) 90%, transparent);
 }
+
 .ts-mask.is-faded.is-bottom {
   background: linear-gradient(0deg, rgba(0, 0, 0, 0.9) 0, rgba(0, 0, 0, 0.1) 90%, transparent);
 }
-video:hover ~ .ts-mask {
-  opacity: 1;
-}
-.ts-mask:hover {
-  opacity: 1;
-}
-.ts-mask:hover ~ .ts-mask {
+
+#playerContainer:hover:not(.auto-hidden) > .ts-mask {
   opacity: 1;
 }
 
@@ -264,5 +284,9 @@ video:hover ~ .ts-mask {
   max-height: 80vh;
   display: inline-flex;
   box-sizing: content-box;
+}
+
+.auto-hidden {
+  cursor: none;
 }
 </style>
