@@ -161,6 +161,8 @@ const toggleFullscreen = () => {
 }
 
 const onKeyDown = (event) => {
+  if (document.activeElement instanceof HTMLInputElement)
+    return
   if (!video.value)
     return
 
