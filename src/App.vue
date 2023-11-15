@@ -140,7 +140,7 @@ if (currentPath.value?.startsWith('#record')) {
       <HeaderBlock />
       <StreamerList v-if="livestreamList" :livestream-list="livestreamList" :path="currentPath" />
     </div>
-    <div ref="centerRef" class="cell is-fluid" :class="{ 'is-scrollable': !isMobile }">
+    <div ref="centerRef" class="cell is-fluid">
       <div class="ts-app-layout is-vertical">
         <!-- StreamerList for mobile user -->
         <div class="cell ts-app-topbar desktop+:has-hidden">
@@ -159,34 +159,36 @@ if (currentPath.value?.startsWith('#record')) {
             />
           </div>
         </div>
-        <!-- MediaPlayer -->
-        <div v-if="isPlayable" class="cell" style="display: inline-flex">
-          <MediaPlayer
-            v-if="livestreamList"
-            :current-path="currentPath"
-            :list="recordList.concat(livestreamList.filter((i) => i.isLive))"
-          />
-        </div>
-        <div ref="playlistRef" class="cell" :class="{ 'is-scrollable is-fluid': isMobile }">
-          <!-- Chat for mobile user -->
-          <div v-if="isPlayable" class="desktop+:has-hidden has-full-height">
-            <ChatView
-              v-if="isMobile"
-              :viewer-count="viewerCount"
-              :messages="messages"
-              :uuid="uuid"
-              :nickname="nickname"
-              :ready="readyState"
-              @set-nickname="setNickname"
-              @send-message="sendMessage"
+        <div class="cell ts-app-layout is-vertical is-fluid is-scrollable">
+          <!-- MediaPlayer -->
+          <div v-if="isPlayable" class="cell" style="display: inline-flex">
+            <MediaPlayer
+              v-if="livestreamList"
+              :current-path="currentPath"
+              :list="recordList.concat(livestreamList.filter((i) => i.isLive))"
             />
           </div>
-          <!-- Playlist -->
-          <PlaylistView
-            :current-path="currentPath"
-            :list="recordList.concat(livestreamList.filter((i) => i.isLive))"
-            @top="scrollToTop"
-          />
+          <div ref="playlistRef" class="cell">
+            <!-- Chat for mobile user -->
+            <div v-if="isPlayable" id="mobileChat" class="desktop+:has-hidden">
+              <ChatView
+                v-if="isMobile"
+                :viewer-count="viewerCount"
+                :messages="messages"
+                :uuid="uuid"
+                :nickname="nickname"
+                :ready="readyState"
+                @set-nickname="setNickname"
+                @send-message="sendMessage"
+              />
+            </div>
+            <!-- Playlist -->
+            <PlaylistView
+              :current-path="currentPath"
+              :list="recordList.concat(livestreamList.filter((i) => i.isLive))"
+              @top="scrollToTop"
+            />
+          </div>
         </div>
       </div>
     </div>
@@ -212,5 +214,8 @@ if (currentPath.value?.startsWith('#record')) {
 }
 #chatBar {
   width: 18%;
+}
+#mobileChat {
+  height: 80vh;
 }
 </style>
