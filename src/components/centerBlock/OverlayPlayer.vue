@@ -200,7 +200,7 @@ const onKeyDown = (event) => {
   }
 }
 
-const onMouseWheel = (event) => {
+const onVolumeMouseWheel = (event) => {
   event.preventDefault()
   if (event.deltaY > 0)
     volumeDown()
@@ -209,7 +209,7 @@ const onMouseWheel = (event) => {
   onPlayerMouseMove()
 }
 
-const onDblClick = (event) => {
+const onPlayerDoubleClick = (event) => {
   if (video.value && isMobile.value)
     if (event.x < video.value?.clientWidth / 2)
       seekBackward()
@@ -242,7 +242,7 @@ onUnmounted(() => {
       @timeupdate="updateStatus"
       @seeking="updateStatus"
       @click="togglePlay"
-      @dblclick="onDblClick"
+      @dblclick="onPlayerDoubleClick"
       @loadeddata="updateStatus"
       @waiting="buffering = true"
       @playing="buffering = false"
