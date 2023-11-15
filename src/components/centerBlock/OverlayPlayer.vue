@@ -96,17 +96,19 @@ const updateStatus = () => {
   duration.value = video.value?.duration
   isPaused.value = video.value?.paused
   isMuted.value = video.value?.muted
-  volume.value = video.value?.volume * 100
+  volume.value = video.value?.muted ? 0 : video.value?.volume * 100
   isFullscreen.value = document.fullscreenElement !== null
   rate.value = video.value?.playbackRate
 }
 
 const setRate = (rate) => {
   video.value.playbackRate = rate
+  updateStatus()
 }
 
 const setTime = () => {
   video.value.currentTime = currentTime.value
+  updateStatus()
 }
 
 const seekForward = () => {
@@ -121,6 +123,7 @@ const seekBackward = () => {
 
 const setVolume = () => {
   video.value.volume = volume.value / 100
+  updateStatus()
 }
 
 const volumeUp = () => {
@@ -135,6 +138,7 @@ const volumeDown = () => {
 
 const toggleMute = () => {
   video.value.muted = !video.value.muted
+  updateStatus()
 }
 
 const togglePlay = () => {
@@ -143,6 +147,7 @@ const togglePlay = () => {
   } else {
     video.value.pause()
   }
+  updateStatus()
 }
 
 const toggleFullscreen = () => {
