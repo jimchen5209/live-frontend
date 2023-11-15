@@ -303,8 +303,8 @@ onUnmounted(() => {
           </div>
           <div class="is-flex">
             <div v-if="qualityList.length > 1">
-              <button class="ts-button is-secondary" data-dropdown="quality">
-                {{ currentQuality == -1 ? 'Auto' : qualityList[currentQuality].split(' ')[0] }}
+              <button class="button has-flex-center" data-dropdown="quality">
+                <span class="ts-icon is-images-icon" />
               </button>
               <div class="ts-dropdown style-text" data-name="quality" data-position="top-end">
                 <button
@@ -327,8 +327,8 @@ onUnmounted(() => {
               </div>
             </div>
             <div>
-              <button class="ts-button is-secondary is-icon" data-dropdown="speed">
-                {{ rateList.find((rateItem) => rateItem.value === rate)?.text }}
+              <button class="button has-flex-center" data-dropdown="speed">
+                <span  class="ts-icon is-gauge-simple-high-icon" />
               </button>
               <div class="ts-dropdown style-text" data-name="speed" data-position="top-end">
                 <button
