@@ -109,18 +109,12 @@ const setTime = () => {
 }
 
 const seekForward = () => {
-  if (currentTime.value + 5 <= duration.value)
-    currentTime.value += 5
-  else
-    currentTime.value = duration.value
+  currentTime.value = Math.min(currentTime.value + 5, duration.value)
   setTime()
 }
 
 const seekBackward = () => {
-  if (currentTime.value - 5 >= 0)
-    currentTime.value -= 5
-  else
-    currentTime.value = 0
+  currentTime.value = Math.max(currentTime.value - 5, 0)
   setTime()
 }
 
@@ -129,18 +123,12 @@ const setVolume = () => {
 }
 
 const volumeUp = () => {
-  if (volume.value + 10 <= 100)
-    volume.value += 10
-  else
-    volume.value = 100
+  volume.value = Math.min(volume.value + 5, 100)
   setVolume()
 }
 
 const volumeDown = () => {
-  if (volume.value - 10 >= 0)
-    volume.value -= 10
-  else
-    volume.value = 0
+  volume.value = Math.max(volume.value - 5, 0)
   setVolume()
 }
 
