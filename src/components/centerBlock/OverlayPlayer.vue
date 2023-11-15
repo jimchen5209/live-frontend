@@ -87,7 +87,8 @@ const rateList = ref([
   { value: 1.75, text: '1.75x' },
   { value: 2, text: '2x' },
   { value: 3, text: '3x' },
-  { value: 4, text: '4x' }
+  { value: 4, text: '4x' },
+  { value: 5, text: '5x' }
 ])
 
 const updateStatus = () => {
