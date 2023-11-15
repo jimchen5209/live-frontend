@@ -278,7 +278,7 @@ onUnmounted(() => {
           v-model="currentTime"
           :max="duration"
           @change="setTime"
-          class="has-full-width"
+          class="has-full-width has-cursor-pointer"
         />
         <div class="is-flex justify-between has-horizontally-padded">
           <div class="is-flex">
@@ -286,14 +286,17 @@ onUnmounted(() => {
               <span v-if="isPaused" class="ts-icon is-play-icon" />
               <span v-else class="ts-icon is-pause-icon" />
             </button>
-            <button class="button has-flex-center" @click="toggleMute" @wheel="onMouseWheel">
-              <span v-if="isMuted" class="ts-icon is-volume-xmark-icon" />
-              <span v-else-if="volume === 0" class="ts-icon is-volume-off-icon" />
-              <span v-else-if="volume <= 50" class="ts-icon is-volume-low-icon" />
-              <span v-else class="ts-icon is-volume-high-icon" />
-            </button>
-            <input type="range" class="mobile:has-hidden" v-model="volume" :max="100" @input="setVolume" @wheel="onMouseWheel" />
-            <span class="has-horizontally-padded">
+            <div class="is-flex has-smaller-gap">
+              <button class="button has-flex-center" @click="toggleMute" @wheel="onVolumeMouseWheel">
+                <span v-if="isMuted" class="ts-icon is-volume-xmark-icon" />
+                <span v-else-if="volume === 0" class="ts-icon is-volume-off-icon" />
+                <span v-else-if="volume <= 50" class="ts-icon is-volume-low-icon" />
+                <span v-else class="ts-icon is-volume-high-icon" />
+              </button>
+              <input type="range" class="mobile:has-hidden has-cursor-pointer" v-model="volume" :max="100" step="any" @input="setVolume" @wheel="onVolumeMouseWheel" />
+              <span class="mobile:has-hidden">{{ Math.round(volume ) }}%</span>
+            </div>
+            <span>
               {{ timeText }}
               <span v-if="!isNaN(duration) && !resource?.isLive" class="mobile:has-hidden"> / {{ durationText }} </span>
             </span>
@@ -372,6 +375,10 @@ onUnmounted(() => {
   display: flex;
   align-items: center;
   gap: 1rem;
+}
+
+.has-smaller-gap {
+  gap: 0.25rem;
 }
 
 .justify-between {
