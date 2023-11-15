@@ -42,7 +42,7 @@ const onPlayerMouseMove = () => {
   const t = setTimeout(() => {
     autoHideTimer.value = null
     overlayVideo.value?.classList.add('auto-hidden')
-  }, 3.5 * 1000)
+  }, 1 * 1000)
   autoHideTimer.value = t
 
   overlayVideo.value?.classList.remove('auto-hidden')
@@ -204,6 +204,7 @@ const onMouseWheel = (event) => {
     volumeDown()
   else
     volumeUp()
+  onPlayerMouseMove()
 }
 
 const onDblClick = (event) => {
