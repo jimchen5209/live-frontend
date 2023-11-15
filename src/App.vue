@@ -181,6 +181,7 @@ if (currentPath.value?.startsWith('#record')) {
                 @set-nickname="setNickname"
                 @send-message="sendMessage"
               />
+              <div class="ts-divider" />
             </div>
             <!-- Playlist -->
             <PlaylistView
