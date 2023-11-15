@@ -1,79 +1,23 @@
 <script setup>
-import { onMounted, watch, ref, onUnmounted } from 'vue'
+import { ref } from 'vue'
 
 import MessageBubble from './MessageBubble.vue'
 
-const props = defineProps({
-  id_his: String,
-  name: String,
-  status_playable: Boolean
+defineProps({
+  viewerCount: Number,
+  messages: Array,
+  uuid: Array,
+  nickname: String,
+  ready: Boolean
 })
 
-const wsServer = 'wss://live.oktw.one/ws'
-const ws = ref(null)
-const data_messages = ref([])
-const nickname = ref(localStorage.getItem('config_nickname') ?? 'anonymous')
-const uuid = ref([])
+defineEmits(['send-message', 'set-nickname'])
+
+const historyRef = ref(null)
 const message = ref('')
-const count_viewer = ref('')
-const isready = ref(false)
 
-const action_setusername = (username) => {
-  localStorage.setItem('config_nickname', username)
-  ws.value?.send(`{"method":"setName", "name":"${username}"}`)
-}
-const action_joinchannel = (channel) => {
-  ws.value?.send(`{"method":"joinChannel","channelName":"${channel}"}`)
-}
-const action_sendmessage = (msg) => {
-  ws.value?.send(`{"method":"sendBulletMessage","msg":"${msg}"}`)
-}
-const action_follow = () =>
-  document
-    .getElementById(props.id_his)
-    .scrollTo(0, document.getElementById(props.id_his).scrollHeight)
-
-const action_connect = () => {
-  ws.value = new WebSocket(wsServer)
-  ws.value?.addEventListener('open', () => action_setusername(nickname.value))
-  ws.value?.addEventListener('open', () => action_joinchannel(props.name))
-  ws.value?.addEventListener('open', () => (isready.value = true))
-  ws.value?.addEventListener('close', (event) => {
-    isready.value = false
-    if (event.code === 1006) setTimeout(action_connect(), 2000)
-  })
-  ws.value?.addEventListener('message', (event) => {
-    const data = JSON.parse(event.data)
-    if ('nowViewerCount' in data && data.uuid) {
-      uuid.value.push(data.uuid)
-      count_viewer.value = data.nowViewerCount
-    }
-    data_messages.value.push(data)
-  })
-  ws.value?.addEventListener('error', (e) => {
-    console.error(e)
-    isready.value = false
-  })
-  action_follow()
-}
-
-onMounted(() => {
-  if (props.status_playable) {
-    action_connect()
-  }
-})
-
-onUnmounted(() => ws.value?.close())
-
-watch(
-  () => props.name,
-  () => {
-    ws.value?.close()
-    if (props.status_playable) {
-      action_connect()
-    }
-  }
-)
+const followChat = () =>
+  historyRef.value?.scrollTo({ top: historyRef.value?.scrollHeight, left: 0, behavior: 'smooth' })
 </script>
 
 <template>
@@ -81,18 +25,18 @@ watch(
     <!-- Header -->
     <div class="cell">
       <div class="ts-content">
-        <div class="ts-text is-bold is-center-aligned">Chatroom ({{ count_viewer }})</div>
+        <div class="ts-text is-bold is-center-aligned">Chatroom ({{ viewerCount }})</div>
       </div>
     </div>
     <!-- History -->
-    <div :id="id_his" class="cell is-fluid is-scrollable">
+    <div ref="historyRef" class="cell is-fluid is-scrollable">
       <div class="ts-content">
         <MessageBubble
-          v-if="data_messages"
-          v-for:="(value, index) in data_messages.filter((i) => i.type === 'bulletScreenMessage')"
-          v-on:vue:mounted="action_follow()"
+          v-if="messages"
+          v-for:="(value, index) in messages.filter((i) => i.type === 'bulletScreenMessage')"
+          v-on:vue:mounted="followChat()"
           :index="index"
-          :isself="uuid.includes(value.uuid)"
+          :is-self="uuid.includes(value.uuid)"
           :author="value.sentFrom"
           :text="value.msg"
         />
@@ -101,26 +45,26 @@ watch(
     <!-- Input -->
     <div class="cell">
       <div class="ts-content is-dense">
-        <div class="ts-input is-start-labeled" :class="{ 'is-disabled': !isready }">
+        <div class="ts-input is-start-labeled" :class="{ 'is-disabled': !ready }">
           <input
             class="label"
             style="padding-right: 0%; max-width: 33%"
-            v-model="nickname"
             type="text"
             placeholder="Nickname"
-            @focusout="action_setusername(nickname)"
+            :value="nickname"
+            @focusout="(event) => $emit('set-nickname', event.target.value)"
           />
           <input
             class="text"
             v-model="message"
             type="text"
             placeholder="Messages..."
-            @keypress="
+            @keydown="
               (event) => {
                 if (event.key === 'Enter' && message.length > 0) {
-                  action_sendmessage(message)
+                  $emit('send-message', message)
                   message = ''
-                  action_follow()
+                  followChat()
                 }
               }
             "

@@ -1,14 +1,14 @@
 <script setup>
 defineProps({
   index: Number,
-  isself: Boolean,
+  isSelf: Boolean,
   author: String,
   text: String
 })
 </script>
 
 <template>
-  <div class="ts-conversation is-sent" :class="{ 'is-self': isself, 'has-top-spaced': index > 0 }">
+  <div class="ts-conversation is-sent" :class="{ 'is-self': isSelf, 'has-top-spaced': index > 0 }">
     <div class="has-break-all content">
       <div class="bubble">
         <div class="author">{{ author }}</div>

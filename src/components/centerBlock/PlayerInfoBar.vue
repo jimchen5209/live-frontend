@@ -4,11 +4,11 @@ defineProps({
     type: Object,
     required: true
   },
-  list_quality: {
+  qualityList: {
     type: Array,
     default: () => []
   },
-  curr_quality: {
+  currentQuality: {
     type: Number,
     default: -1
   }
@@ -30,7 +30,7 @@ defineEmits(['change-quality'])
           }}
         </div>
       </div>
-      <div v-if="list_quality.length > 1" class="column is-flexbox">
+      <div v-if="qualityList.length > 1" class="column is-flexbox">
         <div style="flex-shrink: 0">
           <div class="item is-text style-text">Quality Select:</div>
         </div>
@@ -38,7 +38,7 @@ defineEmits(['change-quality'])
           <!-- Selected -->
           <div class="ts-select is-fluid" data-dropdown="select">
             <div class="content">
-              {{ curr_quality == -1 ? 'Auto' : list_quality[curr_quality] }}
+              {{ currentQuality == -1 ? 'Auto' : qualityList[currentQuality] }}
             </div>
           </div>
           <!-- Options -->
@@ -46,7 +46,7 @@ defineEmits(['change-quality'])
             <button class="item" @click="$emit('change-quality', -1)">Auto</button>
             <button
               class="item"
-              v-for:="(quality, index) in list_quality"
+              v-for:="(quality, index) in qualityList"
               @click="$emit('change-quality', index)"
             >
               {{ quality }}

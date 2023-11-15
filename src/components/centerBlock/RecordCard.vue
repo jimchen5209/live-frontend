@@ -50,7 +50,7 @@ const isload = ref(false)
       </picture>
     </div>
     <!-- Metadata -->
-    <div class="ts-content is-secondary">
+    <div class="ts-content is-secondary has-full-height">
       <div class="ts-text is-description">{{ streamer }}</div>
       <div v-if="isLive" class="ts-header is-truncated is-heavy" style="color: #ff4141">Live</div>
       <div v-else class="ts-header is-truncated is-heavy">{{ parsedu }}</div>
