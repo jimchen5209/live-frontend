@@ -217,6 +217,6 @@ if (currentPath.value?.startsWith('#record')) {
   width: 18%;
 }
 #mobileChat {
-  height: 80vh;
+  height: 65vh;
 }
 </style>
