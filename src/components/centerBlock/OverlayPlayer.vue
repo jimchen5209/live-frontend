@@ -299,7 +299,7 @@ onUnmounted(() => {
             </div>
             <span>
               {{ timeText }}
-              <span v-if="!isNaN(duration) && !resource?.isLive" class="mobile:has-hidden"> / {{ durationText }} </span>
+              <span v-if="!isNaN(duration)"> / {{ durationText }} </span>
             </span>
           </div>
           <div class="is-flex">
