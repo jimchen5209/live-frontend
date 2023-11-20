@@ -402,7 +402,11 @@ onUnmounted(() => {
   box-sizing: content-box;
 }
 
-.auto-hidden {
+.auto-hidden, .auto-hidden * {
   cursor: none;
+}
+
+.auto-hidden .has-cursor-pointer {
+  cursor: none !important;
 }
 </style>
