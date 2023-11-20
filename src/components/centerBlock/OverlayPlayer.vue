@@ -131,6 +131,13 @@ const seekBackward = () => {
 }
 
 const setVolume = () => {
+  if (volume.value === 0) {
+    video.value.muted = true
+    updateStatus()
+    return
+  }
+
+  video.value.muted = false
   video.value.volume = volume.value / 100
   updateStatus()
 }
