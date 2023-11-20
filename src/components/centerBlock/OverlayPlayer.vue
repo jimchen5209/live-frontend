@@ -29,6 +29,10 @@ const isMobile = computed(() => viewWidth.value <= 1023)
 const overlayVideo = ref(null)
 const video = ref(null)
 
+const rateDropdown = ref(null)
+const qualityDropdown = ref(null)
+const isDropdownVisible = () => rateDropdown.value?.classList.contains('is-visible') || qualityDropdown.value?.classList.contains('is-visible')
+
 const buffering = ref(false)
 
 const autoHideTimer = ref(null)
@@ -41,6 +45,10 @@ const onPlayerMouseMove = () => {
   // set timeout to wait of idle time
   const t = setTimeout(() => {
     autoHideTimer.value = null
+
+    if (isDropdownVisible())
+      return
+
     overlayVideo.value?.classList.add('auto-hidden')
   }, 1 * 1000)
   autoHideTimer.value = t
@@ -210,6 +218,14 @@ const onVolumeMouseWheel = (event) => {
   onPlayerMouseMove()
 }
 
+const onPlayerClick = () => {
+  setTimeout(onPlayerMouseMove, 50);
+  // do not toggle play when dropdown is visible
+  if (isDropdownVisible())
+    return
+  togglePlay()
+}
+
 const onPlayerDoubleClick = (event) => {
   if (video.value && isMobile.value)
     if (event.x < video.value?.clientWidth / 2)
@@ -242,7 +258,7 @@ onUnmounted(() => {
       ref="video"
       @timeupdate="updateStatus"
       @seeking="updateStatus"
-      @click="togglePlay"
+      @click="onPlayerClick"
       @dblclick="onPlayerDoubleClick"
       @loadeddata="updateStatus"
       @waiting="buffering = true"
@@ -304,10 +320,10 @@ onUnmounted(() => {
           </div>
           <div class="is-flex">
             <div v-if="qualityList.length > 1">
-              <button class="button has-flex-center" data-dropdown="quality">
+              <button class="button has-flex-center" data-dropdown="quality" @click="onPlayerMouseMove">
                 <span class="ts-icon is-images-icon" />
               </button>
-              <div class="ts-dropdown style-text" data-name="quality" data-position="top-end">
+              <div ref="qualityDropdown" class="ts-dropdown style-text" data-name="quality" data-position="top-end">
                 <button
                   class="item"
                   :class="{ 'is-selected': currentQuality === -1 }"
@@ -328,10 +344,10 @@ onUnmounted(() => {
               </div>
             </div>
             <div>
-              <button class="button has-flex-center" data-dropdown="speed">
+              <button class="button has-flex-center" data-dropdown="speed" @click="onPlayerMouseMove">
                 <span  class="ts-icon is-gauge-simple-high-icon" />
               </button>
-              <div class="ts-dropdown style-text" data-name="speed" data-position="top-end">
+              <div ref="rateDropdown" class="ts-dropdown style-text" data-name="speed" data-position="top-end">
                 <button
                   v-for="rateItem in rateList"
                   :key="rateItem.value"
