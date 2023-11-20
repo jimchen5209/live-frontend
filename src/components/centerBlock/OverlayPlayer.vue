@@ -429,6 +429,7 @@ onUnmounted(() => {
   cursor: none;
 }
 
+/* Workaround tocas-ui's important */
 .auto-hidden .has-cursor-pointer {
   cursor: none !important;
 }
