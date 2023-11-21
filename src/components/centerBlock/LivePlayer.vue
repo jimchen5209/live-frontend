@@ -105,9 +105,9 @@ onMounted(() => {
 watch(
   () => props.resource?.streamer,
   () => {
-      hls.value?.destroy()
-      setTimeout(() => initHls(), 100)
-    }
+    hls.value?.destroy()
+    setTimeout(() => initHls(), 100)
+  }
 )
 onBeforeUnmount(() => {
   hls.value?.destroy()

@@ -1,7 +1,7 @@
 <script setup>
 import { computed } from 'vue'
 import LivePlayer from './LivePlayer.vue'
-import OverlayPlayer from './OverlayPlayer.vue';
+import OverlayPlayer from './OverlayPlayer.vue'
 
 const props = defineProps({
   currentPath: String,
@@ -17,4 +17,3 @@ const resource = computed(
   <LivePlayer v-if="resource?.isLive" :resource="resource" />
   <OverlayPlayer v-else :resource="resource" />
 </template>
-

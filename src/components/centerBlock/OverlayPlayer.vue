@@ -31,7 +31,9 @@ const video = ref(null)
 
 const rateDropdown = ref(null)
 const qualityDropdown = ref(null)
-const isDropdownVisible = () => rateDropdown.value?.classList.contains('is-visible') || qualityDropdown.value?.classList.contains('is-visible')
+const isDropdownVisible = () =>
+  rateDropdown.value?.classList.contains('is-visible') ||
+  qualityDropdown.value?.classList.contains('is-visible')
 
 const buffering = ref(false)
 
@@ -46,8 +48,7 @@ const onPlayerMouseMove = () => {
   const t = setTimeout(() => {
     autoHideTimer.value = null
 
-    if (isDropdownVisible())
-      return
+    if (isDropdownVisible()) return
 
     overlayVideo.value?.classList.add('auto-hidden')
   }, 1 * 1000)
@@ -161,8 +162,7 @@ const toggleMute = () => {
 }
 
 const togglePlay = () => {
-  if (!props.resource)
-    return
+  if (!props.resource) return
   if (video.value.paused) {
     video.value.play()
   } else {
@@ -172,8 +172,7 @@ const togglePlay = () => {
 }
 
 const toggleFullscreen = () => {
-  if (!props.resource)
-    return
+  if (!props.resource) return
   if (!document.fullscreenElement) {
     overlayVideo.value?.requestFullscreen().catch((err) => {
       console.error(`Error attempting to enable fullscreen mode: ${err.message} (${err.name})`)
@@ -184,12 +183,9 @@ const toggleFullscreen = () => {
 }
 
 const onKeyDown = (event) => {
-  if (document.activeElement instanceof HTMLInputElement)
-    return
-  if (!video.value)
-    return
-  if (!props.resource)
-    return
+  if (document.activeElement instanceof HTMLInputElement) return
+  if (!video.value) return
+  if (!props.resource) return
 
   onPlayerMouseMove()
 
@@ -227,29 +223,23 @@ const onKeyDown = (event) => {
 
 const onVolumeMouseWheel = (event) => {
   event.preventDefault()
-  if (event.deltaY > 0)
-    volumeDown()
-  else
-    volumeUp()
+  if (event.deltaY > 0) volumeDown()
+  else volumeUp()
   onPlayerMouseMove()
 }
 
 const onPlayerClick = () => {
-  setTimeout(onPlayerMouseMove, 50);
+  setTimeout(onPlayerMouseMove, 50)
   // do not toggle play when dropdown is visible
-  if (isDropdownVisible())
-    return
+  if (isDropdownVisible()) return
   togglePlay()
 }
 
 const onPlayerDoubleClick = (event) => {
   if (video.value && isMobile.value)
-    if (event.x < video.value?.clientWidth / 2)
-      seekBackward()
-    else
-      seekForward()
-  else
-    toggleFullscreen()
+    if (event.x < video.value?.clientWidth / 2) seekBackward()
+    else seekForward()
+  else toggleFullscreen()
 }
 
 onMounted(() => {
@@ -286,9 +276,9 @@ onUnmounted(() => {
 
     <ErrorBlankSlate v-if="isError" style="position: absolute" />
     <div v-if="buffering || !resource" class="ts-mask">
-        <div class="ts-center">
-            <div class="ts-loading is-large" style="color: #FFF"></div>
-        </div>
+      <div class="ts-center">
+        <div class="ts-loading is-large" style="color: #fff"></div>
+      </div>
     </div>
     <div v-if="resource" class="ts-mask is-faded is-top is-hidable">
       <div class="ts-content" style="color: #fff">
@@ -322,14 +312,26 @@ onUnmounted(() => {
               <span v-else class="ts-icon is-pause-icon" />
             </button>
             <div class="is-flex has-smaller-gap">
-              <button class="button has-flex-center" @click="toggleMute" @wheel="onVolumeMouseWheel">
+              <button
+                class="button has-flex-center"
+                @click="toggleMute"
+                @wheel="onVolumeMouseWheel"
+              >
                 <span v-if="isMuted" class="ts-icon is-volume-xmark-icon" />
                 <span v-else-if="volume === 0" class="ts-icon is-volume-off-icon" />
                 <span v-else-if="volume <= 50" class="ts-icon is-volume-low-icon" />
                 <span v-else class="ts-icon is-volume-high-icon" />
               </button>
-              <input type="range" class="mobile:has-hidden has-cursor-pointer" v-model="volume" :max="100" step="any" @input="setVolume" @wheel="onVolumeMouseWheel" />
-              <span class="mobile:has-hidden">{{ Math.round(volume ) }}%</span>
+              <input
+                type="range"
+                class="mobile:has-hidden has-cursor-pointer"
+                v-model="volume"
+                :max="100"
+                step="any"
+                @input="setVolume"
+                @wheel="onVolumeMouseWheel"
+              />
+              <span class="mobile:has-hidden">{{ Math.round(volume) }}%</span>
             </div>
             <span>
               {{ timeText }}
@@ -338,10 +340,19 @@ onUnmounted(() => {
           </div>
           <div class="is-flex">
             <div v-if="qualityList.length > 1">
-              <button class="button has-flex-center" data-dropdown="quality" @click="onPlayerMouseMove">
+              <button
+                class="button has-flex-center"
+                data-dropdown="quality"
+                @click="onPlayerMouseMove"
+              >
                 <span class="ts-icon is-images-icon" />
               </button>
-              <div ref="qualityDropdown" class="ts-dropdown style-text" data-name="quality" data-position="top-end">
+              <div
+                ref="qualityDropdown"
+                class="ts-dropdown style-text"
+                data-name="quality"
+                data-position="top-end"
+              >
                 <button
                   class="item"
                   :class="{ 'is-selected': currentQuality === -1 }"
@@ -362,10 +373,19 @@ onUnmounted(() => {
               </div>
             </div>
             <div>
-              <button class="button has-flex-center" data-dropdown="speed" @click="onPlayerMouseMove">
-                <span  class="ts-icon is-gauge-simple-high-icon" />
+              <button
+                class="button has-flex-center"
+                data-dropdown="speed"
+                @click="onPlayerMouseMove"
+              >
+                <span class="ts-icon is-gauge-simple-high-icon" />
               </button>
-              <div ref="rateDropdown" class="ts-dropdown style-text" data-name="speed" data-position="top-end">
+              <div
+                ref="rateDropdown"
+                class="ts-dropdown style-text"
+                data-name="speed"
+                data-position="top-end"
+              >
                 <button
                   v-for="rateItem in rateList"
                   :key="rateItem.value"
@@ -436,7 +456,8 @@ onUnmounted(() => {
   box-sizing: content-box;
 }
 
-.auto-hidden, .auto-hidden * {
+.auto-hidden,
+.auto-hidden * {
   cursor: none;
 }
 
