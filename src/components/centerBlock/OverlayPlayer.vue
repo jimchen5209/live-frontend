@@ -28,6 +28,7 @@ const isMobile = computed(() => viewWidth.value <= 1023)
 
 const overlayVideo = ref(null)
 const video = ref(null)
+const isVideoError = ref(false)
 
 const rateDropdown = ref(null)
 const qualityDropdown = ref(null)
@@ -35,7 +36,7 @@ const isDropdownVisible = () =>
   rateDropdown.value?.classList.contains('is-visible') ||
   qualityDropdown.value?.classList.contains('is-visible')
 
-const buffering = ref(false)
+const isBuffering = ref(false)
 
 const autoHideTimer = ref(null)
 const onPlayerMouseMove = () => {
@@ -104,6 +105,7 @@ const rateList = ref([
 ])
 
 const updateStatus = () => {
+  isBuffering.value = false
   currentTime.value = draggingCurrentTime.value ?? video.value?.currentTime
   duration.value = video.value?.duration
   isPaused.value = video.value?.paused
@@ -242,6 +244,16 @@ const onPlayerDoubleClick = (event) => {
   else toggleFullscreen()
 }
 
+const onVideoPlaying = () => {
+  isBuffering.value = false
+  isVideoError.value = false
+}
+
+const onVideoError = () => {
+  isBuffering.value = false
+  isVideoError.value = true
+}
+
 onMounted(() => {
   document.addEventListener('keydown', onKeyDown)
 })
@@ -266,16 +278,18 @@ onUnmounted(() => {
       @seeking="updateStatus"
       @click="onPlayerClick"
       @dblclick="onPlayerDoubleClick"
+      @loadstart="isBuffering = true"
       @loadeddata="updateStatus"
-      @waiting="buffering = true"
-      @playing="buffering = false"
+      @waiting="isBuffering = true"
+      @playing="onVideoPlaying"
+      @error="onVideoError"
       class="has-full-size"
       :src="resource?.isLive ? undefined : resource?.src"
       autoplay
     />
 
-    <ErrorBlankSlate v-if="isError" style="position: absolute" />
-    <div v-if="buffering || !resource" class="ts-mask">
+    <ErrorBlankSlate v-if="isError || isVideoError" style="position: absolute" />
+    <div v-if="isBuffering || !resource" class="ts-mask">
       <div class="ts-center">
         <div class="ts-loading is-large" style="color: #fff"></div>
       </div>
