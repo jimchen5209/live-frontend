@@ -76,6 +76,8 @@ const volume = ref(100)
 
 const currentTime = ref(0)
 
+const draggingCurrentTime = ref(undefined)
+
 const duration = ref(0)
 
 const isFullscreen = ref(false)
@@ -101,7 +103,7 @@ const rateList = ref([
 ])
 
 const updateStatus = () => {
-  currentTime.value = video.value?.currentTime
+  currentTime.value = draggingCurrentTime.value ?? video.value?.currentTime
   duration.value = video.value?.duration
   isPaused.value = video.value?.paused
   isMuted.value = video.value?.muted
@@ -116,6 +118,7 @@ const setRate = (rate) => {
 }
 
 const setTime = () => {
+  draggingCurrentTime.value = undefined
   video.value.currentTime = currentTime.value
   updateStatus()
 }
@@ -301,7 +304,9 @@ onUnmounted(() => {
           type="range"
           v-model="currentTime"
           :max="duration"
+          step="any"
           @change="setTime"
+          @input="draggingCurrentTime = currentTime"
           class="has-full-width has-cursor-pointer"
         />
         <div class="is-flex justify-between has-horizontally-padded">
