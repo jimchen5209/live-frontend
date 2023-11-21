@@ -3,7 +3,7 @@ import { computed, onMounted, onUnmounted, ref } from 'vue'
 import ErrorBlankSlate from '../ErrorBlankSlate.vue'
 import { useViewport } from '../../util/viewport'
 
-defineProps({
+const props = defineProps({
   resource: {
     type: Object,
     required: true
@@ -161,6 +161,8 @@ const toggleMute = () => {
 }
 
 const togglePlay = () => {
+  if (!props.resource)
+    return
   if (video.value.paused) {
     video.value.play()
   } else {
@@ -170,6 +172,8 @@ const togglePlay = () => {
 }
 
 const toggleFullscreen = () => {
+  if (!props.resource)
+    return
   if (!document.fullscreenElement) {
     overlayVideo.value?.requestFullscreen().catch((err) => {
       console.error(`Error attempting to enable fullscreen mode: ${err.message} (${err.name})`)
@@ -183,6 +187,8 @@ const onKeyDown = (event) => {
   if (document.activeElement instanceof HTMLInputElement)
     return
   if (!video.value)
+    return
+  if (!props.resource)
     return
 
   onPlayerMouseMove()
@@ -279,26 +285,26 @@ onUnmounted(() => {
     />
 
     <ErrorBlankSlate v-if="isError" style="position: absolute" />
-    <div v-if="buffering" class="ts-mask">
+    <div v-if="buffering || !resource" class="ts-mask">
         <div class="ts-center">
             <div class="ts-loading is-large" style="color: #FFF"></div>
         </div>
     </div>
-    <div class="ts-mask is-faded is-top is-hidable">
+    <div v-if="resource" class="ts-mask is-faded is-top is-hidable">
       <div class="ts-content" style="color: #fff">
-        <div class="ts-header">{{ resource?.streamer }}</div>
-        <span v-if="resource?.isLive">
+        <div class="ts-header">{{ resource.streamer }}</div>
+        <span v-if="resource.isLive">
           <span class="ts-icon is-circle-icon" :style="{ color: '#ff4141' }" />
           Live
         </span>
         <span v-else>
           {{
-            `${resource?.publishTime.toLocaleDateString()} ${resource?.publishTime.toLocaleTimeString()}`
+            `${resource.publishTime.toLocaleDateString()} ${resource.publishTime.toLocaleTimeString()}`
           }}
         </span>
       </div>
     </div>
-    <div class="ts-mask is-faded is-bottom is-hidable">
+    <div v-if="resource" class="ts-mask is-faded is-bottom is-hidable">
       <div class="ts-content" style="color: #fff">
         <input
           type="range"
