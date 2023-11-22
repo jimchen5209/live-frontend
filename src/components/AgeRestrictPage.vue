@@ -28,7 +28,7 @@ defineEmits(['ageRestrict'])
           </svg>
         </div>
         <div class="header">年齡驗證</div>
-        <div class="has-bottom-spaced-large has-break-words description">
+        <div class="tablet-:has-hidden has-bottom-spaced-large has-break-words description">
           網站包含有年齡限制的內容，包括裸體和露骨色情素材的內容。<br />
           進入即表示您確認您已年滿 18 歲，或在您造訪本網站時所在的司法管轄區已是成年人。
         </div>
