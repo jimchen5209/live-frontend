@@ -55,8 +55,8 @@ const playlist = computed(() => {
 </template>
 
 <style scoped>
-.is-wheelchair-move-icon {
-  animation: 3s cubic-bezier(0.1, 0.6, 0.7, 0.2) 0s infinite running wheel-go;
+.ts-button:hover .is-wheelchair-move-icon {
+  animation: 3s cubic-bezier(0.45, 0.05, 0.55, 0.95) 0s infinite running wheel-go;
 }
 
 @keyframes wheel-go {
