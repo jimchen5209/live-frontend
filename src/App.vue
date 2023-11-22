@@ -40,6 +40,7 @@ const isAdult = ref(parseInt(localStorage.getItem('adult')) ?? 0)
 const ageRestrict = (i) => {
   localStorage.setItem('adult', i)
   isAdult.value = i
+  if (!i) location.href = 'https://moe.r20.tw/'
 }
 
 const isMobile = computed(() => viewWidth.value <= 1023)
