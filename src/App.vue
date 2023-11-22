@@ -7,6 +7,7 @@ import PlaylistView from './components/centerBlock/PlaylistView.vue'
 import MediaPlayer from './components/centerBlock/MediaPlayer.vue'
 import ChatView from './components/chatroom/ChatView.vue'
 import ErrorBlankSlate from './components/ErrorBlankSlate.vue'
+import AgeRestrictPage from './components/AgeRestrictPage.vue'
 
 import { useViewport } from './util/viewport'
 import { useChat } from './util/chat'
@@ -33,6 +34,13 @@ const playlistRef = ref(null)
 const livestreamList = ref([])
 const recordList = ref([])
 const isError = ref(false)
+
+// Age Restrict
+const isAdult = ref(localStorage.getItem('adult') ?? 0)
+const ageRestrict = (i) => {
+  localStorage.setItem('adult', i)
+  isAdult.value = i
+}
 
 const isMobile = computed(() => viewWidth.value <= 1023)
 
@@ -132,6 +140,11 @@ if (currentPath.value?.startsWith('#record')) {
 
 <template>
   <ErrorBlankSlate v-if="isError" style="height: 100vh; width: 100vw" />
+  <AgeRestrictPage
+    v-else-if="!isAdult"
+    style="height: 100vh; width: 100vw"
+    @age-restrict="ageRestrict"
+  />
   <div v-else class="cell ts-app-layout is-horizontal is-full">
     <!-- StreamerList for desktop user -->
     <div id="sidebar" class="tablet-:has-hidden cell is-scrollable">
