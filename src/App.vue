@@ -29,7 +29,6 @@ const {
 
 const { viewWidth } = useViewport()
 
-const centerRef = ref(null)
 const playlistRef = ref(null)
 const livestreamList = ref([])
 const recordList = ref([])
@@ -104,7 +103,6 @@ onMounted(async () => {
 
 // 來點回頂部
 const scrollToTop = () => {
-  centerRef.value?.scrollTo({ top: 0, left: 0, behavior: 'smooth' })
   playlistRef.value?.scrollTo({ top: 0, left: 0, behavior: 'smooth' })
 }
 
@@ -140,7 +138,7 @@ if (currentPath.value?.startsWith('#record')) {
       <HeaderBlock />
       <StreamerList v-if="livestreamList" :livestream-list="livestreamList" :path="currentPath" />
     </div>
-    <div ref="centerRef" class="cell is-fluid">
+    <div class="cell is-fluid">
       <div class="ts-app-layout is-vertical">
         <!-- StreamerList for mobile user -->
         <div class="cell ts-app-topbar desktop+:has-hidden">
@@ -159,7 +157,7 @@ if (currentPath.value?.startsWith('#record')) {
             />
           </div>
         </div>
-        <div class="cell ts-app-layout is-vertical is-fluid is-scrollable">
+        <div ref="playlistRef" class="cell ts-app-layout is-vertical is-fluid is-scrollable">
           <!-- MediaPlayer -->
           <div v-if="isPlayable" class="cell" style="display: inline-flex">
             <MediaPlayer
@@ -168,7 +166,7 @@ if (currentPath.value?.startsWith('#record')) {
               :list="recordList.concat(livestreamList.filter((i) => i.isLive))"
             />
           </div>
-          <div ref="playlistRef" class="cell">
+          <div class="cell">
             <!-- Chat for mobile user -->
             <div v-if="isPlayable" id="mobileChat" class="desktop+:has-hidden">
               <ChatView
