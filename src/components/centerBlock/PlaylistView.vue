@@ -53,3 +53,32 @@ const playlist = computed(() => {
     <button v-else class="ts-button is-wide is-outlined is-fluid is-disabled">No more</button>
   </div>
 </template>
+
+<style scoped>
+.is-wheelchair-move-icon {
+  animation: 3s cubic-bezier(0.1, 0.6, 0.7, 0.2) 0s infinite running wheel-go;
+}
+
+@keyframes wheel-go {
+  from {
+    margin-left: -100%;
+    color: var(--ts-negative-500)
+  }
+  10%{
+    color: var(--ts-negative-500)
+  }
+  25% {
+    color: var(--accent-color, inherit);
+  }
+  75% {
+    color: var(--accent-color, inherit);
+  }
+  85% {
+    color: var(--ts-negative-500)
+  }
+  to {
+    margin-left: 100%;
+    color: var(--ts-negative-500)
+  }
+}
+</style>
