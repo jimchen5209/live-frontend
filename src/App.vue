@@ -36,7 +36,7 @@ const recordList = ref([])
 const isError = ref(false)
 
 // Age Restrict
-const isAdult = ref(localStorage.getItem('adult') ?? 0)
+const isAdult = ref(parseInt(localStorage.getItem('adult')) ?? 0)
 const ageRestrict = (i) => {
   localStorage.setItem('adult', i)
   isAdult.value = i
