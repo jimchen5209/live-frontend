@@ -34,12 +34,12 @@ defineEmits(['ageRestrict'])
         </div>
         <div class="ts-app-layout tablet-:is-horizontal desktop+:is-vertical">
           <button
-            class="has-bottom-spaced-small tablet-:has-end-spaced ts-button is-fluid is-outlined"
+            class="has-bottom-spaced-small tablet-:has-end-spaced ts-button is-fluid is-outlined is-large"
             @click="$emit('ageRestrict', +true)"
           >
             進入 Enter
           </button>
-          <button class="ts-button is-fluid" @click="$emit('ageRestrict', +false)">
+          <button class="ts-button is-fluid is-large" @click="$emit('ageRestrict', +false)">
             離開 Leave
           </button>
         </div>
