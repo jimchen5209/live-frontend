@@ -143,7 +143,6 @@ if (currentPath.value?.startsWith('#record')) {
   <ErrorBlankSlate v-if="isError" style="height: 100vh; width: 100vw" />
   <AgeRestrictPage
     v-else-if="!isAdult"
-    style="height: 100vh; width: 100vw"
     @age-restrict="ageRestrict"
   />
   <div v-else class="cell ts-app-layout is-horizontal is-full">
