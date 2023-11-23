@@ -30,7 +30,7 @@ defineEmits(['ageRestrict'])
       >
         進入 Enter
       </button>
-      <button class="ts-button is-fluid is-disabled" @click="$emit('ageRestrict', +false)">
+      <button class="ts-button is-fluid is-disabled" disabled>
         離開 Leave
       </button>
     </div>
