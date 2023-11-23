@@ -46,4 +46,7 @@ svg {
   max-width: 36rem;
   --ts-accent-color: #4daa47;
 }
+.ts-button.is-disabled {
+  pointer-events: all;
+}
 </style>
