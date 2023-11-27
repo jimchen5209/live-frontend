@@ -118,14 +118,18 @@ watch(
   () => currentPath.value,
   () => {
     const menu = document.getElementById('menu-mobile')
-    if (!menu.getAttribute('class').match('has-hidden'))
-      menu.setAttribute('class', `${menu.getAttribute('class')} has-hidden`)
+    if (menu.classList.contains('is-visible')) menu.classList.remove('is-visible')
     scrollToTop()
     isPlayable.value = currentPath.value.split('/').length > 2
 
     refreshChat()
   }
 )
+
+const onDrawerBackgroundClick = (event) => {
+  const menu = document.getElementById('menu-mobile')
+  if (event.target.classList.contains('ts-app-drawer')) menu.classList.remove('is-visible')
+}
 
 // 相容舊的
 const p = currentPath.value.split('/').at(-1)
@@ -153,20 +157,29 @@ if (currentPath.value?.startsWith('#record')) {
     <div class="cell is-fluid">
       <div class="ts-app-layout is-vertical">
         <!-- StreamerList for mobile user -->
-        <div class="cell ts-app-topbar desktop+:has-hidden">
-          <div class="start">
-            <a class="item" data-toggle="menu:has-hidden">
-              <span class="ts-icon is-bars-icon"></span>
-            </a>
-            <div class="item is-text">StreamerList</div>
+        <div class="cell desktop+:has-hidden">
+          <div class="ts-app-topbar">
+            <div class="start">
+              <a class="item" data-toggle="menu:is-visible">
+                <span class="ts-icon is-bars-icon"></span>
+              </a>
+              <div class="item is-text">StreamerList</div>
+            </div>
           </div>
-          <div id="menu-mobile" class="content has-hidden" data-name="menu">
-            <HeaderBlock />
-            <StreamerList
-              v-if="livestreamList"
-              :livestream-list="livestreamList"
-              :path="currentPath"
-            />
+          <div
+            id="menu-mobile"
+            class="ts-app-drawer is-left is-small"
+            data-name="menu"
+            @click="onDrawerBackgroundClick"
+          >
+            <div class="content is-scrollable">
+              <HeaderBlock />
+              <StreamerList
+                v-if="livestreamList"
+                :livestream-list="livestreamList"
+                :path="currentPath"
+              />
+            </div>
           </div>
         </div>
         <div ref="playlistRef" class="cell ts-app-layout is-vertical is-fluid is-scrollable">
@@ -228,5 +241,12 @@ if (currentPath.value?.startsWith('#record')) {
 }
 #mobileChat {
   height: 65vh;
+}
+.ts-app-topbar {
+  --accent-color: var(--ts-gray-100);
+  --accent-foreground-color: var(--ts-gray-900);
+}
+.content.is-scrollable {
+  overflow-y: auto;
 }
 </style>
