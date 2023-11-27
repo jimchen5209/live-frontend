@@ -24,7 +24,7 @@ const props = defineProps({
 })
 defineEmits(['change-quality'])
 
-const isTouch = (event) => event.pointerType === 'touch'
+const isTouch = (event) => event?.pointerType === 'touch'
 
 const overlayVideo = ref(null)
 const video = ref(null)
@@ -121,6 +121,11 @@ const updateStatus = () => {
   volume.value = video.value?.muted ? 0 : video.value?.volume * 100
   isFullscreen.value = document.fullscreenElement !== null
   rate.value = video.value?.playbackRate
+}
+
+const onPlayerReady = () => {
+  updateStatus()
+  onPlayerPointerMove()
 }
 
 const setRate = (rate) => {
@@ -326,7 +331,7 @@ onUnmounted(() => {
       @seeking="updateStatus"
       @pointerup="onPlayerPointerUp"
       @loadstart="isBuffering = true"
-      @loadeddata="updateStatus"
+      @loadeddata="onPlayerReady"
       @waiting="isBuffering = true"
       @playing="onVideoPlaying"
       @error="onVideoError"
