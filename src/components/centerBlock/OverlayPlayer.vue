@@ -196,6 +196,10 @@ const togglePlay = () => {
   updateStatus()
 }
 
+const onOverlayPointerUp = (event) => {
+  setTimeout(() => onPlayerPointerMove(event), 50)
+}
+
 const onPlayButtonPointerUp = (event) => {
   setTimeout(() => onPlayerPointerMove(event), 50)
   togglePlay()
@@ -341,12 +345,12 @@ onUnmounted(() => {
     />
 
     <ErrorBlankSlate v-if="isError || isVideoError" style="position: absolute" />
-    <div v-if="isBuffering || !resource" class="ts-mask">
+    <div v-if="isBuffering || !resource" class="ts-mask" @pointerup="onOverlayPointerUp">
       <div class="ts-center">
         <div class="ts-loading is-large" style="color: #fff"></div>
       </div>
     </div>
-    <div v-if="resource" class="ts-mask is-faded is-top is-hidable">
+    <div v-if="resource" class="ts-mask is-faded is-top is-hidable" @pointerup="onOverlayPointerUp">
       <div class="ts-content" style="color: #fff">
         <div class="ts-header">{{ resource.streamer }}</div>
         <span v-if="resource.isLive">
@@ -370,7 +374,7 @@ onUnmounted(() => {
           @input="onSeekDrag"
           class="has-full-width has-cursor-pointer"
         />
-        <div class="is-flex justify-between has-horizontally-padded">
+        <div class="is-flex justify-between has-horizontally-padded" @pointerup="onOverlayPointerUp">
           <div class="is-flex">
             <button class="button has-flex-center" @pointerup="onPlayButtonPointerUp">
               <span v-if="isPaused" class="ts-icon is-play-icon" />
