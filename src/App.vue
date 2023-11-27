@@ -31,6 +31,7 @@ const {
 const { viewWidth } = useViewport()
 
 const playlistRef = ref(null)
+const mobileMenuRef = ref(null)
 const livestreamList = ref([])
 const recordList = ref([])
 const isError = ref(false)
@@ -117,8 +118,7 @@ const scrollToTop = () => {
 watch(
   () => currentPath.value,
   () => {
-    const menu = document.getElementById('menu-mobile')
-    if (menu.classList.contains('is-visible')) menu.classList.remove('is-visible')
+    if (mobileMenuRef.value?.classList.contains('is-visible')) mobileMenuRef.value?.classList.remove('is-visible')
     scrollToTop()
     isPlayable.value = currentPath.value.split('/').length > 2
 
@@ -127,8 +127,7 @@ watch(
 )
 
 const onDrawerBackgroundClick = (event) => {
-  const menu = document.getElementById('menu-mobile')
-  if (event.target.classList.contains('ts-app-drawer')) menu.classList.remove('is-visible')
+  if (event.target.classList.contains('ts-app-drawer')) mobileMenuRef.value?.classList.remove('is-visible')
 }
 
 // 相容舊的
@@ -167,7 +166,7 @@ if (currentPath.value?.startsWith('#record')) {
             </div>
           </div>
           <div
-            id="menu-mobile"
+            ref="mobileMenuRef"
             class="ts-app-drawer is-left is-small"
             data-name="menu"
             @click="onDrawerBackgroundClick"
