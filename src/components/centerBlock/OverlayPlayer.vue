@@ -222,7 +222,7 @@ const onFullscreenButtonPointerUp = (event) => {
 }
 
 const onKeyDown = (event) => {
-  if (document.activeElement instanceof HTMLInputElement) return
+  if (document.activeElement instanceof HTMLInputElement && !document.activeElement.classList.contains('player-slider')) return
   if (!video.value) return
   if (!props.resource) return
 
@@ -368,11 +368,11 @@ onUnmounted(() => {
       <div class="ts-content" style="color: #fff">
         <input
           type="range"
+          class="has-full-width has-cursor-pointer player-slider"
           v-model="currentTime"
           :max="duration"
           step="any"
           @input="onSeekDrag"
-          class="has-full-width has-cursor-pointer"
         />
         <div class="is-flex justify-between has-horizontally-padded" @pointerup="onOverlayPointerUp">
           <div class="is-flex">
@@ -393,7 +393,7 @@ onUnmounted(() => {
               </button>
               <input
                 type="range"
-                class="mobile:has-hidden has-cursor-pointer"
+                class="mobile:has-hidden has-cursor-pointer player-slider"
                 v-model="volume"
                 :max="100"
                 step="any"
