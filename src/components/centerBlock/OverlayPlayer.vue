@@ -3,7 +3,6 @@ import { computed, onMounted, onUnmounted, ref } from 'vue'
 import { debounce } from 'lodash'
 
 import ErrorBlankSlate from '../ErrorBlankSlate.vue'
-import { useViewport } from '../../util/viewport'
 
 const props = defineProps({
   resource: {
@@ -25,8 +24,7 @@ const props = defineProps({
 })
 defineEmits(['change-quality'])
 
-const { viewWidth } = useViewport()
-const isMobile = computed(() => viewWidth.value <= 1023)
+const isTouch = (event) => event?.pointerType === 'touch'
 
 const overlayVideo = ref(null)
 const video = ref(null)
@@ -41,20 +39,24 @@ const isDropdownVisible = () =>
 const isBuffering = ref(false)
 
 const autoHideTimer = ref(null)
-const onPlayerMouseMove = () => {
+const isPlayerHidden = () => overlayVideo.value?.classList.contains('auto-hidden') ?? false
+const onPlayerPointerMove = (event) => {
   if (autoHideTimer.value) {
     clearTimeout(autoHideTimer.value)
     autoHideTimer.value = null
   }
 
   // set timeout to wait of idle time
-  const t = setTimeout(() => {
-    autoHideTimer.value = null
+  const t = setTimeout(
+    () => {
+      autoHideTimer.value = null
 
-    if (isDropdownVisible()) return
+      if (isDropdownVisible()) return
 
-    overlayVideo.value?.classList.add('auto-hidden')
-  }, 1 * 1000)
+      overlayVideo.value?.classList.add('auto-hidden')
+    },
+    (isTouch(event) ? 2 : 1) * 1000
+  )
   autoHideTimer.value = t
 
   overlayVideo.value?.classList.remove('auto-hidden')
@@ -81,6 +83,10 @@ const volume = ref(100)
 const currentTime = ref(0)
 
 const draggingCurrentTime = ref(undefined)
+
+const doubleClickCount = ref(0)
+
+const doubleClickTimer = ref(null)
 
 const duration = ref(0)
 
@@ -115,6 +121,11 @@ const updateStatus = () => {
   volume.value = video.value?.muted ? 0 : video.value?.volume * 100
   isFullscreen.value = document.fullscreenElement !== null
   rate.value = video.value?.playbackRate
+}
+
+const onPlayerReady = () => {
+  updateStatus()
+  onPlayerPointerMove()
 }
 
 const setRate = (rate) => {
@@ -170,6 +181,11 @@ const toggleMute = () => {
   updateStatus()
 }
 
+const onMuteButtonPointerUp = (event) => {
+  setTimeout(() => onPlayerPointerMove(event), 50)
+  toggleMute()
+}
+
 const togglePlay = () => {
   if (!props.resource) return
   if (video.value.paused) {
@@ -178,6 +194,15 @@ const togglePlay = () => {
     video.value.pause()
   }
   updateStatus()
+}
+
+const onOverlayPointerUp = (event) => {
+  setTimeout(() => onPlayerPointerMove(event), 50)
+}
+
+const onPlayButtonPointerUp = (event) => {
+  setTimeout(() => onPlayerPointerMove(event), 50)
+  togglePlay()
 }
 
 const toggleFullscreen = () => {
@@ -191,12 +216,17 @@ const toggleFullscreen = () => {
   }
 }
 
+const onFullscreenButtonPointerUp = (event) => {
+  setTimeout(() => onPlayerPointerMove(event), 50)
+  toggleFullscreen()
+}
+
 const onKeyDown = (event) => {
   if (document.activeElement instanceof HTMLInputElement) return
   if (!video.value) return
   if (!props.resource) return
 
-  onPlayerMouseMove()
+  onPlayerPointerMove(event)
 
   switch (event.key) {
     // Play-Pause
@@ -234,18 +264,38 @@ const onVolumeMouseWheel = (event) => {
   event.preventDefault()
   if (event.deltaY > 0) volumeDown()
   else volumeUp()
-  onPlayerMouseMove()
+  onPlayerPointerMove(event)
 }
 
-const onPlayerClick = () => {
-  setTimeout(onPlayerMouseMove, 50)
+const onPlayerPointerUp = (event) => {
+  event.preventDefault()
+  doubleClickCount.value++
+  if (doubleClickCount.value === 1) {
+    doubleClickTimer.value = setTimeout(() => {
+      doubleClickCount.value = 0
+      onPlayerClick(event)
+    }, 300)
+  } else if (doubleClickCount.value === 2) {
+    clearTimeout(doubleClickTimer.value)
+    doubleClickCount.value = 0
+    onPlayerDoubleClick(event)
+  }
+}
+
+const onPlayerClick = (event) => {
+  const isHidden = isPlayerHidden()
+  setTimeout(() => onPlayerPointerMove(event), 50)
+  if (isHidden) {
+    return
+  }
   // do not toggle play when dropdown is visible
   if (isDropdownVisible()) return
   togglePlay()
 }
 
 const onPlayerDoubleClick = (event) => {
-  if (video.value && isMobile.value)
+  setTimeout(() => onPlayerPointerMove(event), 50)
+  if (video.value && isTouch(event))
     if (event.x < video.value?.clientWidth / 2) seekBackward()
     else seekForward()
   else toggleFullscreen()
@@ -276,17 +326,16 @@ onUnmounted(() => {
     ref="overlayVideo"
     class="has-full-size"
     style="display: inline-flex"
-    @mousemove="onPlayerMouseMove"
+    @pointermove="onPlayerPointerMove"
   >
     <video
       id="mediaPlayer"
       ref="video"
       @timeupdate="updateStatus"
       @seeking="updateStatus"
-      @click="onPlayerClick"
-      @dblclick="onPlayerDoubleClick"
+      @pointerup="onPlayerPointerUp"
       @loadstart="isBuffering = true"
-      @loadeddata="updateStatus"
+      @loadeddata="onPlayerReady"
       @waiting="isBuffering = true"
       @playing="onVideoPlaying"
       @error="onVideoError"
@@ -296,12 +345,12 @@ onUnmounted(() => {
     />
 
     <ErrorBlankSlate v-if="isError || isVideoError" style="position: absolute" />
-    <div v-if="isBuffering || !resource" class="ts-mask">
+    <div v-if="isBuffering || !resource" class="ts-mask" @pointerup="onOverlayPointerUp">
       <div class="ts-center">
         <div class="ts-loading is-large" style="color: #fff"></div>
       </div>
     </div>
-    <div v-if="resource" class="ts-mask is-faded is-top is-hidable">
+    <div v-if="resource" class="ts-mask is-faded is-top is-hidable" @pointerup="onOverlayPointerUp">
       <div class="ts-content" style="color: #fff">
         <div class="ts-header">{{ resource.streamer }}</div>
         <span v-if="resource.isLive">
@@ -325,16 +374,16 @@ onUnmounted(() => {
           @input="onSeekDrag"
           class="has-full-width has-cursor-pointer"
         />
-        <div class="is-flex justify-between has-horizontally-padded">
+        <div class="is-flex justify-between has-horizontally-padded" @pointerup="onOverlayPointerUp">
           <div class="is-flex">
-            <button class="button has-flex-center" @click="togglePlay">
+            <button class="button has-flex-center" @pointerup="onPlayButtonPointerUp">
               <span v-if="isPaused" class="ts-icon is-play-icon" />
               <span v-else class="ts-icon is-pause-icon" />
             </button>
             <div class="is-flex has-smaller-gap">
               <button
                 class="button has-flex-center"
-                @click="toggleMute"
+                @pointerup="onMuteButtonPointerUp"
                 @wheel="onVolumeMouseWheel"
               >
                 <span v-if="isMuted" class="ts-icon is-volume-xmark-icon" />
@@ -363,7 +412,7 @@ onUnmounted(() => {
               <button
                 class="button has-flex-center"
                 data-dropdown="quality"
-                @click="onPlayerMouseMove"
+                @pointerup="onPlayerPointerMove"
               >
                 <span class="ts-icon is-images-icon" />
               </button>
@@ -396,7 +445,7 @@ onUnmounted(() => {
               <button
                 class="button has-flex-center"
                 data-dropdown="speed"
-                @click="onPlayerMouseMove"
+                @pointerup="onPlayerPointerMove"
               >
                 <span class="ts-icon is-gauge-simple-high-icon" />
               </button>
@@ -417,7 +466,7 @@ onUnmounted(() => {
                 </button>
               </div>
             </div>
-            <button class="button has-flex-center" @click="toggleFullscreen">
+            <button class="button has-flex-center" @pointerup="onFullscreenButtonPointerUp">
               <span v-if="isFullscreen" class="ts-icon is-compress-icon" />
               <span v-else class="ts-icon is-expand-icon" />
             </button>
