@@ -86,7 +86,7 @@ const draggingCurrentTime = ref(undefined)
 
 const doubleClickCount = ref(0)
 
-const doubleCLickTimer = ref(null)
+const doubleClickTimer = ref(null)
 
 const duration = ref(0)
 
@@ -271,12 +271,12 @@ const onPlayerPointerUp = (event) => {
   event.preventDefault()
   doubleClickCount.value++
   if (doubleClickCount.value === 1) {
-    doubleCLickTimer.value = setTimeout(() => {
+    doubleClickTimer.value = setTimeout(() => {
       doubleClickCount.value = 0
       onPlayerClick(event)
     }, 300)
   } else if (doubleClickCount.value === 2) {
-    clearTimeout(doubleCLickTimer.value)
+    clearTimeout(doubleClickTimer.value)
     doubleClickCount.value = 0
     onPlayerDoubleClick(event)
   }
