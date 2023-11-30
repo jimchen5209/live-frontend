@@ -272,13 +272,14 @@ const onPlayerPointerUp = (event) => {
   if (!event.isPrimary || event.button !== 0) return
   doubleClickCount.value++
   if (doubleClickCount.value === 1) {
+    onPlayerClick(event)
     doubleClickTimer.value = setTimeout(() => {
       doubleClickCount.value = 0
-      onPlayerClick(event)
     }, 300)
   } else if (doubleClickCount.value === 2) {
     clearTimeout(doubleClickTimer.value)
     doubleClickCount.value = 0
+    onPlayerClick(event)
     onPlayerDoubleClick(event)
   }
 }
@@ -287,6 +288,9 @@ const onPlayerClick = (event) => {
   const isHidden = isPlayerHidden()
   setTimeout(() => onPlayerPointerMove(event), 50)
   if (isHidden) {
+    return
+  }
+  if (isTouch(event)) {
     return
   }
   // do not toggle play when dropdown is visible
