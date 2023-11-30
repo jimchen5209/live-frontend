@@ -10,7 +10,7 @@ import ErrorBlankSlate from './components/ErrorBlankSlate.vue'
 import AgeRestrictPage from './components/AgeRestrictPage.vue'
 
 import { useViewport } from './util/viewport'
-import { useChat } from './util/chat'
+import { useChat } from './util/websocket'
 import { useRoute } from './util/routing'
 
 const liveUrl = `${import.meta.env.VITE_BACK_URL ?? ''}/live`

@@ -1,7 +1,11 @@
 import { ref, onUnmounted } from 'vue'
 
+const wsServer = 'wss://live.oktw.one/ws'
+const wsSetName = (name) => JSON.stringify({ method: 'setName', name })
+const wsJoinChannel = (channelName) => JSON.stringify({ method: 'joinChannel', channelName })
+const wsSendBulletMessage = (msg) => JSON.stringify({ method: 'sendBulletMessage', msg })
+
 export const useChat = () => {
-  const wsServer = 'wss://live.oktw.one/ws'
   const ws = ref(null)
 
   const messages = ref([])
@@ -12,13 +16,13 @@ export const useChat = () => {
 
   const setNickname = (name) => {
     localStorage.setItem('config_nickname', name)
-    ws.value?.send(`{"method":"setName", "name":"${name}"}`)
+    ws.value?.send(wsSetName(name))
   }
   const joinChannel = (channel) => {
-    ws.value?.send(`{"method":"joinChannel","channelName":"${channel}"}`)
+    ws.value?.send(wsJoinChannel(channel))
   }
   const sendMessage = (message) => {
-    ws.value?.send(`{"method":"sendBulletMessage","msg":"${message}"}`)
+    ws.value?.send(wsSendBulletMessage(message))
   }
 
   const connect = (channel) => {
