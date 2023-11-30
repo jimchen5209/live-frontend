@@ -2,6 +2,8 @@
 import { computed, onMounted, onUnmounted, ref, watch } from 'vue'
 import { debounce } from 'lodash'
 
+import WatchTogetherStatus from './OverlayPlayer/Sharing/WatchTogetherStatus.vue'
+import WatchTogetherConfig from './OverlayPlayer/Sharing/WatchTogetherConfig.vue'
 import VolumeControl from './OverlayPlayer/VolumeControl.vue'
 import ErrorBlankSlate from '../ErrorBlankSlate.vue'
 
@@ -530,7 +532,8 @@ onUnmounted(() => {
               }}
             </span>
           </div>
-          <div class="is-flex has-smaller-gap">
+          <div class="is-flex">
+            <WatchTogetherStatus />
             <div>
               <button
                 class="button has-flex-center"
@@ -549,6 +552,12 @@ onUnmounted(() => {
                 <button v-if="!resource.isLive" class="item" @click="copyTimeUrl">
                   複製目前時間的連結
                   <span class="description">{{ timeToText(currentTime) }}</span>
+                </button>
+                <button
+                  v-if="!resource.isLive"
+                  class="item is-disabled"
+                >
+                  啟動同時觀看
                 </button>
               </div>
             </div>
@@ -688,6 +697,7 @@ onUnmounted(() => {
       </div>
     </div>
   </div>
+  <WatchTogetherConfig />
 </template>
 
 <style scoped>
@@ -715,7 +725,7 @@ onUnmounted(() => {
 }
 
 #videoTitle {
-  max-width: 80%;
+  max-width: 65%;
 }
 
 /* Workaround tocas-ui's important */

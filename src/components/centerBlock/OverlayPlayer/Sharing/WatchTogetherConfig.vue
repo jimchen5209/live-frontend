@@ -1,0 +1,88 @@
+<script setup>
+import { ref } from 'vue'
+
+const modelOpen = ref(false)
+const isActive = ref(true)
+const isHost = ref(false)
+const hostname = ref('cute_panda')
+defineEmits(['close'])
+</script>
+
+<template>
+  <div class="ts-modal" :class="{ 'is-visible': modelOpen }">
+    <div class="content">
+      <div class="ts-content">
+        <div class="ts-grid is-middle-aligned">
+          <div class="column is-fluid">
+            <div class="ts-header">同時觀看</div>
+          </div>
+          <div class="column">
+            <button class="ts-close" @click="$emit('close')"></button>
+          </div>
+        </div>
+      </div>
+      <div class="ts-divider"></div>
+      <div class="ts-content">
+        <div class="ts-wrap is-vertical">
+          <div class="ts-control is-stacked">
+            <div class="label">暱稱</div>
+            <div class="content">
+              <div class="ts-input">
+                <input v-model="hostname" type="text" />
+              </div>
+            </div>
+          </div>
+          <div v-if="!isActive" class="ts-iconset">
+            <span class="ts-icon is-tower-broadcast-icon" style="color: var(--ts-negative-500)" />
+            <div class="content">
+              <div class="title">共同觀看未執行</div>
+              <div class="text">按下啟動以開始</div>
+            </div>
+          </div>
+          <div v-else class="status-grid">
+            <div class="ts-iconset">
+              <span
+                class="ts-icon is-tower-broadcast-icon"
+                :style="{ color: isHost ? 'var(--ts-negative-500)' : 'var(--ts-positive-500)' }"
+              />
+              <div class="content">
+                <div class="title">主持人</div>
+                <div class="text">{{ isHost ? '您' : hostname }}</div>
+              </div>
+            </div>
+            <div class="ts-iconset">
+              <span class="ts-icon is-eye-icon" />
+              <div class="content">
+                <div class="title">觀看人數</div>
+                <div class="text">2</div>
+              </div>
+            </div>
+          </div>
+          <label class="ts-switch" :class="{ 'is-disabled': isActive && !isHost }">
+            <input type="checkbox" :disabled="isActive && !isHost" />
+            允許控制
+          </label>
+          <button v-if="!isActive" class="ts-button is-fluid">啟動</button>
+          <button v-else class="ts-button is-fluid is-negative">解散</button>
+        </div>
+      </div>
+    </div>
+  </div>
+</template>
+
+<style scoped>
+.status-grid {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  grid-gap: 1rem;
+}
+.status-grid .ts-iconset,
+.status-grid .ts-iconset .content {
+  overflow: hidden;
+  width: 100%;
+}
+.status-grid .ts-iconset .text {
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+</style>
