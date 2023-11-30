@@ -63,9 +63,11 @@ const isVideoError = ref(false)
 
 const rateDropdown = ref(null)
 const qualityDropdown = ref(null)
+const shareDropdown = ref(null)
 const isDropdownVisible = () =>
   rateDropdown.value?.classList.contains('is-visible') ||
-  qualityDropdown.value?.classList.contains('is-visible')
+  qualityDropdown.value?.classList.contains('is-visible') ||
+  shareDropdown.value?.classList.contains('is-visible')
 
 const isBuffering = ref(false)
 
@@ -351,6 +353,16 @@ const onVideoError = () => {
   isVideoError.value = true
 }
 
+const copyUrl = () => {
+  navigator.clipboard.writeText(window.location.href)
+}
+
+const copyTimeUrl = () => {
+  const url = new URL(window.location)
+  url.searchParams.set('t', currentTime.value)
+  navigator.clipboard.writeText(url.href)
+}
+
 onMounted(() => {
   document.addEventListener('keydown', onKeyDown)
 })
@@ -393,16 +405,56 @@ onUnmounted(() => {
     </div>
     <div v-if="resource" class="ts-mask is-faded is-top is-hidable" @pointerup="onOverlayPointerUp">
       <div class="ts-content" style="color: #fff">
-        <div class="ts-header">{{ resource.streamer }}</div>
-        <span v-if="resource.isLive">
-          <span class="ts-icon is-circle-icon" :style="{ color: '#ff4141' }" />
-          Live
-        </span>
-        <span v-else>
-          {{
-            `${resource.publishTime.toLocaleDateString()} ${resource.publishTime.toLocaleTimeString()}`
-          }}
-        </span>
+        <div class="is-flex justify-between has-horizontally-padded">
+          <div>
+            <div class="ts-header">{{ resource.streamer }}</div>
+            <span v-if="resource.isLive">
+              <span class="ts-icon is-circle-icon" :style="{ color: '#ff4141' }" />
+              Live
+            </span>
+            <span v-else>
+              {{
+                `${resource.publishTime.toLocaleDateString()} ${resource.publishTime.toLocaleTimeString()}`
+              }}
+            </span>
+          </div>
+          <div class="is-flex has-smaller-gap">
+            <div>
+              <button
+                class="button has-flex-center"
+                data-dropdown="share"
+                @pointerup="onPlayerPointerMove"
+              >
+                <span class="ts-icon is-share-nodes-icon" />
+              </button>
+              <div
+                ref="shareDropdown"
+                class="ts-dropdown style-text"
+                data-name="share"
+                data-position="bottom-end"
+              >
+                <button
+                  class="item"
+                  @click="copyUrl"
+                >
+                  複製連結
+                </button>
+                <button
+                  class="item"
+                  @click="copyTimeUrl"
+                >
+                  複製目前時間的連結
+                  <span class="description">{{timeToText(currentTime)}}</span>
+                </button>
+                <button
+                  class="item"
+                >
+                  啟動同時觀看
+                </button>
+              </div>
+            </div>
+          </div>
+        </div>
       </div>
     </div>
     <div v-if="resource" class="ts-mask is-faded is-bottom is-hidable">
