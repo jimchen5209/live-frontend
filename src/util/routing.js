@@ -29,6 +29,53 @@ export const useRoute = () => {
     return splittedRoute.value[1].split(':').slice(1)
   })
 
+  const getParameter = (key) => {
+    const parameter = parameters.value.find((parameter) => parameter.startsWith(key))
+    if (parameter === undefined) return undefined
+    return parameter.split('=')[1]
+  }
+
+  const setParameter = (values, reset = false) => {
+    const newParameters = reset ? [] : parameters.value.slice(0)
+
+    for (const [key, value] of Object.entries(values)) {
+      const parameterIndex = newParameters.findIndex((parameter) => parameter.startsWith(key))
+      if (parameterIndex === -1) {
+        if (value === undefined) continue
+        newParameters.push(`${key}=${value}`)
+      } else {
+        if (value === undefined) {
+          newParameters.splice(parameterIndex, 1)
+          continue
+        }
+        newParameters[parameterIndex] = `${key}=${value}`
+      }
+    }
+
+    const newUrl = new URL(window.location.href)
+    const targetFilename = isLive.value ? 'live' : splittedRoute.value[1].split(':')[0]
+    if (newParameters.length === 0) newUrl.hash = `#${profileName.value}/${targetFilename}`
+    else newUrl.hash = `#${profileName.value}/${targetFilename}:${newParameters.join(':')}`
+    return {
+      href: newUrl.href,
+      hash: newUrl.hash
+    }
+  }
+
+  const getUrlWithoutParameters = () => {
+    const newUrl = new URL(window.location.href)
+    const targetFilename = isLive.value ? 'live' : splittedRoute.value[1].split(':')[0]
+    newUrl.hash = `#${profileName.value}/${targetFilename}`
+    return {
+      href: newUrl.href,
+      hash: newUrl.hash
+    }
+  }
+
+  const replaceHash = (hash) => {
+    window.location.replace(hash)
+  }
+
   const mergeUrl = () => {
     const route = window.location.hash.substring(1).split('/')
     if (route.length === 1) return
@@ -77,6 +124,10 @@ export const useRoute = () => {
     isProfilePage,
     isLive,
     targetFilename,
-    parameters
+    parameters,
+    getParameter,
+    setParameter,
+    getUrlWithoutParameters,
+    replaceHash
   }
 }

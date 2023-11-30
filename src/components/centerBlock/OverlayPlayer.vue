@@ -1,9 +1,11 @@
 <script setup>
-import { computed, onMounted, onUnmounted, ref } from 'vue'
+import { computed, onMounted, onUnmounted, ref, watch } from 'vue'
 import { debounce } from 'lodash'
 
 import VolumeControl from './OverlayPlayer/VolumeControl.vue'
 import ErrorBlankSlate from '../ErrorBlankSlate.vue'
+
+import { useRoute } from '../../util/routing'
 
 const props = defineProps({
   resource: {
@@ -24,6 +26,17 @@ const props = defineProps({
   }
 })
 defineEmits(['change-quality'])
+
+// Handle route
+const { getParameter, setParameter, getUrlWithoutParameters, route } = useRoute()
+
+const restoreTimeFromUrl = () => {
+  const time = getParameter('t')
+  if (time && !isNaN(time) && parseInt(time) > 0 && parseInt(time) < duration.value) {
+    currentTime.value = parseInt(time)
+    setTime()
+  }
+}
 
 // Handle touch mode
 const touchMode = ref(false)
@@ -69,6 +82,7 @@ const updatePlayerStatus = () => {
 
 const handlePlayerLoaded = () => {
   updatePlayerStatus()
+  restoreTimeFromUrl()
   showUIAndResetAutoHideTimer()
 }
 
@@ -205,9 +219,11 @@ const toggleMute = () => {
 // Handle dropdown
 const rateDropdownRef = ref(null)
 const qualityDropdownRef = ref(null)
+const shareDropdown = ref(null)
 const isDropdownVisible = () =>
   rateDropdownRef.value?.classList.contains('is-visible') ||
-  qualityDropdownRef.value?.classList.contains('is-visible')
+  qualityDropdownRef.value?.classList.contains('is-visible') ||
+  shareDropdown.value?.classList.contains('is-visible')
 
 // Handle show / (auto) hide UI
 const autoHideTimer = ref(null)
@@ -425,6 +441,24 @@ const handleVolumeMouseWheel = (event) => {
   }
 }
 
+// Handle Share Menu
+const copyVideoUrl = () => {
+  const newUrl = getUrlWithoutParameters()
+  navigator.clipboard.writeText(newUrl.href)
+}
+
+const copyTimeUrl = () => {
+  const newUrl = setParameter({ t: Math.floor(currentTime.value) })
+  navigator.clipboard.writeText(newUrl.href)
+}
+
+watch(
+  () => route.value,
+  () => {
+    restoreTimeFromUrl()
+  }
+)
+
 onMounted(() => {
   document.addEventListener('keydown', handleKeyDown)
 })
@@ -483,16 +517,43 @@ onUnmounted(() => {
       @pointerup="handlePlayerPointerEvent"
     >
       <div class="ts-content" style="color: #fff">
-        <div class="ts-header is-truncated">{{ resource.streamer }}</div>
-        <span v-if="resource.isLive">
-          <span class="ts-icon is-circle-icon" :style="{ color: '#ff4141' }" />
-          Live
-        </span>
-        <span v-else>
-          {{
-            `${resource.publishTime.toLocaleDateString()} ${resource.publishTime.toLocaleTimeString()}`
-          }}
-        </span>
+        <div class="is-flex justify-between has-horizontally-padded">
+          <div>
+            <div class="ts-header is-truncated">{{ resource.streamer }}</div>
+            <span v-if="resource.isLive">
+              <span class="ts-icon is-circle-icon" :style="{ color: '#ff4141' }" />
+              Live
+            </span>
+            <span v-else>
+              {{
+                `${resource.publishTime.toLocaleDateString()} ${resource.publishTime.toLocaleTimeString()}`
+              }}
+            </span>
+          </div>
+          <div class="is-flex has-smaller-gap">
+            <div>
+              <button
+                class="button has-flex-center"
+                data-dropdown="share"
+                @pointerup="onPlayerPointerMove"
+              >
+                <span class="ts-icon is-share-nodes-icon" />
+              </button>
+              <div
+                ref="shareDropdown"
+                class="ts-dropdown style-text"
+                data-name="share"
+                data-position="bottom-end"
+              >
+                <button class="item" @click="copyVideoUrl">複製影片連結</button>
+                <button v-if="!resource.isLive" class="item" @click="copyTimeUrl">
+                  複製目前時間的連結
+                  <span class="description">{{ timeToText(currentTime) }}</span>
+                </button>
+              </div>
+            </div>
+          </div>
+        </div>
       </div>
     </div>
     <div
