@@ -405,8 +405,8 @@ onUnmounted(() => {
               >
                 <span v-if="isMuted" class="ts-icon is-volume-xmark-icon" />
                 <span v-else-if="volume === 0" class="ts-icon is-volume-off-icon" />
-                <span v-else-if="volume <= 100" class="ts-icon is-volume-low-icon" />
-                <span v-else class="ts-icon is-volume-high-icon" />
+                <span v-else-if="volume <= 50" class="ts-icon is-volume-low-icon" />
+                <span v-else class="ts-icon is-volume-high-icon" :style="{color: volume>100 ? 'var(--ts-negative-400)' : 'var(--ts-white)'}" />
               </button>
               <input
                 type="range"
