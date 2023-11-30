@@ -378,8 +378,8 @@ onUnmounted(() => {
         <div class="is-flex justify-between has-horizontally-padded" @pointerup="onOverlayPointerUp">
           <div class="is-flex">
             <button class="button has-flex-center" @pointerup="onPlayButtonPointerUp">
-              <span v-if="isPaused" class="ts-icon is-play-icon" />
-              <span v-else class="ts-icon is-pause-icon" />
+              <span v-if="isPaused" class="ts-icon is-big is-play-icon" />
+              <span v-else class="ts-icon is-big is-pause-icon" />
             </button>
             <div class="is-flex has-smaller-gap">
               <button
@@ -387,10 +387,10 @@ onUnmounted(() => {
                 @pointerup="onMuteButtonPointerUp"
                 @wheel="onVolumeMouseWheel"
               >
-                <span v-if="isMuted" class="ts-icon is-volume-xmark-icon" />
-                <span v-else-if="volume === 0" class="ts-icon is-volume-off-icon" />
-                <span v-else-if="volume <= 50" class="ts-icon is-volume-low-icon" />
-                <span v-else class="ts-icon is-volume-high-icon" />
+                <span v-if="isMuted" class="ts-icon is-big is-volume-xmark-icon" />
+                <span v-else-if="volume === 0" class="ts-icon is-big is-volume-off-icon" />
+                <span v-else-if="volume <= 50" class="ts-icon is-big is-volume-low-icon" />
+                <span v-else class="ts-icon is-big is-volume-high-icon" />
               </button>
               <input
                 type="range"
@@ -415,7 +415,7 @@ onUnmounted(() => {
                 data-dropdown="quality"
                 @pointerup="onPlayerPointerMove"
               >
-                <span class="ts-icon is-images-icon" />
+                <span class="ts-icon is-big is-images-icon" />
               </button>
               <div
                 ref="qualityDropdown"
@@ -448,7 +448,7 @@ onUnmounted(() => {
                 data-dropdown="speed"
                 @pointerup="onPlayerPointerMove"
               >
-                <span class="ts-icon is-gauge-simple-high-icon" />
+                <span class="ts-icon is-big is-gauge-simple-high-icon" />
               </button>
               <div
                 ref="rateDropdown"
@@ -469,7 +469,7 @@ onUnmounted(() => {
             </div>
             <button class="button has-flex-center" @pointerup="onFullscreenButtonPointerUp">
               <span v-if="isFullscreen" class="ts-icon is-compress-icon" />
-              <span v-else class="ts-icon is-expand-icon" />
+              <span v-else class="ts-icon is-big is-expand-icon" />
             </button>
           </div>
         </div>
@@ -503,7 +503,7 @@ onUnmounted(() => {
 }
 
 .has-smaller-gap {
-  gap: 0.25rem;
+  gap: 0.5rem;
 }
 
 .justify-between {
@@ -511,8 +511,8 @@ onUnmounted(() => {
 }
 
 .button {
-  width: 18px;
-  height: 18px;
+  width: 30px;
+  height: 30px;
 }
 
 .style-text {
