@@ -269,6 +269,7 @@ const onVolumeMouseWheel = (event) => {
 
 const onPlayerPointerUp = (event) => {
   event.preventDefault()
+  if (!event.isPrimary || event.button !== 0) return
   doubleClickCount.value++
   if (doubleClickCount.value === 1) {
     doubleClickTimer.value = setTimeout(() => {
