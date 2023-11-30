@@ -2,6 +2,7 @@
 import { computed, onMounted, onUnmounted, ref } from 'vue'
 import { debounce } from 'lodash'
 
+import VolumeControl from './OverlayPlayer/VolumeControl.vue'
 import ErrorBlankSlate from '../ErrorBlankSlate.vue'
 
 const props = defineProps({
@@ -24,6 +25,7 @@ const props = defineProps({
 })
 defineEmits(['change-quality'])
 
+const touchMode = ref(false)
 const isTouch = (event) => event?.pointerType === 'touch'
 
 const overlayVideo = ref(null)
@@ -71,23 +73,25 @@ const isBuffering = ref(false)
 
 const autoHideTimer = ref(null)
 const isPlayerHidden = () => overlayVideo.value?.classList.contains('auto-hidden') ?? false
+
+const hideUI = () => {
+  if (isDropdownVisible()) return
+  if (autoHideTimer.value) {
+    clearTimeout(autoHideTimer.value)
+    autoHideTimer.value = null
+  }
+  overlayVideo.value?.classList.add('auto-hidden')
+}
+
 const onPlayerPointerMove = (event) => {
+  touchMode.value = isTouch(event)
   if (autoHideTimer.value) {
     clearTimeout(autoHideTimer.value)
     autoHideTimer.value = null
   }
 
   // set timeout to wait of idle time
-  const t = setTimeout(
-    () => {
-      autoHideTimer.value = null
-
-      if (isDropdownVisible()) return
-
-      overlayVideo.value?.classList.add('auto-hidden')
-    },
-    (isTouch(event) ? 2 : 1) * 1000
-  )
+  const t = setTimeout(hideUI, (isTouch(event) ? 2 : 1) * 1000)
   autoHideTimer.value = t
 
   overlayVideo.value?.classList.remove('auto-hidden')
@@ -132,14 +136,10 @@ const rate = ref(1)
 const rateList = ref([
   { value: 0.25, text: '0.25x' },
   { value: 0.5, text: '0.5x' },
-  { value: 0.75, text: '0.75x' },
   { value: 1, text: '1x' },
-  { value: 1.25, text: '1.25x' },
   { value: 1.5, text: '1.5x' },
-  { value: 1.75, text: '1.75x' },
   { value: 2, text: '2x' },
   { value: 3, text: '3x' },
-  { value: 4, text: '4x' },
   { value: 5, text: '5x' }
 ])
 
@@ -149,7 +149,7 @@ const updateStatus = () => {
   duration.value = video.value?.duration
   isPaused.value = video.value?.paused
   isMuted.value = video.value?.muted
-  volume.value = video.value?.muted ? 0 : reverseVolume(videoAmplifier.value?.getAmpLevel() * 100) 
+  volume.value = video.value?.muted ? 0 : reverseVolume(videoAmplifier.value?.getAmpLevel() * 100)
   isFullscreen.value = document.fullscreenElement !== null
   rate.value = video.value?.playbackRate
 }
@@ -237,6 +237,11 @@ const onOverlayPointerUp = (event) => {
 }
 
 const onPlayButtonPointerUp = (event) => {
+  const isHidden = isPlayerHidden()
+  setTimeout(() => onPlayerPointerMove(event), 50)
+  if (isHidden) {
+    return
+  }
   setTimeout(() => onPlayerPointerMove(event), 50)
   togglePlay()
 }
@@ -308,14 +313,27 @@ const onVolumeMouseWheel = (event) => {
 }
 
 const onPlayerPointerUp = (event) => {
+  if (!event.isPrimary || event.button !== 0) return
   event.preventDefault()
+  // prevent click on icon button
+  if (event.target instanceof HTMLSpanElement) return
+  const isHidden = isPlayerHidden()
+  const isTouchEvent = isTouch(event)
+  touchMode.value = isTouchEvent
   doubleClickCount.value++
-  if (doubleClickCount.value === 1) {
-    doubleClickTimer.value = setTimeout(() => {
-      doubleClickCount.value = 0
+  if (doubleClickCount.value === 1) { // First click
+    if (isHidden && isTouchEvent) {
+      onPlayerPointerMove(event) // Show UI
+      doubleClickTimer.value = setTimeout(() => doubleClickCount.value = 0, 300)
+    } else {
       onPlayerClick(event)
-    }, 300)
-  } else if (doubleClickCount.value === 2) {
+      // Delay 300 to detect double click and hide UI on touch
+      doubleClickTimer.value = setTimeout(() => {
+        doubleClickCount.value = 0
+        if (isTouchEvent && !isHidden) hideUI()
+      }, 300)
+    }
+  } else if (doubleClickCount.value === 2) { // Second click, trigger double click
     clearTimeout(doubleClickTimer.value)
     doubleClickCount.value = 0
     onPlayerDoubleClick(event)
@@ -323,11 +341,8 @@ const onPlayerPointerUp = (event) => {
 }
 
 const onPlayerClick = (event) => {
-  const isHidden = isPlayerHidden()
-  setTimeout(() => onPlayerPointerMove(event), 50)
-  if (isHidden) {
-    return
-  }
+  if (isTouch(event)) return
+  if (!isPlayerHidden()) setTimeout(() => onPlayerPointerMove(event), 50)
   // do not toggle play when dropdown is visible
   if (isDropdownVisible()) return
   togglePlay()
@@ -335,10 +350,20 @@ const onPlayerClick = (event) => {
 
 const onPlayerDoubleClick = (event) => {
   setTimeout(() => onPlayerPointerMove(event), 50)
-  if (video.value && isTouch(event))
-    if (event.x < video.value?.clientWidth / 2) seekBackward()
-    else seekForward()
-  else toggleFullscreen()
+  if (video.value && isTouch(event)) {
+    // Click center will toggle play, left and right sides will seek time
+    const leftSideEnd = video.value?.clientWidth / 3
+    const RightSideStart = leftSideEnd * 2
+    if (event.x < leftSideEnd) {
+      seekBackward()
+    } else if (event.x > RightSideStart) {
+      seekForward()
+    } else {
+      togglePlay()
+    }
+  } else {
+    toggleFullscreen()
+  }
 }
 
 const onVideoPlaying = () => {
@@ -386,10 +411,20 @@ onUnmounted(() => {
     />
 
     <ErrorBlankSlate v-if="isError || isVideoError" style="position: absolute" />
-    <div v-if="isBuffering || !resource" class="ts-mask" @pointerup="onOverlayPointerUp">
+    <div v-if="isBuffering || !resource" class="ts-mask" @pointerup="onPlayerPointerUp">
       <div class="ts-center">
         <div class="ts-loading is-large" style="color: #fff"></div>
       </div>
+    </div>
+    <div
+      v-if="resource && touchMode"
+      id="mobileCenterControl"
+      class="is-hidable has-flex-center has-horizontally-padded-huge"
+    >
+      <button class="button-touch has-flex-center" @pointerup="onPlayButtonPointerUp">
+        <span v-if="isPaused" class="ts-icon is-huge tablet+:is-heading is-play-icon" />
+        <span v-else class="ts-icon is-huge tablet+:is-heading is-pause-icon" />
+      </button>
     </div>
     <div v-if="resource" class="ts-mask is-faded is-top is-hidable" @pointerup="onOverlayPointerUp">
       <div class="ts-content" style="color: #fff">
@@ -408,6 +443,7 @@ onUnmounted(() => {
     <div v-if="resource" class="ts-mask is-faded is-bottom is-hidable">
       <div class="ts-content" style="color: #fff">
         <input
+          v-if="!touchMode"
           type="range"
           class="has-full-width has-cursor-pointer player-slider"
           v-model="currentTime"
@@ -416,62 +452,52 @@ onUnmounted(() => {
           @input="onSeekDrag"
         />
         <div
-          class="is-flex justify-between has-horizontally-padded"
+          class="is-flex justify-between"
+          :class="{ 'has-horizontally-padded': !touchMode }"
           @pointerup="onOverlayPointerUp"
         >
           <div class="is-flex">
-            <button class="button has-flex-center" @pointerup="onPlayButtonPointerUp">
-              <span v-if="isPaused" class="ts-icon is-play-icon" />
-              <span v-else class="ts-icon is-pause-icon" />
+            <button
+              v-if="!touchMode"
+              class="button has-flex-center"
+              @pointerup="onPlayButtonPointerUp"
+            >
+              <span v-if="isPaused" class="ts-icon tablet+:is-big is-play-icon" />
+              <span v-else class="ts-icon tablet+:is-big is-pause-icon" />
             </button>
-            <div class="is-flex has-smaller-gap">
-              <button
-                class="button has-flex-center"
-                @pointerup="onMuteButtonPointerUp"
-                @wheel="onVolumeMouseWheel"
-              >
-                <span v-if="isMuted" class="ts-icon is-volume-xmark-icon" />
-                <span v-else-if="volume === 0" class="ts-icon is-volume-off-icon" />
-                <span v-else-if="volume <= 50" class="ts-icon is-volume-low-icon" />
-                <span
-                  v-else
-                  class="ts-icon is-volume-high-icon"
-                  :style="{ color: volume > 100 ? 'var(--ts-negative-400)' : 'var(--ts-white)' }"
-                />
-              </button>
-              <input
-                type="range"
-                class="mobile:has-hidden has-cursor-pointer player-slider"
-                v-model="volume"
-                :max="150"
-                step="any"
-                list="volumeMarkers"
-                @input="setVolume"
-                @wheel="onVolumeMouseWheel"
-              />
-              <datalist id="volumeMarkers">
-                <option value="100"></option>
-              </datalist>
-              <span
-                class="mobile:has-hidden has-cursor-pointer"
-                title="按一下重置音量"
-                @click="resetVolume"
-                >{{ Math.round(convertVolume(volume)) }}%</span
-              >
-            </div>
+            <VolumeControl
+              v-if="!touchMode"
+              v-model:volume="volume"
+              :is-muted="isMuted"
+              :convert-volume="convertVolume"
+              :reset-volume="resetVolume"
+              @mute-button-pointerup="onMuteButtonPointerUp"
+              @volume-mousewheel="onVolumeMouseWheel"
+              @update:volume="setVolume"
+            />
             <span>
               {{ timeText }}
               <span v-if="!isNaN(duration)"> / {{ durationText }} </span>
             </span>
           </div>
           <div class="is-flex">
+            <VolumeControl
+              v-if="touchMode"
+              v-model:volume="volume"
+              :is-muted="isMuted"
+              :convert-volume="convertVolume"
+              :reset-volume="resetVolume"
+              @mute-button-pointerup="onMuteButtonPointerUp"
+              @volume-mousewheel="onVolumeMouseWheel"
+              @update:volume="setVolume"
+            />
             <div v-if="qualityList.length > 1">
               <button
                 class="button has-flex-center"
                 data-dropdown="quality"
                 @pointerup="onPlayerPointerMove"
               >
-                <span class="ts-icon is-images-icon" />
+                <span class="ts-icon tablet+:is-big is-images-icon" />
               </button>
               <div
                 ref="qualityDropdown"
@@ -504,7 +530,7 @@ onUnmounted(() => {
                 data-dropdown="speed"
                 @pointerup="onPlayerPointerMove"
               >
-                <span class="ts-icon is-gauge-simple-high-icon" />
+                <span class="ts-icon tablet+:is-big is-gauge-simple-high-icon" />
               </button>
               <div
                 ref="rateDropdown"
@@ -525,17 +551,26 @@ onUnmounted(() => {
             </div>
             <button class="button has-flex-center" @pointerup="onFullscreenButtonPointerUp">
               <span v-if="isFullscreen" class="ts-icon is-compress-icon" />
-              <span v-else class="ts-icon is-expand-icon" />
+              <span v-else class="ts-icon tablet+:is-big is-expand-icon" />
             </button>
           </div>
         </div>
+        <input
+          v-if="touchMode"
+          type="range"
+          class="has-full-width has-cursor-pointer player-slider"
+          v-model="currentTime"
+          :max="duration"
+          step="any"
+          @input="onSeekDrag"
+        />
       </div>
     </div>
   </div>
 </template>
 
 <style scoped>
-.ts-mask.is-hidable {
+.is-hidable {
   opacity: 0;
   transition-duration: 500ms;
 }
@@ -548,7 +583,7 @@ onUnmounted(() => {
   background: linear-gradient(0deg, rgba(0, 0, 0, 0.9) 0, rgba(0, 0, 0, 0.1) 90%, transparent);
 }
 
-#playerContainer:not(.auto-hidden) > .ts-mask.is-hidable {
+#playerContainer:not(.auto-hidden) > .is-hidable {
   opacity: 1;
 }
 
@@ -558,17 +593,25 @@ onUnmounted(() => {
   gap: 1rem;
 }
 
-.has-smaller-gap {
-  gap: 0.25rem;
-}
-
 .justify-between {
   justify-content: space-between;
 }
 
 .button {
-  width: 18px;
-  height: 18px;
+  width: 30px;
+  height: 30px;
+}
+
+.button-touch {
+  width: 36px;
+  height: 36px;
+}
+
+@media (min-width: 768px) {
+  .button-touch {
+    width: 90px;
+    height: 90px;
+  }
 }
 
 .style-text {
@@ -585,6 +628,18 @@ onUnmounted(() => {
 .auto-hidden,
 .auto-hidden * {
   cursor: none;
+}
+
+#mobileCenterControl {
+  color: #fff;
+  position: absolute;
+  left: 50%;
+  top: 50%;
+  transform: translate(-50%, -50%);
+}
+
+#mobileCenterControl .ts-icon::before {
+  text-shadow: #000 2px 2px 5px;
 }
 
 /* Workaround tocas-ui's important */
