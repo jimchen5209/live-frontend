@@ -24,6 +24,7 @@ const props = defineProps({
 })
 defineEmits(['change-quality'])
 
+const touchMode = ref(false)
 const isTouch = (event) => event?.pointerType === 'touch'
 
 const overlayVideo = ref(null)
@@ -41,6 +42,7 @@ const isBuffering = ref(false)
 const autoHideTimer = ref(null)
 const isPlayerHidden = () => overlayVideo.value?.classList.contains('auto-hidden') ?? false
 const onPlayerPointerMove = (event) => {
+  touchMode.value = isTouch(event)
   if (autoHideTimer.value) {
     clearTimeout(autoHideTimer.value)
     autoHideTimer.value = null
@@ -201,6 +203,11 @@ const onOverlayPointerUp = (event) => {
 }
 
 const onPlayButtonPointerUp = (event) => {
+  const isHidden = isPlayerHidden()
+  setTimeout(() => onPlayerPointerMove(event), 50)
+  if (isHidden) {
+    return
+  }
   setTimeout(() => onPlayerPointerMove(event), 50)
   togglePlay()
 }
@@ -219,6 +226,26 @@ const toggleFullscreen = () => {
 const onFullscreenButtonPointerUp = (event) => {
   setTimeout(() => onPlayerPointerMove(event), 50)
   toggleFullscreen()
+}
+
+const onSeekBackwardButtonPointerUp = (event) => {
+  const isHidden = isPlayerHidden()
+  setTimeout(() => onPlayerPointerMove(event), 50)
+  if (isHidden) {
+    return
+  }
+  setTimeout(() => onPlayerPointerMove(event), 50)
+  seekBackward()
+}
+
+const onSeekForwardButtonPointerUp = (event) => {
+  const isHidden = isPlayerHidden()
+  setTimeout(() => onPlayerPointerMove(event), 50)
+  if (isHidden) {
+    return
+  }
+  setTimeout(() => onPlayerPointerMove(event), 50)
+  seekForward()
 }
 
 const onKeyDown = (event) => {
@@ -270,6 +297,8 @@ const onVolumeMouseWheel = (event) => {
 const onPlayerPointerUp = (event) => {
   event.preventDefault()
   if (!event.isPrimary || event.button !== 0) return
+  // prevent click on icon button
+  if (event.target instanceof HTMLSpanElement) return
   doubleClickCount.value++
   if (doubleClickCount.value === 1) {
     onPlayerClick(event)
@@ -353,6 +382,20 @@ onUnmounted(() => {
     <div v-if="isBuffering || !resource" class="ts-mask" @pointerup="onPlayerPointerUp">
       <div class="ts-center">
         <div class="ts-loading is-large" style="color: #fff"></div>
+      </div>
+    </div>
+    <div v-if="resource && touchMode" class="ts-mask is-hidable has-flex-center has-horizontally-padded-huge" @pointerup="onPlayerPointerUp">
+      <div class="is-flex has-larger-gap has-full-width justify-around" style="color: #fff">
+        <button class="button-touch has-flex-center" @pointerup="onSeekBackwardButtonPointerUp">
+          <span class="ts-icon is-huge is-backward-icon" />
+        </button>
+        <button class="button-touch has-flex-center" @pointerup="onPlayButtonPointerUp">
+          <span v-if="isPaused" class="ts-icon is-huge is-play-icon" />
+          <span v-else class="ts-icon is-huge is-pause-icon" />
+        </button>
+        <button class="button-touch has-flex-center" @pointerup="onSeekForwardButtonPointerUp">
+          <span class="ts-icon is-huge is-forward-icon" />
+        </button>
       </div>
     </div>
     <div v-if="resource" class="ts-mask is-faded is-top is-hidable" @pointerup="onOverlayPointerUp">
@@ -513,6 +556,11 @@ onUnmounted(() => {
 .justify-between {
   justify-content: space-between;
 }
+
+.justify-around {
+  justify-content: space-around;
+}
+
 
 .button {
   width: 30px;
