@@ -30,19 +30,23 @@ const overlayVideo = ref(null)
 const video = ref(null)
 const videoAmplifier = computed(() => {
   if (!video.value) return null
-  const context = new (window.AudioContext || window.webkitAudioContext),
-      result = {
-        context: context,
-        source: context.createMediaElementSource(video.value),
-        gain: context.createGain(),
-        media: video.value,
-        amplify: function(multiplier) { result.gain.gain.value = multiplier; },
-        getAmpLevel: function() { return result.gain.gain.value; }
-      };
-  result.source.connect(result.gain);
-  result.gain.connect(context.destination);
-  result.amplify(1);
-  return result;
+  const context = new (window.AudioContext || window.webkitAudioContext)(),
+    result = {
+      context: context,
+      source: context.createMediaElementSource(video.value),
+      gain: context.createGain(),
+      media: video.value,
+      amplify: function (multiplier) {
+        result.gain.gain.value = multiplier
+      },
+      getAmpLevel: function () {
+        return result.gain.gain.value
+      }
+    }
+  result.source.connect(result.gain)
+  result.gain.connect(context.destination)
+  result.amplify(1)
+  return result
 })
 const isVideoError = ref(false)
 
@@ -238,7 +242,11 @@ const onFullscreenButtonPointerUp = (event) => {
 }
 
 const onKeyDown = (event) => {
-  if (document.activeElement instanceof HTMLInputElement && !document.activeElement.classList.contains('player-slider')) return
+  if (
+    document.activeElement instanceof HTMLInputElement &&
+    !document.activeElement.classList.contains('player-slider')
+  )
+    return
   if (!video.value) return
   if (!props.resource) return
 
@@ -391,7 +399,10 @@ onUnmounted(() => {
           step="any"
           @input="onSeekDrag"
         />
-        <div class="is-flex justify-between has-horizontally-padded" @pointerup="onOverlayPointerUp">
+        <div
+          class="is-flex justify-between has-horizontally-padded"
+          @pointerup="onOverlayPointerUp"
+        >
           <div class="is-flex">
             <button class="button has-flex-center" @pointerup="onPlayButtonPointerUp">
               <span v-if="isPaused" class="ts-icon is-play-icon" />
@@ -406,7 +417,11 @@ onUnmounted(() => {
                 <span v-if="isMuted" class="ts-icon is-volume-xmark-icon" />
                 <span v-else-if="volume === 0" class="ts-icon is-volume-off-icon" />
                 <span v-else-if="volume <= 50" class="ts-icon is-volume-low-icon" />
-                <span v-else class="ts-icon is-volume-high-icon" :style="{color: volume>100 ? 'var(--ts-negative-400)' : 'var(--ts-white)'}" />
+                <span
+                  v-else
+                  class="ts-icon is-volume-high-icon"
+                  :style="{ color: volume > 100 ? 'var(--ts-negative-400)' : 'var(--ts-white)' }"
+                />
               </button>
               <input
                 type="range"
