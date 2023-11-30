@@ -346,7 +346,7 @@ onUnmounted(() => {
     />
 
     <ErrorBlankSlate v-if="isError || isVideoError" style="position: absolute" />
-    <div v-if="isBuffering || !resource" class="ts-mask" @pointerup="onOverlayPointerUp">
+    <div v-if="isBuffering || !resource" class="ts-mask" @pointerup="onPlayerPointerUp">
       <div class="ts-center">
         <div class="ts-loading is-large" style="color: #fff"></div>
       </div>
