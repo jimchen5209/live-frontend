@@ -196,6 +196,11 @@ const volumeDown = () => {
   setVolume()
 }
 
+const resetVolume = () => {
+  volume.value = 100
+  setVolume()
+}
+
 const toggleMute = () => {
   video.value.muted = !video.value.muted
   updateStatus()
@@ -432,7 +437,12 @@ onUnmounted(() => {
                 @input="setVolume"
                 @wheel="onVolumeMouseWheel"
               />
-              <span class="mobile:has-hidden">{{ Math.round(volume) }}%</span>
+              <span
+                class="mobile:has-hidden has-cursor-pointer"
+                title="按一下重置音量"
+                @click="resetVolume"
+                >{{ Math.round(volume) }}%</span
+              >
             </div>
             <span>
               {{ timeText }}
