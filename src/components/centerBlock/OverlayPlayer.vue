@@ -228,26 +228,6 @@ const onFullscreenButtonPointerUp = (event) => {
   toggleFullscreen()
 }
 
-const onSeekBackwardButtonPointerUp = (event) => {
-  const isHidden = isPlayerHidden()
-  setTimeout(() => onPlayerPointerMove(event), 50)
-  if (isHidden) {
-    return
-  }
-  setTimeout(() => onPlayerPointerMove(event), 50)
-  seekBackward()
-}
-
-const onSeekForwardButtonPointerUp = (event) => {
-  const isHidden = isPlayerHidden()
-  setTimeout(() => onPlayerPointerMove(event), 50)
-  if (isHidden) {
-    return
-  }
-  setTimeout(() => onPlayerPointerMove(event), 50)
-  seekForward()
-}
-
 const onKeyDown = (event) => {
   if (document.activeElement instanceof HTMLInputElement && !document.activeElement.classList.contains('player-slider')) return
   if (!video.value) return
@@ -388,19 +368,12 @@ onUnmounted(() => {
       v-if="resource && touchMode"
       class="ts-mask is-hidable has-flex-center has-horizontally-padded-huge"
       @pointerup="onPlayerPointerUp"
+      style="color: #fff"
     >
-      <div class="is-flex has-larger-gap has-full-width justify-around" style="color: #fff">
-        <button class="button-touch has-flex-center" @pointerup="onSeekBackwardButtonPointerUp">
-          <span class="ts-icon is-huge is-backward-icon" />
-        </button>
-        <button class="button-touch has-flex-center" @pointerup="onPlayButtonPointerUp">
-          <span v-if="isPaused" class="ts-icon is-huge is-play-icon" />
-          <span v-else class="ts-icon is-huge is-pause-icon" />
-        </button>
-        <button class="button-touch has-flex-center" @pointerup="onSeekForwardButtonPointerUp">
-          <span class="ts-icon is-huge is-forward-icon" />
-        </button>
-      </div>
+      <button class="button-touch has-flex-center" @pointerup="onPlayButtonPointerUp">
+        <span v-if="isPaused" class="ts-icon is-huge tablet+:is-heading is-play-icon" />
+        <span v-else class="ts-icon is-huge tablet+:is-heading is-pause-icon" />
+      </button>
     </div>
     <div v-if="resource" class="ts-mask is-faded is-top is-hidable" @pointerup="onOverlayPointerUp">
       <div class="ts-content" style="color: #fff">
@@ -608,6 +581,18 @@ onUnmounted(() => {
 .button {
   width: 30px;
   height: 30px;
+}
+
+.button-touch {
+  width: 36px;
+  height: 36px;
+}
+
+@media (min-width: 768px) {
+  .button-touch {
+    width: 90px;
+    height: 90px;
+  }
 }
 
 .style-text {
