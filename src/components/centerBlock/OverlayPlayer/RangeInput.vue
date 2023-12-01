@@ -2,14 +2,41 @@
 <script setup>
 import { onMounted, ref, watch } from 'vue'
 
-const props = defineProps(['modelValue', 'value', 'min', 'max', 'step'])
+const props = defineProps(['modelValue', 'value', 'min', 'max', 'step', 'timeRange'])
 const emit = defineEmits(['input', 'wheel', 'update:modelValue'])
 
 const sliderRef = ref(null)
 
+const toProgress = (value) => {
+  return (value / sliderRef.value.max) * 100
+}
+
 const updateBackground = (value) => {
-  const progress = (value / sliderRef.value.max) * 100
-  sliderRef.value.style.background = `linear-gradient(to right, var(--range-fg-color) ${progress}%, var(--range-bg-color) ${progress}%)`
+  const list = []
+  if (!props.timeRange) {
+    list.push(`var(--range-fg-color) ${toProgress(value)}%`)
+    list.push(`var(--range-bg-color) ${toProgress(value)}%`)
+  } else {
+    list.push(`var(--range-fg-color) 0%, var(--range-fg-color) ${toProgress(value)}%`)
+    let lastValue = value
+    for (let i = 0; i < props.timeRange.length; i++) {
+      const start = props.timeRange.start(i)
+      const end = props.timeRange.end(i)
+      if (end < value) continue
+      if (start > lastValue) {
+        list.push(`var(--range-bg-color) ${toProgress(lastValue)}%`)
+        list.push(`var(--range-bg-color) ${toProgress(start)}%`)
+      }
+      list.push(`var(--range-buffered-color) ${toProgress(Math.max(lastValue, start))}%`)
+      list.push(`var(--range-buffered-color) ${toProgress(end)}%`)
+      lastValue = end
+    }
+    if (lastValue < sliderRef.value.max) {
+      list.push(`var(--range-bg-color) ${toProgress(lastValue)}%`)
+      list.push(`var(--range-bg-color) 100%`)
+    }
+  }
+  sliderRef.value.style.background = `linear-gradient(to right, ${list.join(', ')})`
 }
 
 const onSliderInput = (event) => {
@@ -57,7 +84,8 @@ onMounted(() => {
 <style scoped>
 input[type='range'] {
   --range-fg-color: var(--ts-primary-500);
-  --range-bg-color: #ccc;
+  --range-buffered-color: color-mix(in srgb, var(--ts-static-gray-400), transparent 40%);
+  --range-bg-color: color-mix(in srgb, var(--ts-static-gray-500), transparent 40%);
   /* removing default appearance */
   -webkit-appearance: none;
   appearance: none;
