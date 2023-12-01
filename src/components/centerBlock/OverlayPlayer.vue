@@ -384,7 +384,11 @@ onUnmounted(() => {
         <div class="ts-loading is-large" style="color: #fff"></div>
       </div>
     </div>
-    <div v-if="resource && touchMode" class="ts-mask is-hidable has-flex-center has-horizontally-padded-huge" @pointerup="onPlayerPointerUp">
+    <div
+      v-if="resource && touchMode"
+      class="ts-mask is-hidable has-flex-center has-horizontally-padded-huge"
+      @pointerup="onPlayerPointerUp"
+    >
       <div class="is-flex has-larger-gap has-full-width justify-around" style="color: #fff">
         <button class="button-touch has-flex-center" @pointerup="onSeekBackwardButtonPointerUp">
           <span class="ts-icon is-huge is-backward-icon" />
@@ -415,6 +419,7 @@ onUnmounted(() => {
     <div v-if="resource" class="ts-mask is-faded is-bottom is-hidable">
       <div class="ts-content" style="color: #fff">
         <input
+          v-if="!touchMode"
           type="range"
           class="has-full-width has-cursor-pointer player-slider"
           v-model="currentTime"
@@ -422,13 +427,21 @@ onUnmounted(() => {
           step="any"
           @input="onSeekDrag"
         />
-        <div class="is-flex justify-between has-horizontally-padded" @pointerup="onOverlayPointerUp">
+        <div
+          class="is-flex justify-between"
+          :class="{ 'has-horizontally-padded': !touchMode }"
+          @pointerup="onOverlayPointerUp"
+        >
           <div class="is-flex">
-            <button class="button has-flex-center" @pointerup="onPlayButtonPointerUp">
+            <button
+              v-if="!touchMode"
+              class="button has-flex-center"
+              @pointerup="onPlayButtonPointerUp"
+            >
               <span v-if="isPaused" class="ts-icon tablet+:is-big is-play-icon" />
               <span v-else class="ts-icon tablet+:is-big is-pause-icon" />
             </button>
-            <div class="is-flex has-smaller-gap">
+            <div v-if="!touchMode" class="is-flex has-smaller-gap">
               <button
                 class="button has-flex-center"
                 @pointerup="onMuteButtonPointerUp"
@@ -456,6 +469,28 @@ onUnmounted(() => {
             </span>
           </div>
           <div class="is-flex">
+            <div v-if="touchMode" class="is-flex has-smaller-gap">
+              <button
+                class="button has-flex-center"
+                @pointerup="onMuteButtonPointerUp"
+                @wheel="onVolumeMouseWheel"
+              >
+                <span v-if="isMuted" class="ts-icon tablet+:is-big is-volume-xmark-icon" />
+                <span v-else-if="volume === 0" class="ts-icon tablet+:is-big is-volume-off-icon" />
+                <span v-else-if="volume <= 50" class="ts-icon tablet+:is-big is-volume-low-icon" />
+                <span v-else class="ts-icon tablet+:is-big is-volume-high-icon" />
+              </button>
+              <input
+                type="range"
+                class="mobile:has-hidden has-cursor-pointer player-slider"
+                v-model="volume"
+                :max="100"
+                step="any"
+                @input="setVolume"
+                @wheel="onVolumeMouseWheel"
+              />
+              <span class="mobile:has-hidden">{{ Math.round(volume) }}%</span>
+            </div>
             <div v-if="qualityList.length > 1">
               <button
                 class="button has-flex-center"
@@ -520,6 +555,15 @@ onUnmounted(() => {
             </button>
           </div>
         </div>
+        <input
+          v-if="touchMode"
+          type="range"
+          class="has-full-width has-cursor-pointer player-slider"
+          v-model="currentTime"
+          :max="duration"
+          step="any"
+          @input="onSeekDrag"
+        />
       </div>
     </div>
   </div>
@@ -560,7 +604,6 @@ onUnmounted(() => {
 .justify-around {
   justify-content: space-around;
 }
-
 
 .button {
   width: 30px;
