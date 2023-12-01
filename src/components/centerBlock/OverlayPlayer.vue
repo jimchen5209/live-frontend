@@ -2,6 +2,7 @@
 import { computed, onMounted, onUnmounted, ref } from 'vue'
 import { debounce } from 'lodash'
 
+import VolumeControl from './OverlayPlayer/VolumeControl.vue'
 import ErrorBlankSlate from '../ErrorBlankSlate.vue'
 
 const props = defineProps({
@@ -421,56 +422,28 @@ onUnmounted(() => {
               <span v-if="isPaused" class="ts-icon tablet+:is-big is-play-icon" />
               <span v-else class="ts-icon tablet+:is-big is-pause-icon" />
             </button>
-            <div v-if="!touchMode" class="is-flex has-smaller-gap">
-              <button
-                class="button has-flex-center"
-                @pointerup="onMuteButtonPointerUp"
-                @wheel="onVolumeMouseWheel"
-              >
-                <span v-if="isMuted" class="ts-icon tablet+:is-big is-volume-xmark-icon" />
-                <span v-else-if="volume === 0" class="ts-icon tablet+:is-big is-volume-off-icon" />
-                <span v-else-if="volume <= 50" class="ts-icon tablet+:is-big is-volume-low-icon" />
-                <span v-else class="ts-icon tablet+:is-big is-volume-high-icon" />
-              </button>
-              <input
-                type="range"
-                class="mobile:has-hidden has-cursor-pointer player-slider"
-                v-model="volume"
-                :max="100"
-                step="any"
-                @input="setVolume"
-                @wheel="onVolumeMouseWheel"
-              />
-              <span class="mobile:has-hidden">{{ Math.round(volume) }}%</span>
-            </div>
+            <VolumeControl
+              v-if="!touchMode"
+              v-model:volume="volume"
+              :is-muted="isMuted"
+              @mute-button-pointerup="onMuteButtonPointerUp"
+              @volume-mousewheel="onVolumeMouseWheel"
+              @update:volume="setVolume"
+            />
             <span>
               {{ timeText }}
               <span v-if="!isNaN(duration)"> / {{ durationText }} </span>
             </span>
           </div>
           <div class="is-flex">
-            <div v-if="touchMode" class="is-flex has-smaller-gap">
-              <button
-                class="button has-flex-center"
-                @pointerup="onMuteButtonPointerUp"
-                @wheel="onVolumeMouseWheel"
-              >
-                <span v-if="isMuted" class="ts-icon tablet+:is-big is-volume-xmark-icon" />
-                <span v-else-if="volume === 0" class="ts-icon tablet+:is-big is-volume-off-icon" />
-                <span v-else-if="volume <= 50" class="ts-icon tablet+:is-big is-volume-low-icon" />
-                <span v-else class="ts-icon tablet+:is-big is-volume-high-icon" />
-              </button>
-              <input
-                type="range"
-                class="mobile:has-hidden has-cursor-pointer player-slider"
-                v-model="volume"
-                :max="100"
-                step="any"
-                @input="setVolume"
-                @wheel="onVolumeMouseWheel"
-              />
-              <span class="mobile:has-hidden">{{ Math.round(volume) }}%</span>
-            </div>
+            <VolumeControl
+              v-if="touchMode"
+              v-model:volume="volume"
+              :is-muted="isMuted"
+              @mute-button-pointerup="onMuteButtonPointerUp"
+              @volume-mousewheel="onVolumeMouseWheel"
+              @update:volume="setVolume"
+            />
             <div v-if="qualityList.length > 1">
               <button
                 class="button has-flex-center"
@@ -573,16 +546,8 @@ onUnmounted(() => {
   gap: 1rem;
 }
 
-.has-smaller-gap {
-  gap: 0.5rem;
-}
-
 .justify-between {
   justify-content: space-between;
-}
-
-.justify-around {
-  justify-content: space-around;
 }
 
 .button {
