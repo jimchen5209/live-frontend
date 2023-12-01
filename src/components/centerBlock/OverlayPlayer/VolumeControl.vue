@@ -1,4 +1,6 @@
 <script setup>
+import RangeInput from './RangeInput.vue'
+
 defineProps({
   volume: {
     type: Number,
@@ -25,8 +27,7 @@ defineEmits(['mute-button-pointerup', 'volume-mousewheel', 'update:volume'])
       <span v-else-if="volume <= 50" class="ts-icon tablet+:is-big is-volume-low-icon" />
       <span v-else class="ts-icon tablet+:is-big is-volume-high-icon" />
     </button>
-    <input
-      type="range"
+    <RangeInput
       class="mobile:has-hidden has-cursor-pointer player-slider"
       :value="volume"
       :max="100"
