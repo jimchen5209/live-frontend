@@ -2,6 +2,7 @@
 import { computed, onMounted, onUnmounted, ref } from 'vue'
 import { debounce } from 'lodash'
 
+import RangeInput from './OverlayPlayer/RangeInput.vue'
 import VolumeControl from './OverlayPlayer/VolumeControl.vue'
 import ErrorBlankSlate from '../ErrorBlankSlate.vue'
 
@@ -501,7 +502,7 @@ onUnmounted(() => {
       @pointerup="handlePlayerPointerEvent"
     >
       <div class="ts-content" style="color: #fff">
-        <input
+        <RangeInput
           v-if="!touchMode"
           type="range"
           class="has-full-width has-cursor-pointer player-slider"
@@ -615,7 +616,7 @@ onUnmounted(() => {
             </button>
           </div>
         </div>
-        <input
+        <RangeInput
           v-if="touchMode"
           type="range"
           class="has-full-width has-cursor-pointer player-slider"

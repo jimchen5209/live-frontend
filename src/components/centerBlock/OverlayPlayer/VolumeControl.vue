@@ -1,4 +1,6 @@
 <script setup>
+import RangeInput from './RangeInput.vue'
+
 defineProps({
   volume: {
     type: Number,
@@ -38,8 +40,7 @@ defineEmits([
         :style="{ color: volume > 100 ? 'var(--ts-negative-400)' : 'var(--ts-white)' }"
       />
     </button>
-    <input
-      type="range"
+    <RangeInput
       class="mobile:has-hidden has-cursor-pointer player-slider"
       :value="volume"
       :max="150"
