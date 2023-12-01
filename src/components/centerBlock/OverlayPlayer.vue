@@ -230,7 +230,11 @@ const onFullscreenButtonPointerUp = (event) => {
 }
 
 const onKeyDown = (event) => {
-  if (document.activeElement instanceof HTMLInputElement && !document.activeElement.classList.contains('player-slider')) return
+  if (
+    document.activeElement instanceof HTMLInputElement &&
+    !document.activeElement.classList.contains('player-slider')
+  )
+    return
   if (!video.value) return
   if (!props.resource) return
 
