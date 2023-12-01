@@ -440,12 +440,13 @@ onUnmounted(() => {
         <RangeInput
           v-if="!touchMode"
           type="range"
-          class="has-full-width has-cursor-pointer player-slider"
+          input-class="has-full-width has-cursor-pointer player-slider"
           v-model="currentTime"
           :max="duration"
           step="any"
           @input="onSeekDrag"
           :time-range="video?.buffered"
+          :tooltip-value="(value) => timeToText(value)"
         />
         <div
           class="is-flex justify-between"
@@ -554,11 +555,12 @@ onUnmounted(() => {
         <RangeInput
           v-if="touchMode"
           type="range"
-          class="has-full-width has-cursor-pointer player-slider"
+          input-class="has-full-width has-cursor-pointer player-slider"
           v-model="currentTime"
           :max="duration"
           step="any"
           @input="onSeekDrag"
+          :show-tooltip="false"
         />
       </div>
     </div>

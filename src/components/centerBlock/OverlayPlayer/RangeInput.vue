@@ -1,11 +1,46 @@
 <!-- https://blog.logrocket.com/creating-custom-css-range-slider-javascript-upgrades/ -->
+<!-- https://stackoverflow.com/questions/39069993/show-input-range-value-on-hover -->
 <script setup>
 import { onMounted, ref, watch } from 'vue'
 
-const props = defineProps(['modelValue', 'value', 'min', 'max', 'step', 'timeRange', 'list'])
+const props = defineProps({
+  inputClass: {
+    type: String,
+  },
+  modelValue: {
+    type: Number,
+  },
+  value: {
+    type: Number,
+  },
+  min: {
+    type: Number,
+  },
+  max: {
+    type: Number,
+  },
+  step: {
+    type: String,
+  },
+  timeRange: {
+    type: Object,
+  },
+  list:{
+    type: String,
+  },
+  tooltipValue: {
+    type: Function,
+    default: (value) => Math.round(value)
+  },
+  showTooltip: {
+    type: Boolean,
+    default: true
+  }
+})
 const emit = defineEmits(['input', 'wheel', 'update:modelValue'])
 
 const sliderRef = ref(null)
+const tooltipRef = ref(null)
 
 const toProgress = (value) => {
   return (value / sliderRef.value.max) * 100
@@ -45,6 +80,18 @@ const onSliderInput = (event) => {
   emit('input', event)
 }
 
+const onInputMouseMove = (event) => {
+  if (!props.showTooltip) return
+  const w = sliderRef.value.clientWidth
+  const x = event.offsetX
+  const percents = (x - 5) / (w - 10)
+  const min = sliderRef.value.min
+  const max = sliderRef.value.max
+  tooltipRef.value.innerHTML = props.tooltipValue(Math.max(min, Math.min(max, percents * max)))
+  const tooltipWidth = tooltipRef.value.clientWidth
+  tooltipRef.value.style.left = `${x - tooltipWidth / 2}px`
+}
+
 watch(
   () => props.value,
   (value) => {
@@ -68,21 +115,41 @@ onMounted(() => {
 </script>
 
 <template>
-  <input
-    ref="sliderRef"
-    type="range"
-    :value="modelValue ?? value"
-    :min="min"
-    :max="max"
-    :step="step"
-    :list="list"
-    :class="{ 'with-list': list }"
-    @input="onSliderInput"
-    @wheel="$emit('wheel', $event)"
-  />
+  <div style="position: relative">
+    <input
+      ref="sliderRef"
+      type="range"
+      :value="modelValue ?? value"
+      :min="min"
+      :max="max"
+      :step="step"
+      :list="list"
+      :class="[inputClass, { 'with-list': list }]"
+      @input="onSliderInput"
+      @wheel="$emit('wheel', $event)"
+      @mousemove="onInputMouseMove"
+    />
+    <p v-if="showTooltip" ref="tooltipRef" id="tooltip">0</p>
+  </div>
 </template>
 
 <style scoped>
+#tooltip {
+  display: none;
+  position: absolute;
+}
+
+input[type='range']:hover ~ #tooltip {
+  display: block;
+  background: var(--ts-gray-200);
+  color: #fff;
+  padding: 5px 10px;
+  border-radius: 5px;
+  font-size: 12px;
+  top: -40px;
+  z-index: 300;
+}
+
 input[type='range'] {
   --range-fg-color: var(--ts-primary-500);
   --range-buffered-color: color-mix(in srgb, var(--ts-static-gray-400), transparent 40%);
@@ -91,6 +158,7 @@ input[type='range'] {
   -webkit-appearance: none;
   appearance: none;
   /* creating a custom design */
+  width: 100%;
   outline: none;
   border-radius: 15px;
 
