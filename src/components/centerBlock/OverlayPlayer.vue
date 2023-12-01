@@ -505,12 +505,13 @@ onUnmounted(() => {
         <StyledBar
           v-if="!touchMode"
           type="range"
-          class="has-full-width has-cursor-pointer player-slider"
+          input-class="has-full-width has-cursor-pointer player-slider"
           v-model="currentTime"
           :max="duration"
           step="any"
           @input="debounceSeekDrag"
           :time-range="videoRef?.buffered"
+          :tooltip-value="(value) => timeToText(value)"
         />
         <div class="is-flex justify-between" :class="{ 'has-horizontally-padded': !touchMode }">
           <div class="is-flex">
@@ -620,11 +621,12 @@ onUnmounted(() => {
         <StyledBar
           v-if="touchMode"
           type="range"
-          class="has-full-width has-cursor-pointer player-slider"
+          input-class="has-full-width has-cursor-pointer player-slider"
           v-model="currentTime"
           :max="duration"
           step="any"
           @input="debounceSeekDrag"
+          :show-tooltip="false"
           :time-range="videoRef?.buffered"
         />
       </div>

@@ -41,13 +41,14 @@ defineEmits([
       />
     </button>
     <StyledBar
-      class="mobile:has-hidden has-cursor-pointer player-slider"
+      input-class="mobile:has-hidden has-cursor-pointer player-slider"
       :value="volume"
       :max="150"
       step="any"
       list="volumeMarkers"
       @input="$emit('update:volume', $event.target.value)"
       @wheel="$emit('volume-mousewheel', $event)"
+      :show-tooltip="false"
     />
     <datalist id="volumeMarkers">
       <option value="100"></option>
