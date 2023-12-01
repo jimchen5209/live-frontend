@@ -49,4 +49,10 @@ defineEmits(['mute-button-pointerup', 'volume-mousewheel', 'update:volume'])
   align-items: center;
   gap: 0.5rem;
 }
+
+/* Workaround tocas-ui's important */
+.auto-hidden .has-cursor-pointer,
+.auto-hidden button {
+  cursor: none !important;
+}
 </style>
