@@ -408,6 +408,7 @@ onUnmounted(() => {
           :max="duration"
           step="any"
           @input="onSeekDrag"
+          :time-range="video?.buffered"
         />
         <div
           class="is-flex justify-between"
