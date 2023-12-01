@@ -41,6 +41,16 @@ const isBuffering = ref(false)
 
 const autoHideTimer = ref(null)
 const isPlayerHidden = () => overlayVideo.value?.classList.contains('auto-hidden') ?? false
+
+const hideUI = () => {
+  if (isDropdownVisible()) return
+  if (autoHideTimer.value) {
+    clearTimeout(autoHideTimer.value)
+    autoHideTimer.value = null
+  }
+  overlayVideo.value?.classList.add('auto-hidden')
+}
+
 const onPlayerPointerMove = (event) => {
   touchMode.value = isTouch(event)
   if (autoHideTimer.value) {
@@ -49,16 +59,7 @@ const onPlayerPointerMove = (event) => {
   }
 
   // set timeout to wait of idle time
-  const t = setTimeout(
-    () => {
-      autoHideTimer.value = null
-
-      if (isDropdownVisible()) return
-
-      overlayVideo.value?.classList.add('auto-hidden')
-    },
-    (isTouch(event) ? 2 : 1) * 1000
-  )
+  const t = setTimeout(hideUI, (isTouch(event) ? 2 : 1) * 1000)
   autoHideTimer.value = t
 
   overlayVideo.value?.classList.remove('auto-hidden')
@@ -295,11 +296,13 @@ const onPlayerPointerUp = (event) => {
 
 const onPlayerClick = (event) => {
   const isHidden = isPlayerHidden()
-  setTimeout(() => onPlayerPointerMove(event), 50)
-  if (isHidden) {
+  if (isTouch(event) && !isHidden) {
+    touchMode.value = isTouch(event)
+    hideUI()
     return
   }
-  if (isTouch(event)) {
+  setTimeout(() => onPlayerPointerMove(event), 50)
+  if (isHidden) {
     return
   }
   // do not toggle play when dropdown is visible
