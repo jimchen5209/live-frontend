@@ -60,11 +60,10 @@ watch(
 )
 
 onMounted(() => {
-  if (props.modelValue) {
+  if (props.modelValue) 
     updateBackground(props.modelValue)
-    return
-  }
-  updateBackground(props.value)
+  if (props.value)
+    updateBackground(props.value)
 })
 </script>
 
