@@ -89,13 +89,20 @@ onMounted(async () => {
       Array.from(new Set(recordList.value.toReversed().map((i) => i.streamer)).values()).map(
         async (i) => {
           const url_livestream = `${liveUrl}/${i}.m3u8`
+          let isLive = false
+          try {
+            isLive = (await fetch(url_livestream)).ok
+          } catch (e) {
+            console.error('Failed to retch live status', e)
+            isLive = false
+          }
           return {
             streamer: i,
             publishTime: new Date(Date.now()),
             duration: '0',
             src: url_livestream,
             name: `${i}.m3u8`,
-            isLive: (await fetch(url_livestream)).ok
+            isLive
           }
         }
       )
