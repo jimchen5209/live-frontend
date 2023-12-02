@@ -74,7 +74,7 @@ onMounted(async () => {
             ),
             duration: e.format.duration,
             src: `${recordUrl}/${filename.replace('flv', 'mp4')}`,
-            name: filename
+            name: filename.replace('flv', 'mp4')
           }
         })
         .sort(
