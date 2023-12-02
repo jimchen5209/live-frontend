@@ -4,12 +4,12 @@ import LivePlayer from './LivePlayer.vue'
 import OverlayPlayer from './OverlayPlayer.vue'
 
 const props = defineProps({
-  currentPath: String,
+  filename: String,
   list: Array
 })
 
 const resource = computed(
-  () => props.list?.filter((i) => i.name == props.currentPath?.split('/').at(-1))[0]
+  () => props.list?.filter((i) => i.name === props.filename)[0]
 )
 </script>
 

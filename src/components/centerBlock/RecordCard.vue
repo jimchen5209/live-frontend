@@ -21,12 +21,16 @@ const parsedu = computed(() => {
   if (s < 10) s = `0${s}`
   return `${h}:${m}:${s}`
 })
+const nameWithoutExt = computed(() => {
+  if (props.isLive) return 'live'
+  return props.name.substring(0, props.name.lastIndexOf('.')) || props.name
+})
 const isload = ref(false)
 </script>
 
 <template>
   <!-- Box -->
-  <a class="ts-box" :href="`#profile/${streamer}/${name}`">
+  <a class="ts-box" :href="`#${streamer}/${nameWithoutExt}`">
     <!-- Preview image -->
     <div class="live-card-picture ts-image" :class="{ 'live-loading': !isload }">
       <picture>

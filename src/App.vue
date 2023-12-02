@@ -11,6 +11,7 @@ import AgeRestrictPage from './components/AgeRestrictPage.vue'
 
 import { useViewport } from './util/viewport'
 import { useChat } from './util/chat'
+import { useRoute } from './util/routing'
 
 const liveUrl = '/live'
 const recordUrl = '/record'
@@ -29,6 +30,7 @@ const {
 } = useChat()
 
 const { viewWidth } = useViewport()
+const { route, profileName, isProfilePage, targetFilename } = useRoute()
 
 const playlistRef = ref(null)
 const mobileMenuRef = ref(null)
@@ -45,19 +47,10 @@ const ageRestrict = (i) => {
 
 const isMobile = computed(() => viewWidth.value <= 1023)
 
-// Custom Routing
-const currentPath = ref(window.location.hash)
-window.addEventListener('hashchange', () => {
-  currentPath.value = window.location.hash
-})
-
-const isPlayable = ref(currentPath.value.split('/').length > 2)
-
 const refreshChat = () => {
-  if (isPlayable.value) {
-    const channel = currentPath.value.split('/').at(-1)
+  if (!isProfilePage.value) {
     disconnect()
-    connect(channel)
+    connect(targetFilename.value)
   } else {
     disconnect()
   }
@@ -116,28 +109,16 @@ const scrollToTop = () => {
 }
 
 watch(
-  () => currentPath.value,
+  () => route.value,
   () => {
     if (mobileMenuRef.value?.classList.contains('is-visible')) mobileMenuRef.value?.classList.remove('is-visible')
     scrollToTop()
-    isPlayable.value = currentPath.value.split('/').length > 2
-
     refreshChat()
   }
 )
 
 const onDrawerBackgroundClick = (event) => {
   if (event.target.classList.contains('ts-app-drawer')) mobileMenuRef.value?.classList.remove('is-visible')
-}
-
-// 相容舊的
-const p = currentPath.value.split('/').at(-1)
-if (currentPath.value?.startsWith('#record')) {
-  // #record/cute_panda-1698758357.mp4
-  window.location.replace(`#profile/${p.split('-').at(0)}/${p}`) // #profile/cute_panda/cute_panda-1698758357.mp4
-} else if (currentPath.value?.startsWith('#live')) {
-  // #live/cute_panda
-  window.location.replace(`#profile/${p.split('-').at(0)}/${p.split('-').at(0)}.m3u8`) // #profile/cute_panda/cute_panda.m3u8
 }
 </script>
 
@@ -151,7 +132,7 @@ if (currentPath.value?.startsWith('#record')) {
     <!-- StreamerList for desktop user -->
     <div id="sidebar" class="tablet-:has-hidden cell is-scrollable">
       <HeaderBlock />
-      <StreamerList v-if="livestreamList" :livestream-list="livestreamList" :path="currentPath" />
+      <StreamerList v-if="livestreamList" :livestream-list="livestreamList" :selected-streamer="profileName" />
     </div>
     <div class="cell is-fluid">
       <div class="ts-app-layout is-vertical">
@@ -176,23 +157,23 @@ if (currentPath.value?.startsWith('#record')) {
               <StreamerList
                 v-if="livestreamList"
                 :livestream-list="livestreamList"
-                :path="currentPath"
+                :selected-streamer="profileName"
               />
             </div>
           </div>
         </div>
         <div ref="playlistRef" class="cell ts-app-layout is-vertical is-fluid is-scrollable">
           <!-- MediaPlayer -->
-          <div v-if="isPlayable" class="cell" style="display: inline-flex">
+          <div v-if="!isProfilePage" class="cell" style="display: inline-flex">
             <MediaPlayer
               v-if="livestreamList"
-              :current-path="currentPath"
+              :filename="targetFilename"
               :list="recordList.concat(livestreamList.filter((i) => i.isLive))"
             />
           </div>
           <div class="cell">
             <!-- Chat for mobile user -->
-            <div v-if="isPlayable" id="mobileChat" class="desktop+:has-hidden">
+            <div v-if="!isProfilePage" id="mobileChat" class="desktop+:has-hidden">
               <ChatView
                 v-if="isMobile"
                 :viewer-count="viewerCount"
@@ -207,7 +188,7 @@ if (currentPath.value?.startsWith('#record')) {
             </div>
             <!-- Playlist -->
             <PlaylistView
-              :current-path="currentPath"
+              :selected-streamer="profileName"
               :list="recordList.concat(livestreamList.filter((i) => i.isLive))"
               @top="scrollToTop"
             />
@@ -216,7 +197,7 @@ if (currentPath.value?.startsWith('#record')) {
       </div>
     </div>
     <!-- Chat for desktop user -->
-    <div v-if="isPlayable" id="chatBar" class="tablet-:has-hidden cell">
+    <div v-if="!isProfilePage" id="chatBar" class="tablet-:has-hidden cell">
       <ChatView
         v-if="!isMobile"
         :viewer-count="viewerCount"
