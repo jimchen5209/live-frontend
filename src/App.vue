@@ -111,28 +111,31 @@ const scrollToTop = () => {
 watch(
   () => route.value,
   () => {
-    if (mobileMenuRef.value?.classList.contains('is-visible')) mobileMenuRef.value?.classList.remove('is-visible')
+    if (mobileMenuRef.value?.classList.contains('is-visible'))
+      mobileMenuRef.value?.classList.remove('is-visible')
     scrollToTop()
     refreshChat()
   }
 )
 
 const onDrawerBackgroundClick = (event) => {
-  if (event.target.classList.contains('ts-app-drawer')) mobileMenuRef.value?.classList.remove('is-visible')
+  if (event.target.classList.contains('ts-app-drawer'))
+    mobileMenuRef.value?.classList.remove('is-visible')
 }
 </script>
 
 <template>
   <ErrorBlankSlate v-if="isError" style="height: 100vh; width: 100vw" />
-  <AgeRestrictPage
-    v-else-if="!isAdult"
-    @age-restrict="ageRestrict"
-  />
+  <AgeRestrictPage v-else-if="!isAdult" @age-restrict="ageRestrict" />
   <div v-else class="cell ts-app-layout is-horizontal is-full">
     <!-- StreamerList for desktop user -->
     <div id="sidebar" class="tablet-:has-hidden cell is-scrollable">
       <HeaderBlock />
-      <StreamerList v-if="livestreamList" :livestream-list="livestreamList" :selected-streamer="profileName" />
+      <StreamerList
+        v-if="livestreamList"
+        :livestream-list="livestreamList"
+        :selected-streamer="profileName"
+      />
     </div>
     <div class="cell is-fluid">
       <div class="ts-app-layout is-vertical">

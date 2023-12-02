@@ -8,9 +8,7 @@ const props = defineProps({
   list: Array
 })
 
-const resource = computed(
-  () => props.list?.filter((i) => i.name === props.filename)[0]
-)
+const resource = computed(() => props.list?.filter((i) => i.name === props.filename)[0])
 </script>
 
 <template>
