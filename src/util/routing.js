@@ -39,7 +39,7 @@ export const useRoute = () => {
       // #record/cute_panda-1698758357.mp4
       // #live/cute_panda
       const isLive = route[0].startsWith('live')
-      const profileName = route[1].split('-')[0]
+      const profileName = isLive ? route[1] : route[1].split('-').slice(0, -1).join('-')
       const filename = route[1].replace('.mp4', '').replace('.flv', '')
       window.location.replace(`#${profileName}/${isLive ? 'live' : filename}`)
     } else if (route[0] === 'profile' && !route[1].startsWith('profile')) {
