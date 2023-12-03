@@ -186,7 +186,6 @@ const seekBackward = () => {
 }
 
 const setVolume = () => {
-  reverseVolume(videoAmplifier.value?.getAmpLevel())
   if (volume.value === 0) {
     video.value.muted = true
     updateStatus()
