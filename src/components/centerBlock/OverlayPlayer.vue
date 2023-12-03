@@ -153,7 +153,7 @@ const updateStatus = () => {
   duration.value = video.value?.duration
   isPaused.value = video.value?.paused
   isMuted.value = video.value?.muted
-  volume.value = video.value?.muted ? 0 : reverseVolume(videoAmplifier.value?.getAmpLevel() * 100) 
+  volume.value = video.value?.muted ? 0 : reverseVolume(videoAmplifier.value?.getAmpLevel() * 100)
   isFullscreen.value = document.fullscreenElement !== null
   rate.value = video.value?.playbackRate
 }
