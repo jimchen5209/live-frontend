@@ -450,9 +450,7 @@ onUnmounted(() => {
                 @wheel="onVolumeMouseWheel"
               />
               <datalist id="volumeMarkers">
-                <option value="0"></option>
                 <option value="100"></option>
-                <option value="150"></option>
               </datalist>
               <span
                 class="mobile:has-hidden has-cursor-pointer"
