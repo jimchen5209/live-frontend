@@ -30,7 +30,7 @@ const {
 } = useChat()
 
 const { viewWidth } = useViewport()
-const { route, profileName, isProfilePage, targetFilename } = useRoute()
+const { route, profileName, isProfilePage, isLive, targetFilename } = useRoute()
 
 const playlistRef = ref(null)
 const mobileMenuRef = ref(null)
@@ -53,6 +53,27 @@ const refreshChat = () => {
     connect(targetFilename.value)
   } else {
     disconnect()
+  }
+}
+
+const newStreamer = async () => {
+  if (isLive.value && !livestreamList.value.some((i) => i.streamer === profileName.value)) {
+    const url_livestream = `${liveUrl}/${profileName.value}.m3u8`
+    let isLive = false
+    try {
+      isLive = (await fetch(url_livestream)).ok
+    } catch (e) {
+      console.error('Failed to fetch live status', e)
+      isLive = false
+    }
+    livestreamList.value.push({
+      streamer: profileName.value,
+      publishTime: new Date(Date.now()),
+      duration: '0',
+      src: url_livestream,
+      name: `${profileName.value}.m3u8`,
+      isLive
+    })
   }
 }
 
@@ -108,6 +129,7 @@ onMounted(async () => {
       )
     )
   ).sort((a, b) => (a.isLive === b.isLive ? 0 : a.isLive ? -1 : 1))
+  newStreamer()
 })
 
 // 來點回頂部
@@ -122,6 +144,7 @@ watch(
       mobileMenuRef.value?.classList.remove('is-visible')
     scrollToTop()
     refreshChat()
+    newStreamer()
   }
 )
 
