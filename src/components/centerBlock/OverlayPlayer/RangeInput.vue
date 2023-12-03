@@ -76,6 +76,7 @@ onMounted(() => {
     :max="max"
     :step="step"
     :list="list"
+    :class="{ 'with-list': list }"
     @input="onSliderInput"
     @wheel="$emit('wheel', $event)"
   />
@@ -111,6 +112,11 @@ input[type='range']::-webkit-slider-thumb {
   border: none;
 
   transition: 0.2s ease-in-out;
+}
+
+/* Thumb: webkit with ticks */
+input[type='range'].with-list::-webkit-slider-thumb {
+  margin-top: -14px;
 }
 
 /* Thumb: Firefox */
