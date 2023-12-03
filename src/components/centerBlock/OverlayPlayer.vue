@@ -198,7 +198,7 @@ const setVolume = () => {
 }
 
 const volumeUp = () => {
-  volume.value = Math.min(volume.value + 5, 200)
+  volume.value = Math.min(volume.value + 5, 150)
   setVolume()
 }
 
