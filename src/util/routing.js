@@ -12,20 +12,21 @@ export const useRoute = () => {
   })
 
   const isProfilePage = computed(() => {
-    return splittedRoute.value.length === 1 || splittedRoute.value[1] === ''
+    return splittedRoute.value.length === 1 || splittedRoute.value[1].split(':')[0] === ''
   })
 
   const isLive = computed(() => {
-    return !isProfilePage.value ? splittedRoute.value[1] === 'live' : false
+    return !isProfilePage.value ? splittedRoute.value[1].split(':')[0] === 'live' : false
   })
 
   const targetFilename = computed(() => {
     if (isProfilePage.value) return undefined
-    return isLive.value ? `${profileName.value}.m3u8` : `${splittedRoute.value[1]}.mp4`
+    return isLive.value ? `${profileName.value}.m3u8` : `${splittedRoute.value[1].split(':')[0]}.mp4`
   })
 
-  const restRoute = computed(() => {
-    return splittedRoute.value.slice(2)
+  const parameters = computed(() => {
+    if (isProfilePage.value) return []
+    return splittedRoute.value[1].split(':').slice(1)
   })
 
   const mergeUrl = () => {
@@ -76,6 +77,6 @@ export const useRoute = () => {
     isProfilePage,
     isLive,
     targetFilename,
-    restRoute
+    parameters
   }
 }
