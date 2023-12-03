@@ -1,7 +1,8 @@
 <script setup>
-import { computed, onMounted, onUnmounted, ref } from 'vue'
+import { computed, onMounted, onUnmounted, ref, watch } from 'vue'
 import { debounce } from 'lodash'
 
+import { useRoute } from '../../util/routing'
 import ErrorBlankSlate from '../ErrorBlankSlate.vue'
 
 const props = defineProps({
@@ -23,6 +24,8 @@ const props = defineProps({
   }
 })
 defineEmits(['change-quality'])
+
+const { getParameter, setParameter, route } = useRoute()
 
 const isTouch = (event) => event?.pointerType === 'touch'
 
@@ -156,8 +159,17 @@ const updateStatus = () => {
   rate.value = video.value?.playbackRate
 }
 
+const getTimeFromUrl = () => {
+  const time = getParameter('t')
+  if (time && !isNaN(time) && parseInt(time) > 0 && parseInt(time) < duration.value) {
+    currentTime.value = parseInt(time)
+    setTime()
+  }
+}
+
 const onPlayerReady = () => {
   updateStatus()
+  getTimeFromUrl()
   onPlayerPointerMove()
 }
 
@@ -358,10 +370,16 @@ const copyUrl = () => {
 }
 
 const copyTimeUrl = () => {
-  const url = new URL(window.location)
-  url.searchParams.set('t', currentTime.value)
-  navigator.clipboard.writeText(url.href)
+  const newUrl = setParameter('t', Math.floor(currentTime.value))
+  navigator.clipboard.writeText(newUrl.href)
 }
+
+watch(
+  () => route.value,
+  () => {
+    getTimeFromUrl()
+  }
+)
 
 onMounted(() => {
   document.addEventListener('keydown', onKeyDown)
@@ -447,7 +465,7 @@ onUnmounted(() => {
                   <span class="description">{{timeToText(currentTime)}}</span>
                 </button>
                 <button
-                  class="item"
+                  class="item is-disabled"
                 >
                   啟動同時觀看
                 </button>

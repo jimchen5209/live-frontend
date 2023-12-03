@@ -29,6 +29,33 @@ export const useRoute = () => {
     return splittedRoute.value[1].split(':').slice(1)
   })
 
+  const getParameter = (key) => { 
+    const parameter = parameters.value.find((parameter) => parameter.startsWith(key))
+    if (parameter === undefined) return undefined
+    return parameter.split('=')[1]
+  }
+
+  const setParameter = (key, value) => {
+    const newParameters = parameters.value.slice(0)
+    const parameterIndex = newParameters.findIndex((parameter) => parameter.startsWith(key))
+    if (parameterIndex === -1) {
+      newParameters.push(`${key}=${value}`)
+    } else {
+      newParameters[parameterIndex] = `${key}=${value}`
+    }
+    
+    const newUrl = new URL(window.location.href)
+    newUrl.hash = `#${profileName.value}/${isLive.value ? 'live' : splittedRoute.value[1].split(':')[0]}:${newParameters.join(':')}`
+    return {
+      href: newUrl.href,
+      hash: newUrl.hash
+    }
+  }
+
+  const replaceHash = (hash) => {
+    window.location.replace(hash)
+  }
+
   const mergeUrl = () => {
     const route = window.location.hash.substring(1).split('/')
     if (route.length === 1) return
@@ -77,6 +104,9 @@ export const useRoute = () => {
     isProfilePage,
     isLive,
     targetFilename,
-    parameters
+    parameters,
+    getParameter,
+    setParameter,
+    replaceHash
   }
 }
