@@ -28,6 +28,37 @@ const isTouch = (event) => event?.pointerType === 'touch'
 
 const overlayVideo = ref(null)
 const video = ref(null)
+const videoAmplifier = computed(() => {
+  if (!video.value) return null
+  const context = new (window.AudioContext || window.webkitAudioContext)(),
+    result = {
+      context: context,
+      source: context.createMediaElementSource(video.value),
+      gain: context.createGain(),
+      media: video.value,
+      amplify: function (multiplier) {
+        result.gain.gain.value = multiplier
+      },
+      getAmpLevel: function () {
+        return result.gain.gain.value
+      }
+    }
+  result.source.connect(result.gain)
+  result.gain.connect(context.destination)
+  result.amplify(1)
+  return result
+})
+
+const convertVolume = (volume) => {
+  if (volume <= 100) return volume
+  return 100 + (volume - 100) * 2
+}
+
+const reverseVolume = (volume) => {
+  if (volume <= 100) return volume
+  return 100 + (volume - 100) / 2
+}
+
 const isVideoError = ref(false)
 
 const rateDropdown = ref(null)
@@ -118,7 +149,7 @@ const updateStatus = () => {
   duration.value = video.value?.duration
   isPaused.value = video.value?.paused
   isMuted.value = video.value?.muted
-  volume.value = video.value?.muted ? 0 : video.value?.volume * 100
+  volume.value = video.value?.muted ? 0 : reverseVolume(videoAmplifier.value?.getAmpLevel() * 100) 
   isFullscreen.value = document.fullscreenElement !== null
   rate.value = video.value?.playbackRate
 }
@@ -162,17 +193,22 @@ const setVolume = () => {
   }
 
   video.value.muted = false
-  video.value.volume = volume.value / 100
+  videoAmplifier.value?.amplify(convertVolume(volume.value) / 100)
   updateStatus()
 }
 
 const volumeUp = () => {
-  volume.value = Math.min(volume.value + 5, 100)
+  volume.value = Math.min(volume.value + 5, 150)
   setVolume()
 }
 
 const volumeDown = () => {
   volume.value = Math.max(volume.value - 5, 0)
+  setVolume()
+}
+
+const resetVolume = () => {
+  volume.value = 100
   setVolume()
 }
 
@@ -222,7 +258,11 @@ const onFullscreenButtonPointerUp = (event) => {
 }
 
 const onKeyDown = (event) => {
-  if (document.activeElement instanceof HTMLInputElement && !document.activeElement.classList.contains('player-slider')) return
+  if (
+    document.activeElement instanceof HTMLInputElement &&
+    !document.activeElement.classList.contains('player-slider')
+  )
+    return
   if (!video.value) return
   if (!props.resource) return
 
@@ -331,6 +371,7 @@ onUnmounted(() => {
     <video
       id="mediaPlayer"
       ref="video"
+      crossorigin="anonymous"
       @timeupdate="updateStatus"
       @seeking="updateStatus"
       @pointerup="onPlayerPointerUp"
@@ -374,7 +415,10 @@ onUnmounted(() => {
           step="any"
           @input="onSeekDrag"
         />
-        <div class="is-flex justify-between has-horizontally-padded" @pointerup="onOverlayPointerUp">
+        <div
+          class="is-flex justify-between has-horizontally-padded"
+          @pointerup="onOverlayPointerUp"
+        >
           <div class="is-flex">
             <button class="button has-flex-center" @pointerup="onPlayButtonPointerUp">
               <span v-if="isPaused" class="ts-icon is-play-icon" />
@@ -389,18 +433,31 @@ onUnmounted(() => {
                 <span v-if="isMuted" class="ts-icon is-volume-xmark-icon" />
                 <span v-else-if="volume === 0" class="ts-icon is-volume-off-icon" />
                 <span v-else-if="volume <= 50" class="ts-icon is-volume-low-icon" />
-                <span v-else class="ts-icon is-volume-high-icon" />
+                <span
+                  v-else
+                  class="ts-icon is-volume-high-icon"
+                  :style="{ color: volume > 100 ? 'var(--ts-negative-400)' : 'var(--ts-white)' }"
+                />
               </button>
               <input
                 type="range"
                 class="mobile:has-hidden has-cursor-pointer player-slider"
                 v-model="volume"
-                :max="100"
+                :max="150"
                 step="any"
+                list="volumeMarkers"
                 @input="setVolume"
                 @wheel="onVolumeMouseWheel"
               />
-              <span class="mobile:has-hidden">{{ Math.round(volume) }}%</span>
+              <datalist id="volumeMarkers">
+                <option value="100"></option>
+              </datalist>
+              <span
+                class="mobile:has-hidden has-cursor-pointer"
+                title="按一下重置音量"
+                @click="resetVolume"
+                >{{ Math.round(convertVolume(volume)) }}%</span
+              >
             </div>
             <span>
               {{ timeText }}
