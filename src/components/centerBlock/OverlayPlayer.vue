@@ -48,6 +48,17 @@ const videoAmplifier = computed(() => {
   result.amplify(1)
   return result
 })
+
+const convertVolume = (volume) => {
+  if (volume <= 100) return volume
+  return 100 + (volume - 100) * 2
+}
+
+const reverseVolume = (volume) => {
+  if (volume <= 100) return volume
+  return 100 + (volume - 100) / 2
+}
+
 const isVideoError = ref(false)
 
 const rateDropdown = ref(null)
@@ -138,7 +149,7 @@ const updateStatus = () => {
   duration.value = video.value?.duration
   isPaused.value = video.value?.paused
   isMuted.value = video.value?.muted
-  volume.value = video.value?.muted ? 0 : videoAmplifier.value?.getAmpLevel() * 100
+  volume.value = video.value?.muted ? 0 : reverseVolume(videoAmplifier.value?.getAmpLevel() * 100) 
   isFullscreen.value = document.fullscreenElement !== null
   rate.value = video.value?.playbackRate
 }
@@ -175,6 +186,7 @@ const seekBackward = () => {
 }
 
 const setVolume = () => {
+  reverseVolume(videoAmplifier.value?.getAmpLevel())
   if (volume.value === 0) {
     video.value.muted = true
     updateStatus()
@@ -182,7 +194,7 @@ const setVolume = () => {
   }
 
   video.value.muted = false
-  videoAmplifier.value?.amplify(volume.value / 100)
+  videoAmplifier.value?.amplify(convertVolume(volume.value) / 100)
   updateStatus()
 }
 
@@ -432,7 +444,7 @@ onUnmounted(() => {
                 type="range"
                 class="mobile:has-hidden has-cursor-pointer player-slider"
                 v-model="volume"
-                :max="200"
+                :max="150"
                 step="any"
                 @input="setVolume"
                 @wheel="onVolumeMouseWheel"
@@ -441,7 +453,7 @@ onUnmounted(() => {
                 class="mobile:has-hidden has-cursor-pointer"
                 title="按一下重置音量"
                 @click="resetVolume"
-                >{{ Math.round(volume) }}%</span
+                >{{ Math.round(convertVolume(volume)) }}%</span
               >
             </div>
             <span>
