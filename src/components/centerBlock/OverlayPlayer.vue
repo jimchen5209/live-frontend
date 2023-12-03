@@ -446,9 +446,15 @@ onUnmounted(() => {
                 v-model="volume"
                 :max="150"
                 step="any"
+                list="volumeMarkers"
                 @input="setVolume"
                 @wheel="onVolumeMouseWheel"
               />
+              <datalist id="volumeMarkers">
+                <option value="0"></option>
+                <option value="100"></option>
+                <option value="150"></option>
+              </datalist>
               <span
                 class="mobile:has-hidden has-cursor-pointer"
                 title="按一下重置音量"
