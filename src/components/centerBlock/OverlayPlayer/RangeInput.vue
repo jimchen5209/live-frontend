@@ -2,7 +2,7 @@
 <script setup>
 import { onMounted, ref, watch } from 'vue'
 
-const props = defineProps(['modelValue', 'value', 'min', 'max', 'step', 'timeRange'])
+const props = defineProps(['modelValue', 'value', 'min', 'max', 'step', 'timeRange', 'list'])
 const emit = defineEmits(['input', 'wheel', 'update:modelValue'])
 
 const sliderRef = ref(null)
@@ -75,6 +75,7 @@ onMounted(() => {
     :min="min"
     :max="max"
     :step="step"
+    :list="list"
     @input="onSliderInput"
     @wheel="$emit('wheel', $event)"
   />
