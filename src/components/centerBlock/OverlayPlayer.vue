@@ -2,8 +2,11 @@
 import { computed, onMounted, onUnmounted, ref, watch } from 'vue'
 import { debounce } from 'lodash'
 
-import { useRoute } from '../../util/routing'
+import WatchTogetherStatus from './OverlayPlayer/Sharing/WatchTogetherStatus.vue'
+import WatchTogetherConfig from './OverlayPlayer/Sharing/WatchTogetherConfig.vue'
 import ErrorBlankSlate from '../ErrorBlankSlate.vue'
+
+import { useRoute } from '../../util/routing'
 
 const props = defineProps({
   resource: {
@@ -436,7 +439,8 @@ onUnmounted(() => {
               }}
             </span>
           </div>
-          <div class="is-flex has-smaller-gap">
+          <div class="is-flex">
+            <WatchTogetherStatus />
             <div>
               <button
                 class="button has-flex-center"
@@ -604,6 +608,7 @@ onUnmounted(() => {
       </div>
     </div>
   </div>
+  <WatchTogetherConfig />
 </template>
 
 <style scoped>
