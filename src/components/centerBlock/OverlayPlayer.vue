@@ -458,6 +458,7 @@ onUnmounted(() => {
                   複製連結
                 </button>
                 <button
+                  v-if="!resource.isLive"
                   class="item"
                   @click="copyTimeUrl"
                 >
@@ -465,6 +466,7 @@ onUnmounted(() => {
                   <span class="description">{{timeToText(currentTime)}}</span>
                 </button>
                 <button
+                  v-if="!resource.isLive"
                   class="item is-disabled"
                 >
                   啟動同時觀看
