@@ -157,7 +157,7 @@ const updateStatus = () => {
   duration.value = video.value?.duration
   isPaused.value = video.value?.paused
   isMuted.value = video.value?.muted
-  volume.value = video.value?.muted ? 0 : reverseVolume(videoAmplifier.value?.getAmpLevel() * 100) 
+  volume.value = video.value?.muted ? 0 : reverseVolume(videoAmplifier.value?.getAmpLevel() * 100)
   isFullscreen.value = document.fullscreenElement !== null
   rate.value = video.value?.playbackRate
 }
@@ -455,26 +455,12 @@ onUnmounted(() => {
                 data-name="share"
                 data-position="bottom-end"
               >
-                <button
-                  class="item"
-                  @click="copyUrl"
-                >
-                  複製連結
-                </button>
-                <button
-                  v-if="!resource.isLive"
-                  class="item"
-                  @click="copyTimeUrl"
-                >
+                <button class="item" @click="copyUrl">複製連結</button>
+                <button v-if="!resource.isLive" class="item" @click="copyTimeUrl">
                   複製目前時間的連結
-                  <span class="description">{{timeToText(currentTime)}}</span>
+                  <span class="description">{{ timeToText(currentTime) }}</span>
                 </button>
-                <button
-                  v-if="!resource.isLive"
-                  class="item is-disabled"
-                >
-                  啟動同時觀看
-                </button>
+                <button v-if="!resource.isLive" class="item is-disabled">啟動同時觀看</button>
               </div>
             </div>
           </div>

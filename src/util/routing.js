@@ -21,7 +21,9 @@ export const useRoute = () => {
 
   const targetFilename = computed(() => {
     if (isProfilePage.value) return undefined
-    return isLive.value ? `${profileName.value}.m3u8` : `${splittedRoute.value[1].split(':')[0]}.mp4`
+    return isLive.value
+      ? `${profileName.value}.m3u8`
+      : `${splittedRoute.value[1].split(':')[0]}.mp4`
   })
 
   const parameters = computed(() => {
@@ -29,7 +31,7 @@ export const useRoute = () => {
     return splittedRoute.value[1].split(':').slice(1)
   })
 
-  const getParameter = (key) => { 
+  const getParameter = (key) => {
     const parameter = parameters.value.find((parameter) => parameter.startsWith(key))
     if (parameter === undefined) return undefined
     return parameter.split('=')[1]
@@ -43,9 +45,11 @@ export const useRoute = () => {
     } else {
       newParameters[parameterIndex] = `${key}=${value}`
     }
-    
+
     const newUrl = new URL(window.location.href)
-    newUrl.hash = `#${profileName.value}/${isLive.value ? 'live' : splittedRoute.value[1].split(':')[0]}:${newParameters.join(':')}`
+    newUrl.hash = `#${profileName.value}/${
+      isLive.value ? 'live' : splittedRoute.value[1].split(':')[0]
+    }:${newParameters.join(':')}`
     return {
       href: newUrl.href,
       hash: newUrl.hash
