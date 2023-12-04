@@ -103,7 +103,9 @@ export const useWatchTogether = () => {
     ws.value?.send(wsSendBulletMessage(JSON.stringify({ type: 'getProp' })))
   }
   const sendConfig = (hostname, hostUuid, lockState) => {
-    ws.value?.send(wsSendBulletMessage(JSON.stringify({ type: 'setProp', hostname, hostUuid, lockState })))
+    ws.value?.send(
+      wsSendBulletMessage(JSON.stringify({ type: 'setProp', hostname, hostUuid, lockState }))
+    )
   }
 
   const setLocked = (newVal) => {
@@ -115,14 +117,14 @@ export const useWatchTogether = () => {
   const onWatchTogetherMessage = (data, uuid) => {
     switch (data.type) {
       case 'syncTime':
-        if (uuid === hostUuid.value) break;
+        if (uuid === hostUuid.value) break
         syncedTime.value = data.value
-        break;
+        break
       case 'getProp':
         if (isHost.value && hostUuid.value !== 0) {
           sendConfig(nickname.value, ownUuid.value, locked.value)
         }
-        break;
+        break
       case 'setProp':
         if (uuid !== ownUuid.value) {
           isHost.value = false
@@ -130,9 +132,9 @@ export const useWatchTogether = () => {
         hostName.value = data.hostname
         hostUuid.value = data.hostUuid
         locked.value = data.lockState
-        break;
+        break
     }
-   }
+  }
 
   const connect = (channel, code) => {
     ws.value = new WebSocket(wsServer)
@@ -158,10 +160,10 @@ export const useWatchTogether = () => {
             hostUuid.value = ownUuid.value
           }
           getConfig()
-          break;
+          break
         case 'bulletMessage':
           onWatchTogetherMessage(data, data.uuid)
-          break;
+          break
       }
     })
     ws.value?.addEventListener('error', (e) => {
@@ -198,6 +200,6 @@ export const useWatchTogether = () => {
     syncTime,
     setLocked,
     connect,
-    disconnect,
+    disconnect
   }
 }

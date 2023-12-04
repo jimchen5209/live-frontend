@@ -553,12 +553,7 @@ onUnmounted(() => {
                   複製目前時間的連結
                   <span class="description">{{ timeToText(currentTime) }}</span>
                 </button>
-                <button
-                  v-if="!resource.isLive"
-                  class="item is-disabled"
-                >
-                  啟動同時觀看
-                </button>
+                <button v-if="!resource.isLive" class="item is-disabled">啟動同時觀看</button>
               </div>
             </div>
           </div>
