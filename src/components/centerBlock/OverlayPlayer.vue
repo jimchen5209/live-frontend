@@ -393,7 +393,7 @@ onUnmounted(() => {
     </div>
     <div v-if="resource" class="ts-mask is-faded is-top is-hidable" @pointerup="onOverlayPointerUp">
       <div class="ts-content" style="color: #fff">
-        <div class="ts-header">{{ resource.streamer }}</div>
+        <div class="ts-header is-truncated">{{ resource.streamer }}</div>
         <span v-if="resource.isLive">
           <span class="ts-icon is-circle-icon" :style="{ color: '#ff4141' }" />
           Live
