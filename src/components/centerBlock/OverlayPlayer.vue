@@ -29,7 +29,7 @@ const props = defineProps({
 })
 defineEmits(['change-quality'])
 
-const { getParameter, setParameter, route } = useRoute()
+const { getParameter, setParameter, getUrlWithoutParameters, route } = useRoute()
 
 const {
   syncedTime,
@@ -396,12 +396,18 @@ const onVideoError = () => {
   isVideoError.value = true
 }
 
-const copyUrl = () => {
-  navigator.clipboard.writeText(window.location.href)
+const copyVideoUrl = () => {
+  const newUrl = getUrlWithoutParameters()
+  navigator.clipboard.writeText(newUrl.href)
 }
 
 const copyTimeUrl = () => {
-  const newUrl = setParameter('t', Math.floor(currentTime.value))
+  const newUrl = setParameter({ t: Math.floor(currentTime.value), wt: undefined })
+  navigator.clipboard.writeText(newUrl.href)
+}
+
+const copyWatchTogetherUrl = () => {
+  const newUrl = setParameter({ t: undefined })
   navigator.clipboard.writeText(newUrl.href)
 }
 
@@ -488,7 +494,7 @@ onUnmounted(() => {
                 data-name="share"
                 data-position="bottom-end"
               >
-                <button class="item" @click="copyUrl">複製連結</button>
+                <button class="item" @click="copyVideoUrl">複製影片連結</button>
                 <button v-if="!resource.isLive" class="item" @click="copyTimeUrl">
                   複製目前時間的連結
                   <span class="description">{{ timeToText(currentTime) }}</span>
@@ -499,6 +505,9 @@ onUnmounted(() => {
                   @click="isWatchTogetherConfigOpen = true"
                 >
                   {{ isWatchTogetherActive ? '管理' : '啟動' }}同時觀看
+                </button>
+                <button v-if="isWatchTogetherActive" class="item" @click="copyWatchTogetherUrl">
+                  複製同時觀看連結
                 </button>
               </div>
             </div>
