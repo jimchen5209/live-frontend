@@ -1,8 +1,10 @@
 <script setup>
+import { computed } from 'vue';
+
 import { makeId } from '../../../../util/idGenerator'
 import { useRoute } from '../../../../util/routing'
 
-defineProps({
+const props = defineProps({
   modelOpen: {
     type: Boolean,
     default: false
@@ -35,7 +37,9 @@ defineProps({
 
 defineEmits(['nickname-change', 'lock-change', 'close'])
 
-const { setParameter, replaceHash } = useRoute()
+const { getParameter, setParameter, replaceHash } = useRoute()
+
+const isWaiting = computed(() => getParameter('wt') !== undefined && !props.isActive)
 
 const copyWatchTogetherUrl = () => {
   const newUrl = setParameter({ t: undefined })
@@ -76,14 +80,21 @@ const startWatchTogether = () => {
               </div>
             </div>
           </div>
-          <div v-if="!isActive" class="ts-iconset">
+          <div v-if="!isActive && !isWaiting" class="ts-iconset">
             <span class="ts-icon is-tower-broadcast-icon" style="color: var(--ts-negative-500)" />
             <div class="content">
               <div class="title">共同觀看未執行</div>
               <div class="text">按下啟動以開始</div>
             </div>
           </div>
-          <div v-else class="status-grid">
+          <div v-if="isWaiting" class="ts-iconset">
+            <span class="ts-icon is-tower-broadcast-icon" style="color: var(--ts-warning-500)" />
+            <div class="content">
+              <div class="title">連線中...</div>
+              <div class="text">請稍後</div>
+            </div>
+          </div>
+          <div v-if="isActive" class="status-grid">
             <div class="ts-iconset">
               <span
                 class="ts-icon is-tower-broadcast-icon"
@@ -112,7 +123,7 @@ const startWatchTogether = () => {
             允許控制
           </label>
           <button v-if="!isActive" class="ts-button is-fluid" @click="startWatchTogether">
-            啟動
+            啟動{{ isWaiting ? '新的共同觀看' : '' }}
           </button>
           <button v-if="isActive" class="ts-button is-fluid" @click="copyWatchTogetherUrl">
             複製連結
