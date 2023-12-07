@@ -518,7 +518,7 @@ onUnmounted(() => {
     >
       <div class="ts-content" style="color: #fff">
         <div class="is-flex justify-between has-horizontally-padded">
-          <div>
+          <div id="videoTitle">
             <div class="ts-header is-truncated">{{ resource.streamer }}</div>
             <span v-if="resource.isLive">
               <span class="ts-icon is-circle-icon" :style="{ color: '#ff4141' }" />
@@ -712,6 +712,10 @@ onUnmounted(() => {
 .auto-hidden,
 .auto-hidden * {
   cursor: none;
+}
+
+#videoTitle {
+  max-width: 80%;
 }
 
 /* Workaround tocas-ui's important */
