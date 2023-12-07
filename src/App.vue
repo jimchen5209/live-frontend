@@ -13,8 +13,8 @@ import { useViewport } from './util/viewport'
 import { useChat } from './util/chat'
 import { useRoute } from './util/routing'
 
-const liveUrl = '/live'
-const recordUrl = '/record'
+const liveUrl = `${import.meta.env.VITE_BACK_URL ?? ''}/live`
+const recordUrl = `${import.meta.env.VITE_BACK_URL ?? ''}/record`
 const listUrl = `${recordUrl}/list.json`
 
 const {
