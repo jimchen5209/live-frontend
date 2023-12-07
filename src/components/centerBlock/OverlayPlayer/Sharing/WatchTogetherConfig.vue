@@ -1,4 +1,5 @@
 <script setup>
+import { makeId } from '../../../../util/idGenerator'
 import { useRoute } from '../../../../util/routing'
 
 defineProps({
@@ -34,11 +35,16 @@ defineProps({
 
 defineEmits(['nickname-change', 'lock-change', 'close'])
 
-const { setParameter } = useRoute()
+const { setParameter, replaceHash } = useRoute()
 
 const copyWatchTogetherUrl = () => {
   const newUrl = setParameter({ t: undefined })
   navigator.clipboard.writeText(newUrl.href)
+}
+
+const startWatchTogether = () => {
+  const newUrl = setParameter({ wt: makeId(8), t: undefined })
+  replaceHash(newUrl.hash)
 }
 </script>
 
@@ -105,6 +111,9 @@ const copyWatchTogetherUrl = () => {
             />
             允許控制
           </label>
+          <button v-if="!isActive" class="ts-button is-fluid" @click="startWatchTogether">
+            啟動
+          </button>
           <button v-if="isActive" class="ts-button is-fluid" @click="copyWatchTogetherUrl">
             複製連結
           </button>
