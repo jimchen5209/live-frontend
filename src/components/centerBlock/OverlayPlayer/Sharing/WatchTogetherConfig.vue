@@ -1,4 +1,6 @@
 <script setup>
+import { useRoute } from '../../../../util/routing'
+
 defineProps({
   modelOpen: {
     type: Boolean,
@@ -31,6 +33,13 @@ defineProps({
 })
 
 defineEmits(['nickname-change', 'lock-change', 'close'])
+
+const { setParameter } = useRoute()
+
+const copyWatchTogetherUrl = () => {
+  const newUrl = setParameter({ t: undefined })
+  navigator.clipboard.writeText(newUrl.href)
+}
 </script>
 
 <template>
@@ -96,8 +105,10 @@ defineEmits(['nickname-change', 'lock-change', 'close'])
             />
             允許控制
           </label>
-          <button v-if="!isActive" class="ts-button is-fluid">啟動</button>
-          <button v-else class="ts-button is-fluid is-negative">解散</button>
+          <button v-if="isActive" class="ts-button is-fluid" @click="copyWatchTogetherUrl">
+            複製連結
+          </button>
+          <button v-if="isActive" class="ts-button is-fluid is-negative">解散</button>
         </div>
       </div>
     </div>

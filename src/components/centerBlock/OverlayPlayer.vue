@@ -483,6 +483,11 @@ const copyTimeUrl = () => {
   navigator.clipboard.writeText(newUrl.href)
 }
 
+const copyWatchTogetherUrl = () => {
+  const newUrl = setParameter({ t: undefined })
+  navigator.clipboard.writeText(newUrl.href)
+}
+
 watch(
   () => route.value,
   () => {
@@ -593,6 +598,9 @@ onUnmounted(() => {
                   @click="isWatchTogetherConfigOpen = true"
                 >
                   {{ isWatchTogetherActive ? '管理' : '啟動' }}同時觀看
+                </button>
+                <button v-if="isWatchTogetherActive" class="item" @click="copyWatchTogetherUrl">
+                  複製同時觀看連結
                 </button>
               </div>
             </div>
