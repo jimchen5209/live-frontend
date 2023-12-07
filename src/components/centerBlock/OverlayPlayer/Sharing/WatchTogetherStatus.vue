@@ -1,8 +1,20 @@
 <script setup>
 import { ref } from 'vue'
 
-const isHost = ref(false)
-const hostname = ref('username')
+defineProps({
+  isHost: {
+    type: Boolean,
+    default: false
+  },
+  hostName: {
+    type: String,
+    default: ''
+  },
+  viewerCount: {
+    type: Number,
+    default: 0
+  }
+})
 const hasAction = ref(false)
 </script>
 
@@ -14,11 +26,11 @@ const hasAction = ref(false)
           class="ts-icon is-tower-broadcast-icon"
           :style="{ color: isHost ? 'var(--ts-negative-500)' : 'var(--ts-positive-500)' }"
         />
-        <span class="mobile:has-hidden">{{ isHost ? '您正在主持' : hostname }}</span>
+        <span class="mobile:has-hidden">{{ isHost ? '您正在主持' : hostName }}</span>
       </div>
       <div class="ts-wrap mobile:has-hidden is-middle-aligned">
         <span class="ts-icon is-eye-icon" />
-        <span class="">2</span>
+        <span class="">{{ viewerCount }}</span>
       </div>
     </div>
     <div v-if="hasAction" class="ts-wrap is-middle-aligned">

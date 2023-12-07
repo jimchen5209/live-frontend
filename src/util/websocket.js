@@ -16,6 +16,7 @@ export const useChat = () => {
 
   const setNickname = (name) => {
     localStorage.setItem('config_nickname', name)
+    nickname.value = name
     ws.value?.send(wsSetName(name))
   }
   const joinChannel = (channel) => {
@@ -82,7 +83,7 @@ export const useWatchTogether = () => {
   const nickname = ref(localStorage.getItem('config_nickname') ?? 'anonymous')
   const ownUuid = ref(0)
   const isHost = ref(false)
-  const hostName = ref('')
+  const hostName = ref('anonymous')
   const hostUuid = ref(0)
   const locked = ref(true)
   const viewerCount = ref(0)
@@ -90,6 +91,7 @@ export const useWatchTogether = () => {
 
   const setNickname = (name) => {
     localStorage.setItem('config_nickname', name)
+    nickname.value = name
     ws.value?.send(wsSetName(name))
   }
   const joinChannel = (channel) => {

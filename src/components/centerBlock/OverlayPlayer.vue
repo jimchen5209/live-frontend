@@ -7,6 +7,7 @@ import WatchTogetherConfig from './OverlayPlayer/Sharing/WatchTogetherConfig.vue
 import ErrorBlankSlate from '../ErrorBlankSlate.vue'
 
 import { useRoute } from '../../util/routing'
+import { useWatchTogether } from '../../util/websocket'
 
 const props = defineProps({
   resource: {
@@ -29,6 +30,27 @@ const props = defineProps({
 defineEmits(['change-quality'])
 
 const { getParameter, setParameter, route } = useRoute()
+
+const {
+  syncedTime,
+  nickname,
+  isHost,
+  hostName,
+  locked,
+  viewerCount,
+  readyState,
+  setNickname,
+  syncTime,
+  setLocked,
+  connect,
+  disconnect
+} = useWatchTogether()
+
+const isWatchTogetherActive = computed(() => getParameter('wt') !== undefined && readyState.value)
+const isWatchTogetherConfigOpen = ref(false)
+const isPlayControlLocked = computed(
+  () => isWatchTogetherActive.value && !isHost.value && locked.value
+)
 
 const isTouch = (event) => event?.pointerType === 'touch'
 
@@ -177,27 +199,32 @@ const onPlayerReady = () => {
 }
 
 const setRate = (rate) => {
+  if (isPlayControlLocked.value) return
   video.value.playbackRate = rate
   updateStatus()
 }
 
 const onSeekDrag = () => {
+  if (isPlayControlLocked.value) return
   draggingCurrentTime.value = currentTime.value
   debounce(setTime, 500)()
 }
 
 const setTime = () => {
+  if (isPlayControlLocked.value) return
   draggingCurrentTime.value = undefined
   video.value.currentTime = currentTime.value
   updateStatus()
 }
 
 const seekForward = () => {
+  if (isPlayControlLocked.value) return
   currentTime.value = Math.min(currentTime.value + 5, duration.value)
   setTime()
 }
 
 const seekBackward = () => {
+  if (isPlayControlLocked.value) return
   currentTime.value = Math.max(currentTime.value - 5, 0)
   setTime()
 }
@@ -241,6 +268,7 @@ const onMuteButtonPointerUp = (event) => {
 
 const togglePlay = () => {
   if (!props.resource) return
+  if (isPlayControlLocked.value) return
   if (video.value.paused) {
     video.value.play()
   } else {
@@ -440,7 +468,12 @@ onUnmounted(() => {
             </span>
           </div>
           <div class="is-flex">
-            <WatchTogetherStatus />
+            <WatchTogetherStatus
+              v-if="isWatchTogetherActive"
+              :is-host="isHost"
+              :host-name="hostName"
+              :viewer-count="viewerCount"
+            />
             <div>
               <button
                 class="button has-flex-center"
@@ -460,7 +493,13 @@ onUnmounted(() => {
                   複製目前時間的連結
                   <span class="description">{{ timeToText(currentTime) }}</span>
                 </button>
-                <button v-if="!resource.isLive" class="item is-disabled">啟動同時觀看</button>
+                <button
+                  v-if="!resource.isLive"
+                  class="item"
+                  @click="isWatchTogetherConfigOpen = true"
+                >
+                  {{ isWatchTogetherActive ? '管理' : '啟動' }}同時觀看
+                </button>
               </div>
             </div>
           </div>
@@ -475,6 +514,7 @@ onUnmounted(() => {
           v-model="currentTime"
           :max="duration"
           step="any"
+          :disabled="isPlayControlLocked"
           @input="onSeekDrag"
         />
         <div
@@ -578,8 +618,12 @@ onUnmounted(() => {
                   v-for="rateItem in rateList"
                   :key="rateItem.value"
                   class="item"
-                  :class="{ 'is-selected': rateItem.value === rate }"
+                  :class="{
+                    'is-selected': rateItem.value === rate,
+                    'is-disabled': isPlayControlLocked
+                  }"
                   @click="setRate(rateItem.value)"
+                  :disabled="isPlayControlLocked"
                 >
                   {{ rateItem.text }}
                 </button>
@@ -594,7 +638,18 @@ onUnmounted(() => {
       </div>
     </div>
   </div>
-  <WatchTogetherConfig />
+  <WatchTogetherConfig
+    :model-open="isWatchTogetherConfigOpen"
+    :is-active="isWatchTogetherActive"
+    :is-host="isHost"
+    :host-name="hostName"
+    :viewer-count="viewerCount"
+    :nickname="nickname"
+    :is-locked="locked"
+    @nickname-change="setNickname"
+    @close="isWatchTogetherConfigOpen = false"
+    @lock-change="setLocked"
+  />
 </template>
 
 <style scoped>

@@ -1,11 +1,36 @@
 <script setup>
-import { ref } from 'vue'
+defineProps({
+  modelOpen: {
+    type: Boolean,
+    default: false
+  },
+  isActive: {
+    type: Boolean,
+    default: false
+  },
+  isHost: {
+    type: Boolean,
+    default: false
+  },
+  hostname: {
+    type: String,
+    default: ''
+  },
+  viewerCount: {
+    type: Number,
+    default: 0
+  },
+  isLocked: {
+    type: Boolean,
+    default: false
+  },
+  nickname: {
+    type: String,
+    default: ''
+  }
+})
 
-const modelOpen = ref(false)
-const isActive = ref(true)
-const isHost = ref(false)
-const hostname = ref('cute_panda')
-defineEmits(['close'])
+defineEmits(['nickname-change', 'lock-change', 'close'])
 </script>
 
 <template>
@@ -28,7 +53,11 @@ defineEmits(['close'])
             <div class="label">暱稱</div>
             <div class="content">
               <div class="ts-input">
-                <input v-model="hostname" type="text" />
+                <input
+                  type="text"
+                  :value="nickname"
+                  @focusout="$emit('nickname-change', $event.target.value)"
+                />
               </div>
             </div>
           </div>
@@ -54,12 +83,17 @@ defineEmits(['close'])
               <span class="ts-icon is-eye-icon" />
               <div class="content">
                 <div class="title">觀看人數</div>
-                <div class="text">2</div>
+                <div class="text">{{ viewerCount }}</div>
               </div>
             </div>
           </div>
           <label class="ts-switch" :class="{ 'is-disabled': isActive && !isHost }">
-            <input type="checkbox" :disabled="isActive && !isHost" />
+            <input
+              type="checkbox"
+              :disabled="isActive && !isHost"
+              :checked="!isLocked"
+              @input="$emit('lock-change', !$event.target.checked)"
+            />
             允許控制
           </label>
           <button v-if="!isActive" class="ts-button is-fluid">啟動</button>
