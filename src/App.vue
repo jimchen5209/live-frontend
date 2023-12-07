@@ -143,8 +143,14 @@ watch(
     if (mobileMenuRef.value?.classList.contains('is-visible'))
       mobileMenuRef.value?.classList.remove('is-visible')
     scrollToTop()
-    refreshChat()
     newStreamer()
+  }
+)
+
+watch(
+  () => targetFilename.value,
+  () => {
+    refreshChat()
   }
 )
 
