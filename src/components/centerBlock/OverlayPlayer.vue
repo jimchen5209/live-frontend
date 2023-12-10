@@ -160,6 +160,18 @@ const updateStatus = () => {
 const onPlayerReady = () => {
   updateStatus()
   onPlayerPointerMove()
+
+  // Try autoplay
+  const play = video.value.play()
+  if (play) {
+    play.catch((error) => {
+      if (error.name === 'NotAllowedError') {
+        video.value.muted = true
+        actionSnackBarRef.value?.emitSnackbar('volumeUnavailable')
+        video.value.play()
+      }
+    })
+  }
 }
 
 const setRate = (rate) => {
@@ -198,6 +210,7 @@ const setVolume = () => {
   }
 
   video.value.muted = false
+  videoAmplifier.value?.context.resume()
   videoAmplifier.value?.amplify(convertVolume(volume.value) / 100)
   updateStatus()
 }
@@ -231,6 +244,7 @@ const resetVolume = () => {
 
 const toggleMute = (showAction = false) => {
   video.value.muted = !video.value.muted
+  videoAmplifier.value?.context.resume()
   updateStatus()
   if (showAction)
     actionSnackBarRef.value?.emitSnackbar(video.value.muted ? 'volumeMute' : 'volumeUnmute')
@@ -402,7 +416,6 @@ onUnmounted(() => {
       @error="onVideoError"
       class="has-full-size"
       :src="resource?.isLive ? undefined : resource?.src"
-      autoplay
     />
 
     <ErrorBlankSlate v-if="isError || isVideoError" style="position: absolute" />

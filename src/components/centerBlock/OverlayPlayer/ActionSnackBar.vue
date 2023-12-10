@@ -38,7 +38,8 @@ const types = {
   },
   volumeUnavailable: {
     icon: 'volume-xmark',
-    text: '缺少音訊播放權限，已預設靜音'
+    text: '缺少媒體自動播放權限，已預設靜音',
+    overrideTimeout: 3000
   }
 }
 const actionType = ref('play')
@@ -59,7 +60,7 @@ const emitSnackbar = (type, text = undefined) => {
     snackBarTimeout.value = null
     isSnackBarHidden.value = true
     customText.value = undefined
-  }, 1000)
+  }, types[type].overrideTimeout ?? 1000)
   snackBarTimeout.value = timeout
 
   if (text && text.trim() !== '') customText.value = text
