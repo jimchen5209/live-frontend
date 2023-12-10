@@ -136,14 +136,10 @@ const rate = ref(1)
 const rateList = ref([
   { value: 0.25, text: '0.25x' },
   { value: 0.5, text: '0.5x' },
-  { value: 0.75, text: '0.75x' },
   { value: 1, text: '1x' },
-  { value: 1.25, text: '1.25x' },
   { value: 1.5, text: '1.5x' },
-  { value: 1.75, text: '1.75x' },
   { value: 2, text: '2x' },
   { value: 3, text: '3x' },
-  { value: 4, text: '4x' },
   { value: 5, text: '5x' }
 ])
 
