@@ -192,7 +192,7 @@ const reverseVolume = (volume) => {
 }
 
 const setVolume = () => {
-  if (volume.value === 0) {
+  if (Math.round(volume.value) === 0) {
     videoRef.value.muted = true
     updatePlayerStatus()
     return
