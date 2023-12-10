@@ -2,6 +2,7 @@
 import { computed, onMounted, onUnmounted, ref } from 'vue'
 import { debounce } from 'lodash'
 
+import ActionSnackbar from './OverlayPlayer/ActionSnackBar.vue'
 import ErrorBlankSlate from '../ErrorBlankSlate.vue'
 
 const props = defineProps({
@@ -25,6 +26,8 @@ const props = defineProps({
 defineEmits(['change-quality'])
 
 const isTouch = (event) => event?.pointerType === 'touch'
+
+const actionSnackBarRef = ref(null)
 
 const overlayVideo = ref(null)
 const video = ref(null)
@@ -178,11 +181,13 @@ const setTime = () => {
 const seekForward = () => {
   currentTime.value = Math.min(currentTime.value + 5, duration.value)
   setTime()
+  actionSnackBarRef.value?.emitSnackbar('forward')
 }
 
 const seekBackward = () => {
   currentTime.value = Math.max(currentTime.value - 5, 0)
   setTime()
+  actionSnackBarRef.value?.emitSnackbar('backward')
 }
 
 const setVolume = () => {
@@ -200,21 +205,35 @@ const setVolume = () => {
 const volumeUp = () => {
   volume.value = Math.min(volume.value + 5, 150)
   setVolume()
+  actionSnackBarRef.value?.emitSnackbar(
+    'volumeUp',
+    `音量： ${Math.round(convertVolume(volume.value))}%`
+  )
 }
 
 const volumeDown = () => {
   volume.value = Math.max(volume.value - 5, 0)
   setVolume()
+  actionSnackBarRef.value?.emitSnackbar(
+    'volumeDown',
+    `音量： ${Math.round(convertVolume(volume.value))}%`
+  )
 }
 
 const resetVolume = () => {
   volume.value = 100
   setVolume()
+  actionSnackBarRef.value?.emitSnackbar(
+    'volumeUp',
+    `音量： ${Math.round(convertVolume(volume.value))}%`
+  )
 }
 
-const toggleMute = () => {
+const toggleMute = (showAction = false) => {
   video.value.muted = !video.value.muted
   updateStatus()
+  if (showAction)
+    actionSnackBarRef.value?.emitSnackbar(video.value.muted ? 'volumeMute' : 'volumeUnmute')
 }
 
 const onMuteButtonPointerUp = (event) => {
@@ -222,7 +241,7 @@ const onMuteButtonPointerUp = (event) => {
   toggleMute()
 }
 
-const togglePlay = () => {
+const togglePlay = (showAction = false) => {
   if (!props.resource) return
   if (video.value.paused) {
     video.value.play()
@@ -230,6 +249,7 @@ const togglePlay = () => {
     video.value.pause()
   }
   updateStatus()
+  if (showAction) actionSnackBarRef.value?.emitSnackbar(video.value.paused ? 'pause' : 'play')
 }
 
 const onOverlayPointerUp = (event) => {
@@ -272,7 +292,7 @@ const onKeyDown = (event) => {
     // Play-Pause
     case ' ':
       event.preventDefault()
-      togglePlay()
+      togglePlay(true)
       break
     // Seek
     case 'ArrowRight':
@@ -295,7 +315,7 @@ const onKeyDown = (event) => {
     case 'M':
     case 'm':
       event.preventDefault()
-      toggleMute()
+      toggleMute(true)
       break
   }
 }
@@ -330,7 +350,7 @@ const onPlayerClick = (event) => {
   }
   // do not toggle play when dropdown is visible
   if (isDropdownVisible()) return
-  togglePlay()
+  togglePlay(true)
 }
 
 const onPlayerDoubleClick = (event) => {
@@ -386,6 +406,7 @@ onUnmounted(() => {
     />
 
     <ErrorBlankSlate v-if="isError || isVideoError" style="position: absolute" />
+    <ActionSnackbar ref="actionSnackBarRef" />
     <div v-if="isBuffering || !resource" class="ts-mask" @pointerup="onOverlayPointerUp">
       <div class="ts-center">
         <div class="ts-loading is-large" style="color: #fff"></div>
