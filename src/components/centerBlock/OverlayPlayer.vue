@@ -407,9 +407,8 @@ onUnmounted(() => {
     </div>
     <div
       v-if="resource && touchMode"
-      class="ts-mask is-hidable has-flex-center has-horizontally-padded-huge"
-      @pointerup="onPlayerPointerUp"
-      style="color: #fff"
+      id="mobileCenterControl"
+      class="is-hidable has-flex-center has-horizontally-padded-huge"
     >
       <button class="button-touch has-flex-center" @pointerup="onPlayButtonPointerUp">
         <span v-if="isPaused" class="ts-icon is-huge tablet+:is-heading is-play-icon" />
@@ -560,7 +559,7 @@ onUnmounted(() => {
 </template>
 
 <style scoped>
-.ts-mask.is-hidable {
+.is-hidable {
   opacity: 0;
   transition-duration: 500ms;
 }
@@ -573,7 +572,7 @@ onUnmounted(() => {
   background: linear-gradient(0deg, rgba(0, 0, 0, 0.9) 0, rgba(0, 0, 0, 0.1) 90%, transparent);
 }
 
-#playerContainer:not(.auto-hidden) > .ts-mask.is-hidable {
+#playerContainer:not(.auto-hidden) > .is-hidable {
   opacity: 1;
 }
 
@@ -618,6 +617,18 @@ onUnmounted(() => {
 .auto-hidden,
 .auto-hidden * {
   cursor: none;
+}
+
+#mobileCenterControl {
+  color: #fff;
+  position: absolute;
+  left: 50%;
+  top: 50%;
+  transform: translate(-50%, -50%);
+}
+
+#mobileCenterControl .ts-icon::before {
+  text-shadow: #000 2px 2px 5px;
 }
 
 /* Workaround tocas-ui's important */
