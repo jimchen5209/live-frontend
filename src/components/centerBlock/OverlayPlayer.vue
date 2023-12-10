@@ -317,11 +317,14 @@ const onPlayerPointerUp = (event) => {
   if (!event.isPrimary || event.button !== 0) return
   // prevent click on icon button
   if (event.target instanceof HTMLSpanElement) return
+  const isHidden = isPlayerHidden()
+  touchMode.value = isTouch(event)
   doubleClickCount.value++
   if (doubleClickCount.value === 1) {
     onPlayerClick(event)
     doubleClickTimer.value = setTimeout(() => {
       doubleClickCount.value = 0
+      if (isTouch(event) && !isHidden) hideUI()
     }, 300)
   } else if (doubleClickCount.value === 2) {
     clearTimeout(doubleClickTimer.value)
@@ -333,15 +336,9 @@ const onPlayerPointerUp = (event) => {
 
 const onPlayerClick = (event) => {
   const isHidden = isPlayerHidden()
-  if (isTouch(event) && !isHidden) {
-    touchMode.value = isTouch(event)
-    hideUI()
-    return
-  }
   setTimeout(() => onPlayerPointerMove(event), 50)
-  if (isHidden) {
-    return
-  }
+  if (isHidden) return
+  if (isTouch(event)) return
   // do not toggle play when dropdown is visible
   if (isDropdownVisible()) return
   togglePlay()
