@@ -71,30 +71,43 @@ const isDropdownVisible = () =>
 
 const isBuffering = ref(false)
 
+// Handle show / (auto) hide UI
 const autoHideTimer = ref(null)
 const isPlayerHidden = () => overlayVideo.value?.classList.contains('auto-hidden') ?? false
 
-const hideUI = () => {
-  if (isDropdownVisible()) return
+const resetAutoHideTimer = () => {
   if (autoHideTimer.value) {
     clearTimeout(autoHideTimer.value)
     autoHideTimer.value = null
   }
+}
+
+const hideUI = () => {
+  // Skip if dropdown is visible
+  if (isDropdownVisible()) return
+
+  resetAutoHideTimer()
+
   overlayVideo.value?.classList.add('auto-hidden')
 }
 
-const onPlayerPointerMove = (event) => {
-  touchMode.value = isTouch(event)
-  if (autoHideTimer.value) {
-    clearTimeout(autoHideTimer.value)
-    autoHideTimer.value = null
-  }
+const showUIAndResetAutoHideTimer = (isTouchEvent) => {
+  resetAutoHideTimer()
 
   // set timeout to wait of idle time
-  const t = setTimeout(hideUI, (isTouch(event) ? 2 : 1) * 1000)
+  const t = setTimeout(hideUI, (isTouchEvent ? 2 : 1) * 1000)
   autoHideTimer.value = t
 
   overlayVideo.value?.classList.remove('auto-hidden')
+}
+
+const handlePlayerPointerMove = (event) => {
+  const isTouchEvent = isTouch(event)
+
+  // Set touch mode
+  touchMode.value = isTouchEvent
+
+  showUIAndResetAutoHideTimer(isTouchEvent)
 }
 
 const timeToText = (time) => {
@@ -118,10 +131,6 @@ const volume = ref(100)
 const currentTime = ref(0)
 
 const draggingCurrentTime = ref(undefined)
-
-const doubleClickCount = ref(0)
-
-const doubleClickTimer = ref(null)
 
 const duration = ref(0)
 
@@ -156,7 +165,7 @@ const updateStatus = () => {
 
 const onPlayerReady = () => {
   updateStatus()
-  onPlayerPointerMove()
+  handlePlayerPointerMove()
 }
 
 const setRate = (rate) => {
@@ -218,7 +227,7 @@ const toggleMute = () => {
 }
 
 const onMuteButtonPointerUp = (event) => {
-  setTimeout(() => onPlayerPointerMove(event), 50)
+  setTimeout(() => handlePlayerPointerMove(event), 50)
   toggleMute()
 }
 
@@ -233,16 +242,16 @@ const togglePlay = () => {
 }
 
 const onOverlayPointerUp = (event) => {
-  setTimeout(() => onPlayerPointerMove(event), 50)
+  setTimeout(() => handlePlayerPointerMove(event), 50)
 }
 
 const onPlayButtonPointerUp = (event) => {
   const isHidden = isPlayerHidden()
-  setTimeout(() => onPlayerPointerMove(event), 50)
+  setTimeout(() => handlePlayerPointerMove(event), 50)
   if (isHidden) {
     return
   }
-  setTimeout(() => onPlayerPointerMove(event), 50)
+  setTimeout(() => handlePlayerPointerMove(event), 50)
   togglePlay()
 }
 
@@ -258,7 +267,7 @@ const toggleFullscreen = () => {
 }
 
 const onFullscreenButtonPointerUp = (event) => {
-  setTimeout(() => onPlayerPointerMove(event), 50)
+  setTimeout(() => handlePlayerPointerMove(event), 50)
   toggleFullscreen()
 }
 
@@ -271,7 +280,7 @@ const onKeyDown = (event) => {
   if (!video.value) return
   if (!props.resource) return
 
-  onPlayerPointerMove(event)
+  handlePlayerPointerMove(event)
 
   switch (event.key) {
     // Play-Pause
@@ -309,60 +318,102 @@ const onVolumeMouseWheel = (event) => {
   event.preventDefault()
   if (event.deltaY > 0) volumeDown()
   else volumeUp()
-  onPlayerPointerMove(event)
+  handlePlayerPointerMove(event)
 }
 
-const onPlayerPointerUp = (event) => {
+// Handle player click
+const isFirstClickUIHidden = ref(false)
+
+const doubleClickCount = ref(0)
+
+const doubleClickTimer = ref(null)
+
+const resetDoubleClick = () => {
+  clearTimeout(doubleClickTimer.value)
+  doubleClickTimer.value = null
+  doubleClickCount.value = 0
+}
+
+const handlePlayerClick = (event) => {
+  // Only work on main hand and left click
   if (!event.isPrimary || event.button !== 0) return
+
   event.preventDefault()
-  // prevent click on icon button
+
+  // Prevent click on icon button
   if (event.target instanceof HTMLSpanElement) return
+
   const isHidden = isPlayerHidden()
   const isTouchEvent = isTouch(event)
+
+  // Set touch mode
   touchMode.value = isTouchEvent
+
   doubleClickCount.value++
-  if (doubleClickCount.value === 1) { // First click
-    if (isHidden && isTouchEvent) {
-      onPlayerPointerMove(event) // Show UI
-      doubleClickTimer.value = setTimeout(() => doubleClickCount.value = 0, 300)
-    } else {
-      onPlayerClick(event)
-      // Delay 300 to detect double click and hide UI on touch
-      doubleClickTimer.value = setTimeout(() => {
-        doubleClickCount.value = 0
-        if (isTouchEvent && !isHidden) hideUI()
-      }, 300)
-    }
-  } else if (doubleClickCount.value === 2) { // Second click, trigger double click
-    clearTimeout(doubleClickTimer.value)
-    doubleClickCount.value = 0
-    onPlayerDoubleClick(event)
+  if (doubleClickCount.value === 1) {
+    // Trigger first click
+    handlePlayerFirstClick(event, isHidden, isTouchEvent)
+  } else if (doubleClickCount.value === 2) {
+    // Reset timer and count
+    resetDoubleClick()
+    // Trigger second click
+    handlePlayerSecondClick(event, isTouchEvent)
   }
 }
 
-const onPlayerClick = (event) => {
-  if (isTouch(event)) return
-  if (!isPlayerHidden()) setTimeout(() => onPlayerPointerMove(event), 50)
-  // do not toggle play when dropdown is visible
-  if (isDropdownVisible()) return
-  togglePlay()
+const handlePlayerFirstClick = (event, isHidden, isTouchEvent) => {
+  // Store first click UI hidden status
+  isFirstClickUIHidden.value = isHidden
+
+  if (!isTouchEvent) {
+    // Toggle play when dropdown is not visible
+    if (!isDropdownVisible()) {
+      showUIAndResetAutoHideTimer(isTouchEvent)
+      togglePlay()
+    }
+  } else if (isHidden) {
+    showUIAndResetAutoHideTimer(isTouchEvent)
+  }
+
+  // Delay 300 to detect double click and hide UI on touch
+  doubleClickTimer.value = setTimeout(() => {
+    resetDoubleClick()
+    if (isTouchEvent && !isHidden) {
+      hideUI()
+    }
+  }, 300)
 }
 
-const onPlayerDoubleClick = (event) => {
-  setTimeout(() => onPlayerPointerMove(event), 50)
-  if (video.value && isTouch(event)) {
+const handlePlayerSecondClick = (event, isTouchEvent) => {
+  // Skip if video is not ready or dropdown is visible
+  if (!video.value || isDropdownVisible()) {
+    return
+  }
+
+  if (isTouchEvent && !isFirstClickUIHidden.value) {
+    // Trigger show UI to reset auto hide timer
+    showUIAndResetAutoHideTimer(isTouchEvent)
     // Click center will toggle play, left and right sides will seek time
-    const leftSideEnd = video.value?.clientWidth / 3
+    const elementOffsetX = event.target.getBoundingClientRect().x
+    const eventX = event.clientX - elementOffsetX
+    const leftSideEnd = video.value.clientWidth / 3
     const RightSideStart = leftSideEnd * 2
-    if (event.x < leftSideEnd) {
+    if (eventX < leftSideEnd) {
       seekBackward()
-    } else if (event.x > RightSideStart) {
+    } else if (eventX > RightSideStart) {
       seekForward()
     } else {
       togglePlay()
     }
   } else {
     toggleFullscreen()
+
+    if (isTouchEvent) {
+      hideUI()
+    } else {
+      showUIAndResetAutoHideTimer(isTouchEvent)
+      togglePlay()
+    }
   }
 }
 
@@ -391,7 +442,7 @@ onUnmounted(() => {
     ref="overlayVideo"
     class="has-full-size"
     style="display: inline-flex"
-    @pointermove="onPlayerPointerMove"
+    @pointermove="handlePlayerPointerMove"
   >
     <video
       id="mediaPlayer"
@@ -399,7 +450,7 @@ onUnmounted(() => {
       crossorigin="anonymous"
       @timeupdate="updateStatus"
       @seeking="updateStatus"
-      @pointerup="onPlayerPointerUp"
+      @pointerup="handlePlayerClick"
       @loadstart="isBuffering = true"
       @loadeddata="onPlayerReady"
       @waiting="isBuffering = true"
@@ -411,7 +462,7 @@ onUnmounted(() => {
     />
 
     <ErrorBlankSlate v-if="isError || isVideoError" style="position: absolute" />
-    <div v-if="isBuffering || !resource" class="ts-mask" @pointerup="onPlayerPointerUp">
+    <div v-if="isBuffering || !resource" class="ts-mask" @pointerup="handlePlayerClick">
       <div class="ts-center">
         <div class="ts-loading is-large" style="color: #fff"></div>
       </div>
@@ -495,7 +546,7 @@ onUnmounted(() => {
               <button
                 class="button has-flex-center"
                 data-dropdown="quality"
-                @pointerup="onPlayerPointerMove"
+                @pointerup="handlePlayerPointerMove"
               >
                 <span class="ts-icon tablet+:is-big is-images-icon" />
               </button>
@@ -528,7 +579,7 @@ onUnmounted(() => {
               <button
                 class="button has-flex-center"
                 data-dropdown="speed"
-                @pointerup="onPlayerPointerMove"
+                @pointerup="handlePlayerPointerMove"
               >
                 <span class="ts-icon tablet+:is-big is-gauge-simple-high-icon" />
               </button>
