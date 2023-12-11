@@ -341,10 +341,8 @@ const onPlayerPointerUp = (event) => {
 }
 
 const onPlayerClick = (event) => {
-  const isHidden = isPlayerHidden()
-  setTimeout(() => onPlayerPointerMove(event), 50)
-  if (isHidden) return
   if (isTouch(event)) return
+  if (!isPlayerHidden()) setTimeout(() => onPlayerPointerMove(event), 50)
   // do not toggle play when dropdown is visible
   if (isDropdownVisible()) return
   togglePlay()
