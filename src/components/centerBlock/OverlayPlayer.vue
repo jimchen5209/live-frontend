@@ -313,32 +313,36 @@ const onVolumeMouseWheel = (event) => {
 }
 
 const onPlayerPointerUp = (event) => {
-  event.preventDefault()
   if (!event.isPrimary || event.button !== 0) return
+  event.preventDefault()
   // prevent click on icon button
   if (event.target instanceof HTMLSpanElement) return
   const isHidden = isPlayerHidden()
-  touchMode.value = isTouch(event)
+  const isTouchEvent = isTouch(event)
+  touchMode.value = isTouchEvent
   doubleClickCount.value++
-  if (doubleClickCount.value === 1) {
-    onPlayerClick(event)
-    doubleClickTimer.value = setTimeout(() => {
-      doubleClickCount.value = 0
-      if (isTouch(event) && !isHidden) hideUI()
-    }, 300)
-  } else if (doubleClickCount.value === 2) {
+  if (doubleClickCount.value === 1) { // First click
+    if (isHidden && isTouchEvent) {
+      onPlayerPointerMove(event) // Show UI
+      doubleClickTimer.value = setTimeout(() => doubleClickCount.value = 0, 300)
+    } else {
+      onPlayerClick(event)
+      // Delay 300 to detect double click and hide UI on touch
+      doubleClickTimer.value = setTimeout(() => {
+        doubleClickCount.value = 0
+        if (isTouchEvent && !isHidden) hideUI()
+      }, 300)
+    }
+  } else if (doubleClickCount.value === 2) { // Second click, trigger double click
     clearTimeout(doubleClickTimer.value)
     doubleClickCount.value = 0
-    onPlayerClick(event)
     onPlayerDoubleClick(event)
   }
 }
 
 const onPlayerClick = (event) => {
-  const isHidden = isPlayerHidden()
-  setTimeout(() => onPlayerPointerMove(event), 50)
-  if (isHidden) return
   if (isTouch(event)) return
+  if (!isPlayerHidden()) setTimeout(() => onPlayerPointerMove(event), 50)
   // do not toggle play when dropdown is visible
   if (isDropdownVisible()) return
   togglePlay()
@@ -346,10 +350,20 @@ const onPlayerClick = (event) => {
 
 const onPlayerDoubleClick = (event) => {
   setTimeout(() => onPlayerPointerMove(event), 50)
-  if (video.value && isTouch(event))
-    if (event.x < video.value?.clientWidth / 2) seekBackward()
-    else seekForward()
-  else toggleFullscreen()
+  if (video.value && isTouch(event)) {
+    // Click center will toggle play, left and right sides will seek time
+    const leftSideEnd = video.value?.clientWidth / 3
+    const RightSideStart = leftSideEnd * 2
+    if (event.x < leftSideEnd) {
+      seekBackward()
+    } else if (event.x > RightSideStart) {
+      seekForward()
+    } else {
+      togglePlay()
+    }
+  } else {
+    toggleFullscreen()
+  }
 }
 
 const onVideoPlaying = () => {
@@ -414,7 +428,7 @@ onUnmounted(() => {
     </div>
     <div v-if="resource" class="ts-mask is-faded is-top is-hidable" @pointerup="onOverlayPointerUp">
       <div class="ts-content" style="color: #fff">
-        <div class="ts-header">{{ resource.streamer }}</div>
+        <div class="ts-header is-truncated">{{ resource.streamer }}</div>
         <span v-if="resource.isLive">
           <span class="ts-icon is-circle-icon" :style="{ color: '#ff4141' }" />
           Live
