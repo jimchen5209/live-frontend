@@ -351,13 +351,18 @@ const onPlayerClick = (event) => {
 }
 
 const onPlayerDoubleClick = (event) => {
-  // Click center will toggle fullscreen, left and right sides will seek time
   setTimeout(() => onPlayerPointerMove(event), 50)
   if (video.value && isTouch(event)) {
+    // Click center will toggle play, left and right sides will seek time
     const leftSideEnd = video.value?.clientWidth / 3
     const RightSideStart = leftSideEnd * 2
-    if (event.x < leftSideEnd) seekBackward()
-    if (event.x > RightSideStart) seekForward()
+    if (event.x < leftSideEnd) {
+      seekBackward()
+    } else if (event.x > RightSideStart) {
+      seekForward()
+    } else {
+      togglePlay()
+    }
   } else {
     toggleFullscreen()
   }
