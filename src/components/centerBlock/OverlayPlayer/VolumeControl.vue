@@ -11,14 +11,15 @@ defineProps({
   convertVolume: {
     type: Function,
     required: true
-  },
-  resetVolume: {
-    type: Function,
-    required: true
   }
 })
 
-defineEmits(['mute-button-pointerup', 'volume-mousewheel', 'update:volume'])
+defineEmits([
+  'mute-button-pointerup',
+  'volume-mousewheel',
+  'reset-button-pointerup',
+  'update:volume'
+])
 </script>
 
 <template>
@@ -50,9 +51,13 @@ defineEmits(['mute-button-pointerup', 'volume-mousewheel', 'update:volume'])
     <datalist id="volumeMarkers">
       <option value="100"></option>
     </datalist>
-    <span class="mobile:has-hidden has-cursor-pointer" title="按一下重置音量" @click="resetVolume"
-      >{{ Math.round(convertVolume(volume)) }}%</span
+    <span
+      class="mobile:has-hidden has-cursor-pointer"
+      title="按一下重置音量"
+      @pointerup="$emit('reset-button-pointerup', $event)"
     >
+      {{ Math.round(convertVolume(volume)) }}%
+    </span>
   </div>
 </template>
 
