@@ -60,7 +60,9 @@ const updatePlayerStatus = () => {
   duration.value = videoRef.value?.duration
   isPaused.value = videoRef.value?.paused
   isMuted.value = videoRef.value?.muted
-  volume.value = videoRef.value?.muted ? 0 : reverseVolume(videoAmplifier.value?.getAmpLevel() * 100)
+  volume.value = videoRef.value?.muted
+    ? 0
+    : reverseVolume(videoAmplifier.value?.getAmpLevel() * 100)
   isFullscreen.value = document.fullscreenElement !== null
   playbackRate.value = videoRef.value?.playbackRate
 }
@@ -467,12 +469,19 @@ onUnmounted(() => {
       id="mobileCenterControl"
       class="is-hidable has-flex-center has-horizontally-padded-huge"
     >
-      <button class="button-touch has-flex-center" @pointerup="withHandlePointerEvent($event, togglePlay)">
+      <button
+        class="button-touch has-flex-center"
+        @pointerup="withHandlePointerEvent($event, togglePlay)"
+      >
         <span v-if="isPaused" class="ts-icon is-huge tablet+:is-heading is-play-icon" />
         <span v-else class="ts-icon is-huge tablet+:is-heading is-pause-icon" />
       </button>
     </div>
-    <div v-if="resource" class="ts-mask is-faded is-top is-hidable" @pointerup="handlePlayerPointerEvent">
+    <div
+      v-if="resource"
+      class="ts-mask is-faded is-top is-hidable"
+      @pointerup="handlePlayerPointerEvent"
+    >
       <div class="ts-content" style="color: #fff">
         <div class="ts-header is-truncated">{{ resource.streamer }}</div>
         <span v-if="resource.isLive">
@@ -486,7 +495,11 @@ onUnmounted(() => {
         </span>
       </div>
     </div>
-    <div v-if="resource" class="ts-mask is-faded is-bottom is-hidable" @pointerup="handlePlayerPointerEvent">
+    <div
+      v-if="resource"
+      class="ts-mask is-faded is-bottom is-hidable"
+      @pointerup="handlePlayerPointerEvent"
+    >
       <div class="ts-content" style="color: #fff">
         <input
           v-if="!touchMode"
@@ -497,10 +510,7 @@ onUnmounted(() => {
           step="any"
           @input="debounceSeekDrag"
         />
-        <div
-          class="is-flex justify-between"
-          :class="{ 'has-horizontally-padded': !touchMode }"
-        >
+        <div class="is-flex justify-between" :class="{ 'has-horizontally-padded': !touchMode }">
           <div class="is-flex">
             <button
               v-if="!touchMode"
@@ -596,7 +606,10 @@ onUnmounted(() => {
                 </button>
               </div>
             </div>
-            <button class="button has-flex-center" @pointerup="withHandlePointerEvent($event, toggleFullscreen)">
+            <button
+              class="button has-flex-center"
+              @pointerup="withHandlePointerEvent($event, toggleFullscreen)"
+            >
               <span v-if="isFullscreen" class="ts-icon is-compress-icon" />
               <span v-else class="ts-icon tablet+:is-big is-expand-icon" />
             </button>
@@ -700,5 +713,4 @@ onUnmounted(() => {
 .style-text {
   color: var(--ts-gray-900);
 }
-
 </style>
