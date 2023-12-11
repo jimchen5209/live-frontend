@@ -318,17 +318,19 @@ const onPlayerPointerUp = (event) => {
   // prevent click on icon button
   if (event.target instanceof HTMLSpanElement) return
   const isHidden = isPlayerHidden()
-  touchMode.value = isTouch(event)
+  const isTouch = isTouch(event)
+  touchMode.value = isTouch
   doubleClickCount.value++
   if (doubleClickCount.value === 1) { // First click
-    if (isHidden) {
+    if (isHidden && isTouch) {
       onPlayerPointerMove(event) // Show UI
+      doubleClickTimer.value = setTimeout(() => doubleClickCount.value = 0, 300)
     } else {
-      // Delay 300 to detect double click
+      onPlayerClick(event)
+      // Delay 300 to detect double click and hide UI on touch
       doubleClickTimer.value = setTimeout(() => {
-        onPlayerClick(event)
         doubleClickCount.value = 0
-        if (isTouch(event) && !isHidden) hideUI()
+        if (isTouch && !isHidden) hideUI()
       }, 300)
     }
   } else if (doubleClickCount.value === 2) { // Second click, trigger double click
