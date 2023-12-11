@@ -313,8 +313,8 @@ const onVolumeMouseWheel = (event) => {
 }
 
 const onPlayerPointerUp = (event) => {
-  event.preventDefault()
   if (!event.isPrimary || event.button !== 0) return
+  event.preventDefault()
   // prevent click on icon button
   if (event.target instanceof HTMLSpanElement) return
   const isHidden = isPlayerHidden()
