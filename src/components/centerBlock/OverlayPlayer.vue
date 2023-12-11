@@ -320,16 +320,20 @@ const onPlayerPointerUp = (event) => {
   const isHidden = isPlayerHidden()
   touchMode.value = isTouch(event)
   doubleClickCount.value++
-  if (doubleClickCount.value === 1) {
-    onPlayerClick(event)
-    doubleClickTimer.value = setTimeout(() => {
-      doubleClickCount.value = 0
-      if (isTouch(event) && !isHidden) hideUI()
-    }, 300)
-  } else if (doubleClickCount.value === 2) {
+  if (doubleClickCount.value === 1) { // First click
+    if (isHidden) {
+      onPlayerPointerMove(event) // Show UI
+    } else {
+      // Delay 300 to detect double click
+      doubleClickTimer.value = setTimeout(() => {
+        onPlayerClick(event)
+        doubleClickCount.value = 0
+        if (isTouch(event) && !isHidden) hideUI()
+      }, 300)
+    }
+  } else if (doubleClickCount.value === 2) { // Second click, trigger double click
     clearTimeout(doubleClickTimer.value)
     doubleClickCount.value = 0
-    onPlayerClick(event)
     onPlayerDoubleClick(event)
   }
 }
@@ -345,11 +349,16 @@ const onPlayerClick = (event) => {
 }
 
 const onPlayerDoubleClick = (event) => {
+  // Click center will toggle fullscreen, left and right sides will seek time
   setTimeout(() => onPlayerPointerMove(event), 50)
-  if (video.value && isTouch(event))
-    if (event.x < video.value?.clientWidth / 2) seekBackward()
-    else seekForward()
-  else toggleFullscreen()
+  if (video.value && isTouch(event)) {
+    const leftSideEnd = video.value?.clientWidth / 3
+    const RightSideStart = leftSideEnd * 2
+    if (event.x < leftSideEnd) seekBackward()
+    if (event.x > RightSideStart) seekForward()
+  } else {
+    toggleFullscreen()
+  }
 }
 
 const onVideoPlaying = () => {
