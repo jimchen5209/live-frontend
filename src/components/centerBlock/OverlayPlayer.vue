@@ -2,6 +2,7 @@
 import { computed, onMounted, onUnmounted, ref } from 'vue'
 import { debounce } from 'lodash'
 
+import VolumeControl from './OverlayPlayer/VolumeControl.vue'
 import ErrorBlankSlate from '../ErrorBlankSlate.vue'
 
 const props = defineProps({
@@ -24,18 +25,124 @@ const props = defineProps({
 })
 defineEmits(['change-quality'])
 
+// Handle touch mode
+const touchMode = ref(false)
 const isTouch = (event) => event?.pointerType === 'touch'
 
-const overlayVideo = ref(null)
-const video = ref(null)
+// Handle video element
+const videoRef = ref(null)
+
+const overlayVideoRef = ref(null)
+
+const isVideoError = ref(false)
+
+const isBuffering = ref(false)
+
+const isPaused = ref(true)
+
+const isFullscreen = ref(false)
+
+const currentTime = ref(0)
+
+const timeText = computed(() => timeToText(currentTime.value))
+
+const draggingCurrentTime = ref(undefined)
+
+const duration = ref(0)
+
+const durationText = computed(() => timeToText(duration.value))
+
+const playbackRate = ref(1)
+
+const updatePlayerStatus = () => {
+  isBuffering.value = false
+  currentTime.value = draggingCurrentTime.value ?? videoRef.value?.currentTime
+  duration.value = videoRef.value?.duration
+  isPaused.value = videoRef.value?.paused
+  isMuted.value = videoRef.value?.muted
+  volume.value = videoRef.value?.muted
+    ? 0
+    : reverseVolume(videoAmplifier.value?.getAmpLevel() * 100)
+  isFullscreen.value = document.fullscreenElement !== null
+  playbackRate.value = videoRef.value?.playbackRate
+}
+
+const handlePlayerLoaded = () => {
+  updatePlayerStatus()
+  showUIAndResetAutoHideTimer()
+}
+
+const playbackRateList = ref([
+  { value: 0.25, text: '0.25x' },
+  { value: 0.5, text: '0.5x' },
+  { value: 1, text: '1x' },
+  { value: 1.5, text: '1.5x' },
+  { value: 2, text: '2x' },
+  { value: 3, text: '3x' },
+  { value: 5, text: '5x' }
+])
+
+const setPlaybackRate = (rate) => {
+  videoRef.value.playbackRate = rate
+  updatePlayerStatus()
+}
+
+const debounceSeekDrag = () => {
+  draggingCurrentTime.value = currentTime.value
+  debounce(setTime, 500)()
+}
+
+const setTime = () => {
+  draggingCurrentTime.value = undefined
+  videoRef.value.currentTime = currentTime.value
+  updatePlayerStatus()
+}
+
+const seekForward = () => {
+  currentTime.value = Math.min(currentTime.value + 5, duration.value)
+  setTime()
+}
+
+const seekBackward = () => {
+  currentTime.value = Math.max(currentTime.value - 5, 0)
+  setTime()
+}
+
+const togglePlay = () => {
+  if (!props.resource) return
+  if (videoRef.value.paused) {
+    videoRef.value.play()
+  } else {
+    videoRef.value.pause()
+  }
+  updatePlayerStatus()
+}
+
+const toggleFullscreen = () => {
+  if (!props.resource) return
+  if (!document.fullscreenElement) {
+    overlayVideoRef.value?.requestFullscreen().catch((err) => {
+      console.error(`Error attempting to enable fullscreen mode: ${err.message} (${err.name})`)
+    })
+  } else {
+    document.exitFullscreen()
+  }
+}
+
+const setBufferAndErrorState = (buffering, error) => {
+  isBuffering.value = buffering
+  isVideoError.value = error
+}
+
+// Handle video volume
 const videoAmplifier = computed(() => {
-  if (!video.value) return null
+  if (!videoRef.value) return null
   const context = new (window.AudioContext || window.webkitAudioContext)(),
     result = {
       context: context,
-      source: context.createMediaElementSource(video.value),
+      source: context.createMediaElementSource(videoRef.value),
       gain: context.createGain(),
-      media: video.value,
+      media: videoRef.value,
       amplify: function (multiplier) {
         result.gain.gain.value = multiplier
       },
@@ -49,6 +156,10 @@ const videoAmplifier = computed(() => {
   return result
 })
 
+const isMuted = ref(false)
+
+const volume = ref(100)
+
 const convertVolume = (volume) => {
   if (volume <= 100) return volume
   return 100 + (volume - 100) * 2
@@ -59,142 +170,16 @@ const reverseVolume = (volume) => {
   return 100 + (volume - 100) / 2
 }
 
-const isVideoError = ref(false)
-
-const rateDropdown = ref(null)
-const qualityDropdown = ref(null)
-const isDropdownVisible = () =>
-  rateDropdown.value?.classList.contains('is-visible') ||
-  qualityDropdown.value?.classList.contains('is-visible')
-
-const isBuffering = ref(false)
-
-const autoHideTimer = ref(null)
-const isPlayerHidden = () => overlayVideo.value?.classList.contains('auto-hidden') ?? false
-const onPlayerPointerMove = (event) => {
-  if (autoHideTimer.value) {
-    clearTimeout(autoHideTimer.value)
-    autoHideTimer.value = null
-  }
-
-  // set timeout to wait of idle time
-  const t = setTimeout(
-    () => {
-      autoHideTimer.value = null
-
-      if (isDropdownVisible()) return
-
-      overlayVideo.value?.classList.add('auto-hidden')
-    },
-    (isTouch(event) ? 2 : 1) * 1000
-  )
-  autoHideTimer.value = t
-
-  overlayVideo.value?.classList.remove('auto-hidden')
-}
-
-const timeToText = (time) => {
-  const hours = Math.floor(time / 3600)
-  const minutes = Math.floor((time % 3600) / 60)
-  const seconds = Math.floor(time % 60)
-
-  const hourValue = hours.toString().padStart(2, '0')
-  const minuteValue = minutes.toString().padStart(2, '0')
-  const secondValue = seconds.toString().padStart(2, '0')
-
-  return `${hourValue}:${minuteValue}:${secondValue}`
-}
-
-const isPaused = ref(true)
-
-const isMuted = ref(false)
-
-const volume = ref(100)
-
-const currentTime = ref(0)
-
-const draggingCurrentTime = ref(undefined)
-
-const doubleClickCount = ref(0)
-
-const doubleClickTimer = ref(null)
-
-const duration = ref(0)
-
-const isFullscreen = ref(false)
-
-const timeText = computed(() => timeToText(currentTime.value))
-
-const durationText = computed(() => timeToText(duration.value))
-
-const rate = ref(1)
-
-const rateList = ref([
-  { value: 0.25, text: '0.25x' },
-  { value: 0.5, text: '0.5x' },
-  { value: 0.75, text: '0.75x' },
-  { value: 1, text: '1x' },
-  { value: 1.25, text: '1.25x' },
-  { value: 1.5, text: '1.5x' },
-  { value: 1.75, text: '1.75x' },
-  { value: 2, text: '2x' },
-  { value: 3, text: '3x' },
-  { value: 4, text: '4x' },
-  { value: 5, text: '5x' }
-])
-
-const updateStatus = () => {
-  isBuffering.value = false
-  currentTime.value = draggingCurrentTime.value ?? video.value?.currentTime
-  duration.value = video.value?.duration
-  isPaused.value = video.value?.paused
-  isMuted.value = video.value?.muted
-  volume.value = video.value?.muted ? 0 : reverseVolume(videoAmplifier.value?.getAmpLevel() * 100) 
-  isFullscreen.value = document.fullscreenElement !== null
-  rate.value = video.value?.playbackRate
-}
-
-const onPlayerReady = () => {
-  updateStatus()
-  onPlayerPointerMove()
-}
-
-const setRate = (rate) => {
-  video.value.playbackRate = rate
-  updateStatus()
-}
-
-const onSeekDrag = () => {
-  draggingCurrentTime.value = currentTime.value
-  debounce(setTime, 500)()
-}
-
-const setTime = () => {
-  draggingCurrentTime.value = undefined
-  video.value.currentTime = currentTime.value
-  updateStatus()
-}
-
-const seekForward = () => {
-  currentTime.value = Math.min(currentTime.value + 5, duration.value)
-  setTime()
-}
-
-const seekBackward = () => {
-  currentTime.value = Math.max(currentTime.value - 5, 0)
-  setTime()
-}
-
 const setVolume = () => {
   if (volume.value === 0) {
-    video.value.muted = true
-    updateStatus()
+    videoRef.value.muted = true
+    updatePlayerStatus()
     return
   }
 
-  video.value.muted = false
+  videoRef.value.muted = false
   videoAmplifier.value?.amplify(convertVolume(volume.value) / 100)
-  updateStatus()
+  updatePlayerStatus()
 }
 
 const volumeUp = () => {
@@ -213,60 +198,189 @@ const resetVolume = () => {
 }
 
 const toggleMute = () => {
-  video.value.muted = !video.value.muted
-  updateStatus()
+  videoRef.value.muted = !videoRef.value.muted
+  updatePlayerStatus()
 }
 
-const onMuteButtonPointerUp = (event) => {
-  setTimeout(() => onPlayerPointerMove(event), 50)
-  toggleMute()
-}
+// Handle dropdown
+const rateDropdownRef = ref(null)
+const qualityDropdownRef = ref(null)
+const isDropdownVisible = () =>
+  rateDropdownRef.value?.classList.contains('is-visible') ||
+  qualityDropdownRef.value?.classList.contains('is-visible')
 
-const togglePlay = () => {
-  if (!props.resource) return
-  if (video.value.paused) {
-    video.value.play()
-  } else {
-    video.value.pause()
-  }
-  updateStatus()
-}
+// Handle show / (auto) hide UI
+const autoHideTimer = ref(null)
+const isPlayerHidden = () => overlayVideoRef.value?.classList.contains('auto-hidden') ?? false
 
-const onOverlayPointerUp = (event) => {
-  setTimeout(() => onPlayerPointerMove(event), 50)
-}
-
-const onPlayButtonPointerUp = (event) => {
-  setTimeout(() => onPlayerPointerMove(event), 50)
-  togglePlay()
-}
-
-const toggleFullscreen = () => {
-  if (!props.resource) return
-  if (!document.fullscreenElement) {
-    overlayVideo.value?.requestFullscreen().catch((err) => {
-      console.error(`Error attempting to enable fullscreen mode: ${err.message} (${err.name})`)
-    })
-  } else {
-    document.exitFullscreen()
+const resetAutoHideTimer = () => {
+  if (autoHideTimer.value) {
+    clearTimeout(autoHideTimer.value)
+    autoHideTimer.value = null
   }
 }
 
-const onFullscreenButtonPointerUp = (event) => {
-  setTimeout(() => onPlayerPointerMove(event), 50)
-  toggleFullscreen()
+const hideUI = () => {
+  // Skip if dropdown is visible
+  if (isDropdownVisible()) return
+
+  resetAutoHideTimer()
+
+  overlayVideoRef.value?.classList.add('auto-hidden')
 }
 
-const onKeyDown = (event) => {
-  if (
+const showUIAndResetAutoHideTimer = (isTouchEvent = false) => {
+  resetAutoHideTimer()
+
+  // set timeout to wait of idle time
+  const t = setTimeout(hideUI, (isTouchEvent ? 2 : 1) * 1000)
+  autoHideTimer.value = t
+
+  overlayVideoRef.value?.classList.remove('auto-hidden')
+}
+
+const handlePlayerPointerEvent = (event) => {
+  const isTouchEvent = isTouch(event)
+
+  // Set touch mode
+  touchMode.value = isTouchEvent
+
+  showUIAndResetAutoHideTimer(isTouchEvent)
+}
+
+// Utils
+const timeToText = (time) => {
+  const hours = Math.floor(time / 3600)
+  const minutes = Math.floor((time % 3600) / 60)
+  const seconds = Math.floor(time % 60)
+
+  const hourValue = hours.toString().padStart(2, '0')
+  const minuteValue = minutes.toString().padStart(2, '0')
+  const secondValue = seconds.toString().padStart(2, '0')
+
+  return `${hourValue}:${minuteValue}:${secondValue}`
+}
+
+// Do something with pointer event trigger
+const withHandlePointerEvent = (event, callback) => {
+  // Only work on main hand and left click
+  if (!event.isPrimary || event.button !== 0) return
+
+  event.preventDefault()
+  handlePlayerPointerEvent(event)
+  callback(event)
+}
+
+// Handle player click
+const isFirstClickUIHidden = ref(false)
+
+const doubleClickCount = ref(0)
+
+const doubleClickTimer = ref(null)
+
+const resetDoubleClick = () => {
+  clearTimeout(doubleClickTimer.value)
+  doubleClickTimer.value = null
+  doubleClickCount.value = 0
+}
+
+const handlePlayerClick = (event) => {
+  // Only work on main hand and left click
+  if (!event.isPrimary || event.button !== 0) return
+
+  event.preventDefault()
+
+  // Prevent click on icon button
+  if (event.target instanceof HTMLSpanElement) return
+
+  const isHidden = isPlayerHidden()
+  const isTouchEvent = isTouch(event)
+
+  // Set touch mode
+  touchMode.value = isTouchEvent
+
+  doubleClickCount.value++
+  if (doubleClickCount.value === 1) {
+    // Trigger first click
+    handlePlayerFirstClick(event, isHidden, isTouchEvent)
+  } else if (doubleClickCount.value === 2) {
+    // Reset timer and count
+    resetDoubleClick()
+    // Trigger second click
+    handlePlayerSecondClick(event, isTouchEvent)
+  }
+}
+
+const handlePlayerFirstClick = (event, isHidden, isTouchEvent) => {
+  // Store first click UI hidden status
+  isFirstClickUIHidden.value = isHidden
+
+  if (!isTouchEvent) {
+    // Toggle play when dropdown is not visible
+    if (!isDropdownVisible()) {
+      showUIAndResetAutoHideTimer(isTouchEvent)
+      togglePlay()
+    }
+  } else if (isHidden) {
+    showUIAndResetAutoHideTimer(isTouchEvent)
+  }
+
+  // Delay 300 to detect double click and hide UI on touch
+  doubleClickTimer.value = setTimeout(() => {
+    resetDoubleClick()
+    if (isTouchEvent && !isHidden) {
+      hideUI()
+    }
+  }, 300)
+}
+
+const handlePlayerSecondClick = (event, isTouchEvent) => {
+  // Skip if video is not ready or dropdown is visible
+  if (!videoRef.value || isDropdownVisible()) {
+    return
+  }
+
+  if (isTouchEvent && !isFirstClickUIHidden.value) {
+    // Trigger show UI to reset auto hide timer
+    showUIAndResetAutoHideTimer(isTouchEvent)
+
+    // Get click position
+    const elementOffsetX = event.target.getBoundingClientRect().x
+    const eventX = event.clientX - elementOffsetX
+
+    // Click center will toggle play, left and right sides will seek time
+    const leftSideEnd = videoRef.value.clientWidth / 3
+    const RightSideStart = leftSideEnd * 2
+    if (eventX < leftSideEnd) {
+      seekBackward()
+    } else if (eventX > RightSideStart) {
+      seekForward()
+    } else {
+      togglePlay()
+    }
+  } else {
+    toggleFullscreen()
+
+    if (isTouchEvent) {
+      hideUI()
+    } else {
+      showUIAndResetAutoHideTimer(isTouchEvent)
+      togglePlay()
+    }
+  }
+}
+
+// Handle key event
+const handleKeyDown = (event) => {
+  // Skip if input is focused or video is not ready
+  const shouldSkip =
     document.activeElement instanceof HTMLInputElement &&
     !document.activeElement.classList.contains('player-slider')
-  )
+  if (shouldSkip || !videoRef.value || !props.resource) {
     return
-  if (!video.value) return
-  if (!props.resource) return
+  }
 
-  onPlayerPointerMove(event)
+  showUIAndResetAutoHideTimer()
 
   switch (event.key) {
     // Play-Pause
@@ -300,98 +414,74 @@ const onKeyDown = (event) => {
   }
 }
 
-const onVolumeMouseWheel = (event) => {
+const handleVolumeMouseWheel = (event) => {
   event.preventDefault()
-  if (event.deltaY > 0) volumeDown()
-  else volumeUp()
-  onPlayerPointerMove(event)
-}
-
-const onPlayerPointerUp = (event) => {
-  event.preventDefault()
-  doubleClickCount.value++
-  if (doubleClickCount.value === 1) {
-    doubleClickTimer.value = setTimeout(() => {
-      doubleClickCount.value = 0
-      onPlayerClick(event)
-    }, 300)
-  } else if (doubleClickCount.value === 2) {
-    clearTimeout(doubleClickTimer.value)
-    doubleClickCount.value = 0
-    onPlayerDoubleClick(event)
+  if (event.deltaY > 0) {
+    // Scroll down
+    volumeDown()
+  } else {
+    // Scroll up
+    volumeUp()
   }
-}
-
-const onPlayerClick = (event) => {
-  const isHidden = isPlayerHidden()
-  setTimeout(() => onPlayerPointerMove(event), 50)
-  if (isHidden) {
-    return
-  }
-  // do not toggle play when dropdown is visible
-  if (isDropdownVisible()) return
-  togglePlay()
-}
-
-const onPlayerDoubleClick = (event) => {
-  setTimeout(() => onPlayerPointerMove(event), 50)
-  if (video.value && isTouch(event))
-    if (event.x < video.value?.clientWidth / 2) seekBackward()
-    else seekForward()
-  else toggleFullscreen()
-}
-
-const onVideoPlaying = () => {
-  isBuffering.value = false
-  isVideoError.value = false
-}
-
-const onVideoError = () => {
-  isBuffering.value = false
-  isVideoError.value = true
 }
 
 onMounted(() => {
-  document.addEventListener('keydown', onKeyDown)
+  document.addEventListener('keydown', handleKeyDown)
 })
 
 onUnmounted(() => {
-  document.removeEventListener('keydown', onKeyDown)
+  document.removeEventListener('keydown', handleKeyDown)
 })
 </script>
 
 <template>
   <div
     id="playerContainer"
-    ref="overlayVideo"
+    ref="overlayVideoRef"
     class="has-full-size"
-    style="display: inline-flex"
-    @pointermove="onPlayerPointerMove"
+    @pointermove="handlePlayerPointerEvent"
   >
     <video
       id="mediaPlayer"
-      ref="video"
+      ref="videoRef"
       crossorigin="anonymous"
-      @timeupdate="updateStatus"
-      @seeking="updateStatus"
-      @pointerup="onPlayerPointerUp"
+      @timeupdate="updatePlayerStatus"
+      @seeking="updatePlayerStatus"
+      @pointerup="handlePlayerClick"
       @loadstart="isBuffering = true"
-      @loadeddata="onPlayerReady"
+      @loadeddata="handlePlayerLoaded"
       @waiting="isBuffering = true"
-      @playing="onVideoPlaying"
-      @error="onVideoError"
+      @playing="setBufferAndErrorState(false, false)"
+      @error="setBufferAndErrorState(false, true)"
       class="has-full-size"
       :src="resource?.isLive ? undefined : resource?.src"
       autoplay
     />
 
     <ErrorBlankSlate v-if="isError || isVideoError" style="position: absolute" />
-    <div v-if="isBuffering || !resource" class="ts-mask" @pointerup="onOverlayPointerUp">
+    <div v-if="isBuffering || !resource" class="ts-mask" @pointerup="handlePlayerClick">
       <div class="ts-center">
         <div class="ts-loading is-large" style="color: #fff"></div>
       </div>
     </div>
-    <div v-if="resource" class="ts-mask is-faded is-top is-hidable" @pointerup="onOverlayPointerUp">
+    <div
+      v-if="resource && touchMode"
+      id="mobileCenterControl"
+      class="is-hidable has-flex-center has-horizontally-padded-huge"
+    >
+      <button
+        class="button-touch has-flex-center"
+        @pointerup="withHandlePointerEvent($event, togglePlay)"
+      >
+        <span v-if="isPaused" class="ts-icon is-huge tablet+:is-heading is-play-icon" />
+        <span v-else class="ts-icon is-huge tablet+:is-heading is-pause-icon" />
+      </button>
+    </div>
+    <div
+      v-if="resource"
+      class="ts-mask is-faded is-top is-hidable"
+      @pointerup="handlePlayerPointerEvent"
+    >
       <div class="ts-content" style="color: #fff">
         <div class="ts-header is-truncated">{{ resource.streamer }}</div>
         <span v-if="resource.isLive">
@@ -405,76 +495,69 @@ onUnmounted(() => {
         </span>
       </div>
     </div>
-    <div v-if="resource" class="ts-mask is-faded is-bottom is-hidable">
+    <div
+      v-if="resource"
+      class="ts-mask is-faded is-bottom is-hidable"
+      @pointerup="handlePlayerPointerEvent"
+    >
       <div class="ts-content" style="color: #fff">
         <input
+          v-if="!touchMode"
           type="range"
           class="has-full-width has-cursor-pointer player-slider"
           v-model="currentTime"
           :max="duration"
           step="any"
-          @input="onSeekDrag"
+          @input="debounceSeekDrag"
         />
-        <div
-          class="is-flex justify-between has-horizontally-padded"
-          @pointerup="onOverlayPointerUp"
-        >
+        <div class="is-flex justify-between" :class="{ 'has-horizontally-padded': !touchMode }">
           <div class="is-flex">
-            <button class="button has-flex-center" @pointerup="onPlayButtonPointerUp">
-              <span v-if="isPaused" class="ts-icon is-play-icon" />
-              <span v-else class="ts-icon is-pause-icon" />
+            <button
+              v-if="!touchMode"
+              class="button has-flex-center"
+              @pointerup="withHandlePointerEvent($event, togglePlay)"
+            >
+              <span v-if="isPaused" class="ts-icon tablet+:is-big is-play-icon" />
+              <span v-else class="ts-icon tablet+:is-big is-pause-icon" />
             </button>
-            <div class="is-flex has-smaller-gap">
-              <button
-                class="button has-flex-center"
-                @pointerup="onMuteButtonPointerUp"
-                @wheel="onVolumeMouseWheel"
-              >
-                <span v-if="isMuted" class="ts-icon is-volume-xmark-icon" />
-                <span v-else-if="volume === 0" class="ts-icon is-volume-off-icon" />
-                <span v-else-if="volume <= 50" class="ts-icon is-volume-low-icon" />
-                <span
-                  v-else
-                  class="ts-icon is-volume-high-icon"
-                  :style="{ color: volume > 100 ? 'var(--ts-negative-400)' : 'var(--ts-white)' }"
-                />
-              </button>
-              <input
-                type="range"
-                class="mobile:has-hidden has-cursor-pointer player-slider"
-                v-model="volume"
-                :max="150"
-                step="any"
-                list="volumeMarkers"
-                @input="setVolume"
-                @wheel="onVolumeMouseWheel"
-              />
-              <datalist id="volumeMarkers">
-                <option value="100"></option>
-              </datalist>
-              <span
-                class="mobile:has-hidden has-cursor-pointer"
-                title="按一下重置音量"
-                @click="resetVolume"
-                >{{ Math.round(convertVolume(volume)) }}%</span
-              >
-            </div>
+            <VolumeControl
+              v-if="!touchMode"
+              v-model:volume="volume"
+              :is-muted="isMuted"
+              :convert-volume="convertVolume"
+              @reset-button-pointerup="withHandlePointerEvent($event, resetVolume)"
+              @mute-button-pointerup="withHandlePointerEvent($event, toggleMute)"
+              @volume-mousewheel="withHandlePointerEvent($event, handleVolumeMouseWheel)"
+              @pointerup="handlePlayerPointerEvent"
+              @update:volume="setVolume"
+            />
             <span>
               {{ timeText }}
               <span v-if="!isNaN(duration)"> / {{ durationText }} </span>
             </span>
           </div>
           <div class="is-flex">
+            <VolumeControl
+              v-if="touchMode"
+              v-model:volume="volume"
+              :is-muted="isMuted"
+              :convert-volume="convertVolume"
+              @reset-button-pointerup="withHandlePointerEvent($event, resetVolume)"
+              @mute-button-pointerup="withHandlePointerEvent($event, toggleMute)"
+              @volume-mousewheel="withHandlePointerEvent($event, handleVolumeMouseWheel)"
+              @pointerup="handlePlayerPointerEvent"
+              @update:volume="setVolume"
+            />
             <div v-if="qualityList.length > 1">
               <button
                 class="button has-flex-center"
                 data-dropdown="quality"
-                @pointerup="onPlayerPointerMove"
+                @pointerup="handlePlayerPointerEvent"
               >
-                <span class="ts-icon is-images-icon" />
+                <span class="ts-icon tablet+:is-big is-images-icon" />
               </button>
               <div
-                ref="qualityDropdown"
+                ref="qualityDropdownRef"
                 class="ts-dropdown style-text"
                 data-name="quality"
                 data-position="top-end"
@@ -502,40 +585,53 @@ onUnmounted(() => {
               <button
                 class="button has-flex-center"
                 data-dropdown="speed"
-                @pointerup="onPlayerPointerMove"
+                @pointerup="handlePlayerPointerEvent"
               >
-                <span class="ts-icon is-gauge-simple-high-icon" />
+                <span class="ts-icon tablet+:is-big is-gauge-simple-high-icon" />
               </button>
               <div
-                ref="rateDropdown"
+                ref="rateDropdownRef"
                 class="ts-dropdown style-text"
                 data-name="speed"
                 data-position="top-end"
               >
                 <button
-                  v-for="rateItem in rateList"
+                  v-for="rateItem in playbackRateList"
                   :key="rateItem.value"
                   class="item"
-                  :class="{ 'is-selected': rateItem.value === rate }"
-                  @click="setRate(rateItem.value)"
+                  :class="{ 'is-selected': rateItem.value === playbackRate }"
+                  @click="setPlaybackRate(rateItem.value)"
                 >
                   {{ rateItem.text }}
                 </button>
               </div>
             </div>
-            <button class="button has-flex-center" @pointerup="onFullscreenButtonPointerUp">
+            <button
+              class="button has-flex-center"
+              @pointerup="withHandlePointerEvent($event, toggleFullscreen)"
+            >
               <span v-if="isFullscreen" class="ts-icon is-compress-icon" />
-              <span v-else class="ts-icon is-expand-icon" />
+              <span v-else class="ts-icon tablet+:is-big is-expand-icon" />
             </button>
           </div>
         </div>
+        <input
+          v-if="touchMode"
+          type="range"
+          class="has-full-width has-cursor-pointer player-slider"
+          v-model="currentTime"
+          :max="duration"
+          step="any"
+          @input="debounceSeekDrag"
+        />
       </div>
     </div>
   </div>
 </template>
 
 <style scoped>
-.ts-mask.is-hidable {
+/* Auto Hide */
+.is-hidable {
   opacity: 0;
   transition-duration: 500ms;
 }
@@ -548,38 +644,8 @@ onUnmounted(() => {
   background: linear-gradient(0deg, rgba(0, 0, 0, 0.9) 0, rgba(0, 0, 0, 0.1) 90%, transparent);
 }
 
-#playerContainer:not(.auto-hidden) > .ts-mask.is-hidable {
+#playerContainer:not(.auto-hidden) > .is-hidable {
   opacity: 1;
-}
-
-.is-flex {
-  display: flex;
-  align-items: center;
-  gap: 1rem;
-}
-
-.has-smaller-gap {
-  gap: 0.25rem;
-}
-
-.justify-between {
-  justify-content: space-between;
-}
-
-.button {
-  width: 18px;
-  height: 18px;
-}
-
-.style-text {
-  color: var(--ts-gray-900);
-}
-
-#playerContainer:not(:fullscreen) video {
-  aspect-ratio: 16/9;
-  max-height: 80vh;
-  display: inline-flex;
-  box-sizing: content-box;
 }
 
 .auto-hidden,
@@ -590,5 +656,61 @@ onUnmounted(() => {
 /* Workaround tocas-ui's important */
 .auto-hidden .has-cursor-pointer {
   cursor: none !important;
+}
+
+/* Elements */
+.button {
+  width: 30px;
+  height: 30px;
+}
+
+.button-touch {
+  width: 36px;
+  height: 36px;
+}
+
+@media (min-width: 768px) {
+  .button-touch {
+    width: 90px;
+    height: 90px;
+  }
+}
+
+#playerContainer {
+  display: inline-flex;
+}
+
+#playerContainer:not(:fullscreen) video {
+  aspect-ratio: 16/9;
+  max-height: 80vh;
+  display: inline-flex;
+  box-sizing: content-box;
+}
+
+#mobileCenterControl {
+  color: #fff;
+  position: absolute;
+  left: 50%;
+  top: 50%;
+  transform: translate(-50%, -50%);
+}
+
+#mobileCenterControl .ts-icon::before {
+  text-shadow: #000 2px 2px 5px;
+}
+
+/* Util Styles */
+.is-flex {
+  display: flex;
+  align-items: center;
+  gap: 1rem;
+}
+
+.justify-between {
+  justify-content: space-between;
+}
+
+.style-text {
+  color: var(--ts-gray-900);
 }
 </style>
