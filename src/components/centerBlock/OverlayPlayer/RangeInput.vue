@@ -8,10 +8,14 @@ const emit = defineEmits(['input', 'wheel', 'update:modelValue'])
 const sliderRef = ref(null)
 
 const toProgress = (value) => {
-  return (value / sliderRef.value.max) * 100
+  return (parseFloat(value) / parseFloat(sliderRef.value.max)) * 100
 }
 
 const updateBackground = (value) => {
+  // Parse float to avoid string compare
+  value = parseFloat(value)
+  const maxValue = parseFloat(sliderRef.value.max)
+
   const list = []
   if (!props.timeRange) {
     list.push(`var(--range-fg-color) ${toProgress(value)}%`)
@@ -31,7 +35,7 @@ const updateBackground = (value) => {
       list.push(`var(--range-buffered-color) ${toProgress(end)}%`)
       lastValue = end
     }
-    if (lastValue < sliderRef.value.max) {
+    if (lastValue < maxValue) {
       list.push(`var(--range-bg-color) ${toProgress(lastValue)}%`)
       list.push(`var(--range-bg-color) 100%`)
     }
