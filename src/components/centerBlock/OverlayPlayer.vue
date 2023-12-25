@@ -394,7 +394,7 @@ const handlePlayerSecondClick = (event, isTouchEvent) => {
     } else if (eventX > RightSideStart) {
       seekForward()
     } else {
-      togglePlay(true)
+      togglePlay()
     }
   } else {
     toggleFullscreen()
