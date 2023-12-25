@@ -18,23 +18,37 @@ const updateBackground = (value) => {
 
   const list = []
   if (!props.timeRange) {
+    // Normal timeline
     list.push(`var(--range-fg-color) ${toProgress(value)}%`)
     list.push(`var(--range-bg-color) ${toProgress(value)}%`)
   } else {
+    // Timeline with buffered range
+    // Played range
     list.push(`var(--range-fg-color) 0%, var(--range-fg-color) ${toProgress(value)}%`)
+
+    // Buffered range
     let lastValue = value
     for (let i = 0; i < props.timeRange.length; i++) {
       const start = props.timeRange.start(i)
       const end = props.timeRange.end(i)
+
+      // Skip if the range is before the played range
       if (end < value) continue
+
+      // Fill the gap with unbuffered color
       if (start > lastValue) {
         list.push(`var(--range-bg-color) ${toProgress(lastValue)}%`)
         list.push(`var(--range-bg-color) ${toProgress(start)}%`)
       }
+
+      // Fill the buffered range
       list.push(`var(--range-buffered-color) ${toProgress(Math.max(lastValue, start))}%`)
       list.push(`var(--range-buffered-color) ${toProgress(end)}%`)
+      
       lastValue = end
     }
+
+    // Fill the rest with unbuffered color
     if (lastValue < maxValue) {
       list.push(`var(--range-bg-color) ${toProgress(lastValue)}%`)
       list.push(`var(--range-bg-color) 100%`)
