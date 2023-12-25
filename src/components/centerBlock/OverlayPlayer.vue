@@ -134,7 +134,7 @@ const togglePlay = (showAction = false) => {
     videoRef.value.pause()
   }
   updatePlayerStatus()
-  if (showAction) {
+  if (showAction === true) {
     actionSnackBarRef.value?.emitSnackbar(videoRef.value.paused ? 'pause' : 'play')
   }
 }
@@ -235,7 +235,7 @@ const toggleMute = (showAction = false) => {
   videoRef.value.muted = !videoRef.value.muted
   videoAmplifier.value?.context.resume()
   updatePlayerStatus()
-  if (showAction) {
+  if (showAction === true) {
     actionSnackBarRef.value?.emitSnackbar(videoRef.value.muted ? 'volumeMute' : 'volumeUnmute')
   }
 }
