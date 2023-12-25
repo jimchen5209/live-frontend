@@ -510,7 +510,7 @@ onUnmounted(() => {
           :max="duration"
           step="any"
           @input="debounceSeekDrag"
-          :time-range="video?.buffered"
+          :time-range="videoRef?.buffered"
         />
         <div class="is-flex justify-between" :class="{ 'has-horizontally-padded': !touchMode }">
           <div class="is-flex">
@@ -625,6 +625,7 @@ onUnmounted(() => {
           :max="duration"
           step="any"
           @input="debounceSeekDrag"
+          :time-range="videoRef?.buffered"
         />
       </div>
     </div>
