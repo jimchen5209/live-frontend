@@ -57,7 +57,7 @@ const updateBackground = (value) => {
   sliderRef.value.style.background = `linear-gradient(to right, ${list.join(', ')})`
 }
 
-const onSliderInput = (event) => {
+const handleSliderInput = (event) => {
   updateBackground(event.target.value)
   emit('update:modelValue', event.target.value)
   emit('input', event)
@@ -95,7 +95,7 @@ onMounted(() => {
     :step="step"
     :list="list"
     :class="{ 'with-list': list }"
-    @input="onSliderInput"
+    @input="handleSliderInput"
     @wheel="$emit('wheel', $event)"
   />
 </template>
