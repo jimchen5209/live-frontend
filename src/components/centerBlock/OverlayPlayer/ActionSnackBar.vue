@@ -72,7 +72,7 @@ defineExpose({ emitSnackbar })
 </script>
 
 <template>
-  <div id="actionSnackBar" :class="[additionalClass, { 'has-hidden': isSnackBarHidden }]">
+  <div id="actionSnackBar" class="has-pointer-events-none" :class="[additionalClass, { 'has-hidden': isSnackBarHidden }]">
     <div class="ts-snackbar">
       <div class="content">
         <span class="ts-icon" :class="[`is-${icon}-icon`]" />
