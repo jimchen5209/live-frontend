@@ -1,5 +1,5 @@
 <script setup>
-import RangeInput from './RangeInput.vue'
+import StyledBar from './StyledBar.vue'
 
 defineProps({
   volume: {
@@ -40,7 +40,7 @@ defineEmits([
         :style="{ color: volume > 100 ? 'var(--ts-negative-400)' : 'var(--ts-white)' }"
       />
     </button>
-    <RangeInput
+    <StyledBar
       class="mobile:has-hidden has-cursor-pointer player-slider"
       :value="volume"
       :max="150"
