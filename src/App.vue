@@ -115,7 +115,6 @@ onMounted(async () => {
             isLive = (await fetch(url_livestream)).ok
           } catch (e) {
             console.error('Failed to fetch live status', e)
-            isLive = false
           }
           return {
             streamer: i,
