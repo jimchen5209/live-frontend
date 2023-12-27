@@ -56,7 +56,7 @@ const refreshChat = () => {
   }
 }
 
-const newStreamer = async () => {
+const detectNewStreamer = async () => {
   if (isLive.value && !livestreamList.value.some((i) => i.streamer === profileName.value)) {
     const url_livestream = `${liveUrl}/${profileName.value}.m3u8`
     let isLive = false
@@ -128,7 +128,7 @@ onMounted(async () => {
       )
     )
   ).sort((a, b) => (a.isLive === b.isLive ? 0 : a.isLive ? -1 : 1))
-  newStreamer()
+  detectNewStreamer()
 })
 
 // 來點回頂部
@@ -143,7 +143,7 @@ watch(
       mobileMenuRef.value?.classList.remove('is-visible')
     scrollToTop()
     refreshChat()
-    newStreamer()
+    detectNewStreamer()
   }
 )
 
