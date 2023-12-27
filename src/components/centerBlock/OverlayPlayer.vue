@@ -28,7 +28,7 @@ const props = defineProps({
 defineEmits(['change-quality'])
 
 // Handle route
-const { getParameter, setParameter, getUrlWithoutParameters, route } = useRoute()
+const { getParameter, getUrlWithNewParameters, getUrlWithoutParameters, route } = useRoute()
 
 const restoreTimeFromUrl = () => {
   const time = getParameter('t')
@@ -448,7 +448,7 @@ const copyVideoUrl = () => {
 }
 
 const copyTimeUrl = () => {
-  const newUrl = setParameter({ t: Math.floor(currentTime.value) })
+  const newUrl = getUrlWithNewParameters({ t: Math.floor(currentTime.value) })
   navigator.clipboard.writeText(newUrl.href)
 }
 

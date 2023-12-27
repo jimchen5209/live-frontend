@@ -63,7 +63,7 @@ export const useRoute = () => {
 
   // set parameter value by key
   // format: { key1: value1, key2: value2 }
-  const setParameter = (values, reset = false) => {
+  const getUrlWithNewParameters = (values, reset = false) => {
     // if reset is true, remove all current parameters
     const newParameters = reset ? [] : parameters.value.slice(0)
 
@@ -165,7 +165,7 @@ export const useRoute = () => {
     targetFilename,
     parameters,
     getParameter,
-    setParameter,
+    getUrlWithNewParameters,
     getUrlWithoutParameters,
     replaceHash
   }
