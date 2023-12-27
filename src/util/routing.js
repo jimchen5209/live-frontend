@@ -1,71 +1,56 @@
 import { ref, computed, onMounted, onUnmounted } from 'vue'
 
 export const useRoute = () => {
-  // hash: #cute_panda/cute_panda-1698758357
-
   // fetch route from hash and remove #
-  // stored: 'cute_panda/cute_panda-1698758357'
   const route = ref(window.location.hash.substring(1))
 
-  // split route by /
-  // output: ['cute_panda', 'cute_panda-1698758357']
-  const splittedRoute = computed(() => {
-    return route.value.split('/')
-  })
+  // parse route
+  const parsedRoute = computed(() => {
+    const splittedRaw = route.value.split('/')
 
-  // get profile name
-  // output: 'cute_panda'
-  const profileName = computed(() => {
-    return splittedRoute.value[0]
-  })
+    // profile name
+    const profileName = splittedRaw[0]
 
-  // check if route is profile page by  checking if there is only one element
-  const isProfilePage = computed(() => {
-    return splittedRoute.value.length === 1 || splittedRoute.value[1].split(':')[0] === ''
-  })
+    if (splittedRaw.length === 2) {
+      const parametersRaw = splittedRaw[1].split(':')
 
-  // check if route is a live url
-  const isLive = computed(() => {
-    return !isProfilePage.value ? splittedRoute.value[1].split(':')[0] === 'live' : false
-  })
+      if (parametersRaw[0] !== '') {
+        // check if route is a live url
+        const isLive = splittedRaw[1] === 'live'
 
-  // get target filename
-  // output:
-  // - undefined if profile page
-  // - 'cute_panda-1698758357.mp4' if record
-  // - 'cute_panda.m3u8' if live
-  const targetFilename = computed(() => {
-    if (isProfilePage.value) {
-      return undefined
+        // url filename
+        const filename = parametersRaw[0]
+
+        // target filename
+        const targetFilename = isLive ? `${profileName}.m3u8` : `${filename}.mp4`
+
+        // parameters from route with format key=value and split them by :
+        const parameters = parametersRaw.slice(1)
+
+        return { profileName, isLive, filename, targetFilename, parameters }
+      }
     }
-    return isLive.value
-      ? `${profileName.value}.m3u8`
-      : `${splittedRoute.value[1].split(':')[0]}.mp4`
-  })
-
-  // get parameters from route with format key=value and split them by :
-  // output: ['key1=value1', 'key2=value2']
-  const parameters = computed(() => {
-    if (isProfilePage.value) {
-      return []
+    return {
+      profileName,
+      isLive: false,
+      parameters: []
     }
-    return splittedRoute.value[1].split(':').slice(1)
   })
 
   // get parameter value by key
   const getParameter = (key) => {
-    const parameter = parameters.value.find((parameter) => parameter.startsWith(key))
+    const parameter = parsedRoute.value.parameters.find((parameter) => parameter.startsWith(key))
     if (parameter === undefined) {
       return undefined
     }
     return parameter.split('=')[1]
   }
 
-  // set parameter value by key
+  // set parameter value by key and return new url
   // format: { key1: value1, key2: value2 }
   const getUrlWithNewParameters = (values, reset = false) => {
     // if reset is true, remove all current parameters
-    const newParameters = reset ? [] : parameters.value.slice(0)
+    const newParameters = reset ? [] : parsedRoute.value.parameters.slice(0)
 
     // add or update parameters
     for (const [key, value] of Object.entries(values)) {
@@ -81,12 +66,10 @@ export const useRoute = () => {
 
     // generate new url
     const newUrl = new URL(window.location.href)
-    const targetFilename = isLive.value ? 'live' : splittedRoute.value[1].split(':')[0]
-    if (newParameters.length === 0) {
-      newUrl.hash = `#${profileName.value}/${targetFilename}`
-    } else {
-      newUrl.hash = `#${profileName.value}/${targetFilename}:${newParameters.join(':')}`
-    }
+    newUrl.hash = `#${parsedRoute.value.profileName}/${parsedRoute.value.filename}`
+    if (newParameters.length !== 0) {
+      newUrl.hash += `:${newParameters.join(':')}`
+    } 
 
     return {
       href: newUrl.href,
@@ -97,8 +80,7 @@ export const useRoute = () => {
   // get url without parameters
   const getUrlWithoutParameters = () => {
     const newUrl = new URL(window.location.href)
-    const targetFilename = isLive.value ? 'live' : splittedRoute.value[1].split(':')[0]
-    newUrl.hash = `#${profileName.value}/${targetFilename}`
+    newUrl.hash = `#${parsedRoute.value.profileName}/${parsedRoute.value.filename}`
 
     return {
       href: newUrl.href,
@@ -157,13 +139,30 @@ export const useRoute = () => {
   onUnmounted(() => {
     window.removeEventListener('hashchange', updateRoute)
   })
+
+  // Public getters
+  const profileName = computed(() => {
+    return parsedRoute.value.profileName
+  })
+
+  const isProfilePage = computed(() => {
+    return parsedRoute.value.targetFilename === undefined
+  })
+
+  const isLive = computed(() => {
+    return parsedRoute.value.isLive
+  })
+
+  const targetFilename = computed(() => {
+    return parsedRoute.value.targetFilename
+  })
+
   return {
     route,
     profileName,
     isProfilePage,
     isLive,
     targetFilename,
-    parameters,
     getParameter,
     getUrlWithNewParameters,
     getUrlWithoutParameters,
