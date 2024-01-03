@@ -5,8 +5,6 @@ import { debounce } from 'lodash'
 import VolumeControl from './OverlayPlayer/VolumeControl.vue'
 import ErrorBlankSlate from '../ErrorBlankSlate.vue'
 
-import { useRoute } from '../../util/routing'
-
 const props = defineProps({
   resource: {
     type: Object,
@@ -20,20 +18,22 @@ const props = defineProps({
     type: Number,
     default: -1
   },
+  time: {
+    type: String,
+    required: false,
+    default: undefined
+  },
   isError: {
     type: Boolean,
     default: false
   }
 })
-defineEmits(['change-quality'])
+defineEmits(['change-quality', 'copy-link', 'copy-time-link'])
 
-// Handle route
-const { getParameter, getUrlWithNewParameters, getUrlWithoutParameters, route } = useRoute()
-
-const restoreTimeFromUrl = () => {
-  const time = getParameter('t')
-  if (time && !isNaN(time) && parseInt(time) > 0 && parseInt(time) < duration.value) {
-    currentTime.value = parseInt(time)
+// Handle time code
+const restoreTime = () => {
+  if (props.time && !isNaN(props.time)) {
+    currentTime.value = Math.max(Math.min(parseInt(props.time), duration.value), 0)
     setTime()
   }
 }
@@ -82,7 +82,7 @@ const updatePlayerStatus = () => {
 
 const handlePlayerLoaded = () => {
   updatePlayerStatus()
-  restoreTimeFromUrl()
+  restoreTime()
   showUIAndResetAutoHideTimer()
 }
 
@@ -441,21 +441,10 @@ const handleVolumeMouseWheel = (event) => {
   }
 }
 
-// Handle Share Menu
-const copyVideoUrl = () => {
-  const newUrl = getUrlWithoutParameters()
-  navigator.clipboard.writeText(newUrl.href)
-}
-
-const copyTimeUrl = () => {
-  const newUrl = getUrlWithNewParameters({ t: Math.floor(currentTime.value) })
-  navigator.clipboard.writeText(newUrl.href)
-}
-
 watch(
-  () => route.value,
+  () => props.time,
   () => {
-    restoreTimeFromUrl()
+    restoreTime()
   }
 )
 
@@ -545,8 +534,12 @@ onUnmounted(() => {
                 data-name="share"
                 data-position="bottom-end"
               >
-                <button class="item" @click="copyVideoUrl">複製影片連結</button>
-                <button v-if="!resource.isLive" class="item" @click="copyTimeUrl">
+                <button class="item" @click="$emit('copy-link')">複製影片連結</button>
+                <button
+                  v-if="!resource.isLive"
+                  class="item"
+                  @click="$emit('copy-time-link', currentTime)"
+                >
                   複製目前時間的連結
                   <span class="description">{{ timeToText(currentTime) }}</span>
                 </button>

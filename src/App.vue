@@ -30,7 +30,16 @@ const {
 } = useChat()
 
 const { viewWidth } = useViewport()
-const { route, profileName, isProfilePage, isLive, targetFilename } = useRoute()
+const {
+  route,
+  profileName,
+  isProfilePage,
+  isLive,
+  targetFilename,
+  getParameter,
+  getUrlWithNewParameters,
+  getUrlWithoutParameters
+} = useRoute()
 
 const playlistRef = ref(null)
 const mobileMenuRef = ref(null)
@@ -136,6 +145,19 @@ const scrollToTop = () => {
   playlistRef.value?.scrollTo({ top: 0, left: 0, behavior: 'smooth' })
 }
 
+// handle time code
+const time = ref(getParameter('t'))
+
+const copyVideoLink = () => {
+  const newUrl = getUrlWithoutParameters()
+  navigator.clipboard.writeText(newUrl.href)
+}
+
+const copyTimeLink = (currentTime) => {
+  const newUrl = getUrlWithNewParameters({ t: Math.floor(currentTime) })
+  navigator.clipboard.writeText(newUrl.href)
+}
+
 watch(
   () => route.value,
   () => {
@@ -143,6 +165,7 @@ watch(
       mobileMenuRef.value?.classList.remove('is-visible')
     scrollToTop()
     refreshChat()
+    time.value = getParameter('t')
     detectNewStreamer()
   }
 )
@@ -201,6 +224,9 @@ const onDrawerBackgroundClick = (event) => {
               v-if="livestreamList"
               :filename="targetFilename"
               :list="recordList.concat(livestreamList.filter((i) => i.isLive))"
+              :time="time"
+              @copy-link="copyVideoLink"
+              @copy-time-link="copyTimeLink"
             />
           </div>
           <div class="cell">

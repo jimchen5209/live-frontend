@@ -69,7 +69,7 @@ export const useRoute = () => {
     newUrl.hash = `#${parsedRoute.value.profileName}/${parsedRoute.value.filename}`
     if (newParameters.length !== 0) {
       newUrl.hash += `:${newParameters.join(':')}`
-    } 
+    }
 
     return {
       href: newUrl.href,
