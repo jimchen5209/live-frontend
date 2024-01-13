@@ -1,9 +1,6 @@
 <script setup>
 import { computed } from 'vue';
 
-import { makeId } from '../../../../util/idGenerator'
-import { useRoute } from '../../../../util/routing'
-
 const props = defineProps({
   modelOpen: {
     type: Boolean,
@@ -32,24 +29,17 @@ const props = defineProps({
   nickname: {
     type: String,
     default: ''
-  }
+  },
+  watchTogetherCode: {
+    type: String,
+    required: false,
+    default: undefined
+  },
 })
 
-defineEmits(['nickname-change', 'lock-change', 'close'])
+defineEmits(['nickname-change', 'lock-change', 'close', 'start-new-watch-together', 'copy-watch-together-link'])
 
-const { getParameter, setParameter, replaceHash } = useRoute()
-
-const isWaiting = computed(() => getParameter('wt') !== undefined && !props.isActive)
-
-const copyWatchTogetherUrl = () => {
-  const newUrl = setParameter({ t: undefined })
-  navigator.clipboard.writeText(newUrl.href)
-}
-
-const startWatchTogether = () => {
-  const newUrl = setParameter({ wt: makeId(8), t: undefined })
-  replaceHash(newUrl.hash)
-}
+const isWaiting = computed(() => props.watchTogetherCode !== undefined && !props.isActive)
 </script>
 
 <template>
@@ -122,10 +112,10 @@ const startWatchTogether = () => {
             />
             允許控制
           </label>
-          <button v-if="!isActive" class="ts-button is-fluid" @click="startWatchTogether">
+          <button v-if="!isActive" class="ts-button is-fluid" @click="$emit('start-new-watch-together')">
             啟動{{ isWaiting ? '新的共同觀看' : '' }}
           </button>
-          <button v-if="isActive" class="ts-button is-fluid" @click="copyWatchTogetherUrl">
+          <button v-if="isActive" class="ts-button is-fluid" @click="$emit('copy-watch-together-link')">
             複製連結
           </button>
           <button v-if="isActive" class="ts-button is-fluid is-negative">解散</button>

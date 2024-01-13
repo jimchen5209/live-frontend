@@ -26,12 +26,17 @@ const props = defineProps({
     required: false,
     default: undefined
   },
+  watchTogetherCode: {
+    type: String,
+    required: false,
+    default: undefined
+  },
   isError: {
     type: Boolean,
     default: false
   }
 })
-defineEmits(['change-quality', 'copy-link', 'copy-time-link'])
+defineEmits(['change-quality', 'copy-link', 'copy-time-link', 'copy-watch-together-link', 'start-new-watch-together'])
 
 // Handle time code
 const restoreTime = () => {
@@ -57,7 +62,7 @@ const {
   disconnect
 } = useWatchTogether()
 
-const isWatchTogetherActive = computed(() => getParameter('wt') !== undefined && readyState.value)
+const isWatchTogetherActive = computed(() => props.watchTogetherCode !== undefined && readyState.value)
 const isWatchTogetherConfigOpen = ref(false)
 const isPlayControlLocked = computed(
   () => isWatchTogetherActive.value && !isHost.value && locked.value
@@ -474,11 +479,6 @@ const handleVolumeMouseWheel = (event) => {
   }
 }
 
-const copyWatchTogetherUrl = () => {
-  const newUrl = setParameter({ t: undefined })
-  navigator.clipboard.writeText(newUrl.href)
-}
-
 watch(
   () => props.time,
   () => {
@@ -594,7 +594,7 @@ onUnmounted(() => {
                 >
                   {{ isWatchTogetherActive ? '管理' : '啟動' }}同時觀看
                 </button>
-                <button v-if="isWatchTogetherActive" class="item" @click="copyWatchTogetherUrl">
+                <button v-if="isWatchTogetherActive" class="item" @click="$emit('copy-watch-together-link')">
                   複製同時觀看連結
                 </button>
               </div>
@@ -748,9 +748,11 @@ onUnmounted(() => {
     :viewer-count="viewerCount"
     :nickname="nickname"
     :is-locked="locked"
+    :watch-together-code="watchTogetherCode"
     @nickname-change="setNickname"
     @close="isWatchTogetherConfigOpen = false"
     @lock-change="setLocked"
+    @start-new-watch-together="$emit('start-new-watch-together')"
   />
 </template>
 
