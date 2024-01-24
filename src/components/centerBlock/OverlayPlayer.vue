@@ -193,7 +193,7 @@ const videoAmplifier = computed(() => {
 
 const isMuted = ref(false)
 
-const volume = ref(parseInt(localStorage.getItem('player_volume') ?? 100))
+const volume = ref(parseFloat(localStorage.getItem('player_volume') ?? 100))
 
 const convertVolume = (volume) => {
   if (volume <= 100) return volume
