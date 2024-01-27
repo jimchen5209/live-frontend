@@ -193,7 +193,7 @@ const videoAmplifier = computed(() => {
 
 const isMuted = ref(false)
 
-const volume = ref(100)
+const volume = ref(parseFloat(localStorage.getItem('player_volume') ?? 100))
 
 const convertVolume = (volume) => {
   if (volume <= 100) return volume
@@ -215,6 +215,7 @@ const setVolume = () => {
   videoRef.value.muted = false
   videoAmplifier.value?.context.resume()
   videoAmplifier.value?.amplify(convertVolume(volume.value) / 100)
+  localStorage.setItem('player_volume', volume.value)
   updatePlayerStatus()
 }
 
@@ -490,6 +491,10 @@ watch(
 
 onMounted(() => {
   document.addEventListener('keydown', handleKeyDown)
+  if (isNaN(volume.value)) {
+    resetVolume()
+  }
+  setVolume()
 })
 
 onUnmounted(() => {
