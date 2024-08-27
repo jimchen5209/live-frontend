@@ -5,6 +5,7 @@ import { debounce } from 'lodash'
 import WatchTogetherStatus from './OverlayPlayer/Sharing/WatchTogetherStatus.vue'
 import WatchTogetherConfig from './OverlayPlayer/Sharing/WatchTogetherConfig.vue'
 import VolumeControl from './OverlayPlayer/VolumeControl.vue'
+import ActionSnackbar from './OverlayPlayer/ActionSnackBar.vue'
 import ErrorBlankSlate from '../ErrorBlankSlate.vue'
 import { useWatchTogether } from '../../util/websocket'
 
@@ -72,6 +73,9 @@ const isPlayControlLocked = computed(
 const touchMode = ref(false)
 const isTouch = (event) => event?.pointerType === 'touch'
 
+// Handle snack bar
+const actionSnackBarRef = ref(null)
+
 // Handle video element
 const videoRef = ref(null)
 
@@ -114,6 +118,18 @@ const handlePlayerLoaded = () => {
   updatePlayerStatus()
   restoreTime()
   showUIAndResetAutoHideTimer()
+
+  // Try autoplay
+  const play = videoRef.value.play()
+  if (play) {
+    play.catch((error) => {
+      if (error.name === 'NotAllowedError') {
+        videoRef.value.muted = true
+        actionSnackBarRef.value?.emitSnackbar('volumeUnavailable')
+        videoRef.value.play()
+      }
+    })
+  }
 }
 
 const playbackRateList = ref([
@@ -149,15 +165,17 @@ const seekForward = () => {
   if (isPlayControlLocked.value) return
   currentTime.value = Math.min(currentTime.value + 5, duration.value)
   setTime()
+  actionSnackBarRef.value?.emitSnackbar('forward')
 }
 
 const seekBackward = () => {
   if (isPlayControlLocked.value) return
   currentTime.value = Math.max(currentTime.value - 5, 0)
   setTime()
+  actionSnackBarRef.value?.emitSnackbar('backward')
 }
 
-const togglePlay = () => {
+const togglePlay = (showAction = false) => {
   if (!props.resource) return
   if (isPlayControlLocked.value) return
   if (videoRef.value.paused) {
@@ -166,6 +184,9 @@ const togglePlay = () => {
     videoRef.value.pause()
   }
   updatePlayerStatus()
+  if (showAction === true) {
+    actionSnackBarRef.value?.emitSnackbar(videoRef.value.paused ? 'pause' : 'play')
+  }
 }
 
 const toggleFullscreen = () => {
@@ -208,7 +229,7 @@ const videoAmplifier = computed(() => {
 
 const isMuted = ref(false)
 
-const volume = ref(100)
+const volume = ref(parseFloat(localStorage.getItem('player_volume') ?? 100))
 
 const convertVolume = (volume) => {
   if (volume <= 100) return volume
@@ -221,35 +242,53 @@ const reverseVolume = (volume) => {
 }
 
 const setVolume = () => {
-  if (volume.value === 0) {
+  if (Math.round(volume.value) === 0) {
     videoRef.value.muted = true
     updatePlayerStatus()
     return
   }
 
   videoRef.value.muted = false
+  videoAmplifier.value?.context.resume()
   videoAmplifier.value?.amplify(convertVolume(volume.value) / 100)
+  localStorage.setItem('player_volume', volume.value)
   updatePlayerStatus()
 }
 
 const volumeUp = () => {
   volume.value = Math.min(volume.value + 5, 150)
   setVolume()
+  actionSnackBarRef.value?.emitSnackbar(
+    'volumeUp',
+    `音量： ${Math.round(convertVolume(volume.value))}%`
+  )
 }
 
 const volumeDown = () => {
   volume.value = Math.max(volume.value - 5, 0)
   setVolume()
+  actionSnackBarRef.value?.emitSnackbar(
+    'volumeDown',
+    `音量： ${Math.round(convertVolume(volume.value))}%`
+  )
 }
 
 const resetVolume = () => {
   volume.value = 100
   setVolume()
+  actionSnackBarRef.value?.emitSnackbar(
+    'volumeUp',
+    `音量： ${Math.round(convertVolume(volume.value))}%`
+  )
 }
 
-const toggleMute = () => {
+const toggleMute = (showAction = false) => {
   videoRef.value.muted = !videoRef.value.muted
+  videoAmplifier.value?.context.resume()
   updatePlayerStatus()
+  if (showAction === true) {
+    actionSnackBarRef.value?.emitSnackbar(videoRef.value.muted ? 'volumeMute' : 'volumeUnmute')
+  }
 }
 
 // Handle dropdown
@@ -371,7 +410,7 @@ const handlePlayerFirstClick = (event, isHidden, isTouchEvent) => {
     // Toggle play when dropdown is not visible
     if (!isDropdownVisible()) {
       showUIAndResetAutoHideTimer(isTouchEvent)
-      togglePlay()
+      togglePlay(true)
     }
   } else if (isHidden) {
     showUIAndResetAutoHideTimer(isTouchEvent)
@@ -417,7 +456,7 @@ const handlePlayerSecondClick = (event, isTouchEvent) => {
       hideUI()
     } else {
       showUIAndResetAutoHideTimer(isTouchEvent)
-      togglePlay()
+      togglePlay(true)
     }
   }
 }
@@ -438,7 +477,7 @@ const handleKeyDown = (event) => {
     // Play-Pause
     case ' ':
       event.preventDefault()
-      togglePlay()
+      togglePlay(true)
       break
     // Seek
     case 'ArrowRight':
@@ -461,7 +500,7 @@ const handleKeyDown = (event) => {
     case 'M':
     case 'm':
       event.preventDefault()
-      toggleMute()
+      toggleMute(true)
       break
   }
 }
@@ -488,6 +527,10 @@ watch(
 
 onMounted(() => {
   document.addEventListener('keydown', handleKeyDown)
+  if (isNaN(volume.value)) {
+    resetVolume()
+  }
+  setVolume()
 })
 
 onUnmounted(() => {
@@ -516,10 +559,10 @@ onUnmounted(() => {
       @error="setBufferAndErrorState(false, true)"
       class="has-full-size"
       :src="resource?.isLive ? undefined : resource?.src"
-      autoplay
     />
 
     <ErrorBlankSlate v-if="isError || isVideoError" style="position: absolute" />
+    <ActionSnackbar ref="actionSnackBarRef" />
     <div v-if="isBuffering || !resource" class="ts-mask" @pointerup="handlePlayerClick">
       <div class="ts-center">
         <div class="ts-loading is-large" style="color: #fff"></div>

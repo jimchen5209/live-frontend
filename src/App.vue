@@ -236,7 +236,7 @@ const onDrawerBackgroundClick = (event) => {
         </div>
         <div ref="playlistRef" class="cell ts-app-layout is-vertical is-fluid is-scrollable">
           <!-- MediaPlayer -->
-          <div v-if="!isProfilePage" class="cell" style="display: inline-flex">
+          <div v-if="!isProfilePage" class="cell" style="display: inline-flex; background-color: black;">
             <MediaPlayer
               v-if="livestreamList"
               :filename="targetFilename"
